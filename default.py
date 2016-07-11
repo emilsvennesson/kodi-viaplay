@@ -2,6 +2,8 @@
 """
 A Kodi plugin for Viaplay
 """
+import sys
+import os
 import xbmc
 import xbmcaddon
 import xbmcvfs
@@ -12,8 +14,6 @@ addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
 addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
 base_resource_path = os.path.join(addon_path, 'resources', 'lib')
 sys.path.append(base_resource_path)
-import sys
-import os
 import cookielib
 import urllib
 import urlparse
