@@ -243,6 +243,8 @@ def list_seasons(url):
         title = season['title']
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'series', 'url': season['url']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
@@ -362,6 +364,7 @@ def list_categories(url):
         list_item.setProperty('IsPlayable', 'false')
         list_item.setInfo('video', {'title': title, 'genre': title})
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         # Create a URL for the plugin recursive callback.
         # Example: plugin://plugin.video.example/?action=listing&category=Animals
         if type == 'sport':
