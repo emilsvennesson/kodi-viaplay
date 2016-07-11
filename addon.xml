@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.viaplay"
+       version="0.0.1"
+       name="Viaplay"
+       provider-name="emilsvennesson">
+  <requires>
+    <import addon="xbmc.python" version="2.24.0"/>
+    <import addon="script.module.requests" version="2.4.3"/>
+    <import addon="script.module.beautifulsoup4" version="4.3.2"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <description lang="en">Watch content from Viaplay.</description>
+    <disclaimer lang="en">This addon requires you to have a subscription to Viaplay.[CR]This addon is completely unofficial and is not endorsed by Viaplay in any way.</disclaimer>
+  </extension>
+</addon>
