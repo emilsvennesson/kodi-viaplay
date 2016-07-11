@@ -21,7 +21,6 @@ import json
 import requests
 import uuid
 from collections import defaultdict
-import m3u8
 from pycaption import SAMIReader, SRTWriter
 
 language = addon.getLocalizedString
