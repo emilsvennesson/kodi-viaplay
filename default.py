@@ -19,6 +19,7 @@ import urllib
 import urlparse
 import json
 import requests
+import uuid
 from collections import defaultdict
 import m3u8
 from pycaption import SAMIReader, SRTWriter
@@ -101,7 +102,7 @@ def get_streams(guid):
     """Return the URL for a stream. Append all available SAMI subtitle URL:s in the dict subguid."""
     url = 'http://play.viaplay.se/api/stream/byguid'
     payload = {
-    'deviceId': 'XAONO7YPYIM8TOXKGHZPB1UY7YAS3WB2',
+    'deviceId': uuid.uuid4(),
     'deviceName': 'atv',
     'deviceType': 'atv',
     'userAgent': 'AppleTV/2.4',
