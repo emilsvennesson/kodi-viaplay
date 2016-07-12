@@ -21,7 +21,7 @@ import json
 import requests
 import uuid
 from collections import defaultdict
-from pycaption import SAMIReader, SRTWriter
+import HTMLParser
 
 language = addon.getLocalizedString
 logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
@@ -447,33 +447,32 @@ def play_video(guid):
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=get_streams(guid))
     play_item.setProperty('IsPlayable', 'true')
-    play_item.setSubtitles((get_subtitles(subdict[guid])))
+    play_item.setSubtitles(get_subtitles(subdict[guid]))
     # Pass the item to the Kodi player.
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
     
 def get_subtitles(subdict):
-    """Convert subtitle from SAMI to SRT and download to addon profile."""
+    """Download the SAMI subtitles, decode the HTML entities and save to addon profile.
+    Return a list of the path to the subtitles."""
     subtitles = []
     for samiurl in subdict:
         req = requests.get(samiurl)
         sami = req.content.decode('utf-8', 'ignore').strip()
-        try:
-            srt = SRTWriter().write(SAMIReader().read(sami)).encode('utf-8')
-        except:
-            srt = None
+        htmlparser = HTMLParser.HTMLParser()
+        subtitle = htmlparser.unescape(sami).encode('utf-8')
+        
         if '_sv' in samiurl:
-            path = os.path.join(addon_profile, 'swe.srt')
+            path = os.path.join(addon_profile, 'swe.smi')
         elif '_no' in samiurl:
-            path = os.path.join(addon_profile, 'nor.srt')
+            path = os.path.join(addon_profile, 'nor.smi')
         elif '_da' in samiurl:
-            path = os.path.join(addon_profile, 'dan.srt')
+            path = os.path.join(addon_profile, 'dan.smi')
         elif '_fi' in samiurl:
-            path = os.path.join(addon_profile, 'fin.srt')
-        if srt is not None:
-            f = open(path, 'w')
-            f.write(srt)
-            f.close()
-            subtitles.append(path)
+            path = os.path.join(addon_profile, 'fin.smi')
+        f = open(path, 'w')
+        f.write(s)
+        f.close()
+        subtitles.append(subtitle)
     return subtitles
 
 
