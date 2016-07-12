@@ -468,9 +468,9 @@ def get_subtitles(subdict):
         elif '_fi' in samiurl:
             path = os.path.join(addon_profile, 'fin.smi')
         f = open(path, 'w')
-        f.write(s)
+        f.write(subtitle)
         f.close()
-        subtitles.append(subtitle)
+        subtitles.append(path)
     return subtitles
 
 
