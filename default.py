@@ -327,11 +327,7 @@ def get_seasons(url):
     products = data['_embedded']['viaplay:blocks']
     for season in products:
         if season['type'] == 'season-list':
-            seasons_info = {
-            'title': 'Season' + ' ' + season['title'],
-            'url': season['_links']['self']['href']
-            }
-            seasons.append(seasons_info)
+            seasons.append(season)
     return seasons
         
 def list_seasons(url):
@@ -339,12 +335,12 @@ def list_seasons(url):
     seasons = get_seasons(url)
     listing = []
     for season in seasons:
-        title = season['title']
+        title = 'Season ' + season['title']
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': season['url']}
+        parameters = {'action': 'listproducts', 'url': season['_links']['self']['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
