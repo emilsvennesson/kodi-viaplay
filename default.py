@@ -24,7 +24,7 @@ from collections import defaultdict
 from pycaption import SAMIReader, SRTWriter
 
 language = addon.getLocalizedString
-logging_prefix = '[%s-%s]' %(addon.getAddonInfo('id'), addon.getAddonInfo('version'))
+logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
 
 if not xbmcvfs.exists(addon_profile):
     xbmcvfs.mkdir(addon_profile)
@@ -152,20 +152,61 @@ def root_menu(url):
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         if type == 'series':
-            parameters = {'action': 'series', 'url': category['url']}
+            parameters = {'action': 'series', 'url': category['href']}
         elif type == 'movie':
-            parameters = {'action': 'movie', 'url': category['url']}
+            parameters = {'action': 'movie', 'url': category['href']}
         elif type == 'sport':
-            parameters = {'action': 'sport', 'url': category['url']}
+            parameters = {'action': 'sport', 'url': category['href']}
         elif type == 'kids':
-            parameters = {'action': 'kids', 'url': category['url']}
+            parameters = {'action': 'kids', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.endOfDirectory(_handle)
-       
+    
+def movie_menu(url):
+    categories = get_categories(url)
+    listing = []
+    
+    for category in categories:
+        title = category['title']
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        parameters = {'action': 'sortby', 'url': category['href']}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+    
+def get_sortings(url):
+    url = url.replace('https', 'http')
+    url = url.replace('{?dtg}', '')
+    data = make_request(url=url, method='get')
+    
+    sorttypes = data['_links']['viaplay:sortings']
+    return sorttypes
+     
+def sort_by(url):
+    sortings = get_sortings(url)
+    listing = []
+    
+    for sorting in sortings:
+        title = sorting['title']
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        parameters = {'action': 'listproducts', 'url': sorting['href']}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+    
 def next_page(data):
     """Return next page if the current page is less than the total page count."""
     try:
@@ -209,7 +250,6 @@ def list_products(url):
             url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
             is_playable = 'true'
-            sort = True
         elif type == 'series':
             title = item['content']['series']['title'].encode('utf-8')      
             self_url = item['_links']['viaplay:page']['href']
@@ -417,7 +457,7 @@ def main():
             sys.exit(0)
     root_menu(base_url)
     
-def sports_category(url):
+def sports_menu(url):
     live_url = 'http://content.viaplay.se/androiddash-se/sport2' # hardcoded as it's not available on all platforms
     listing = []
     categories = get_categories(live_url)
@@ -440,16 +480,15 @@ def router(paramstring):
     # Check the parameters passed to the plugin
     if params:
         if params['action'] == 'listcategories':
-            # Display the list of videos in a provided category.
             list_categories(params['url'])
-        elif params['action'] == 'movies':
-            list_products(params['url'])
-        elif params['action'] == 'barn':
-            list_products(params['url'])
+        elif params['action'] == 'movie':
+            movie_menu(params['url'])
+        elif params['action'] == 'kids':
+            kids_menu(params['url'])
         elif params['action'] == 'series':
-            list_products(params['url'])
-        elif params['action'] == 'sports':
-            sports_category(params['url'])
+            series_menu(params['url'])
+        elif params['action'] == 'sport':
+            sports_menu(params['url'])
         elif params['action'] == 'seasons':
             list_seasons(params['url'])
         elif params['action'] == 'nextpage':
@@ -458,6 +497,10 @@ def router(paramstring):
             list_products(params['url'])
         elif params['action'] == 'play':
             play_video(params['guid'])
+        elif params['action'] == 'sortby':
+            sort_by(params['url'])
+        elif params['action'] == 'listproducts':
+            list_products(params['url'])
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
@@ -467,3 +510,4 @@ if __name__ == '__main__':
     # Call the router function and pass the plugin call parameters to it.
     # We use string slicing to trim the leading '?' from the plugin call paramstring
     router(sys.argv[2][1:])
+    
