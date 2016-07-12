@@ -45,7 +45,7 @@ http_session.cookies = cookie_jar
     
 username = addon.getSetting('email')
 password = addon.getSetting('password')
-base_url = 'http://content.viaplay.se/atv-se'
+base_url = 'http://content.viaplay.se/pc-se'
 subdict = defaultdict(list)
 
 if addon.getSetting('debug') == 'false':
