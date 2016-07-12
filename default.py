@@ -182,6 +182,23 @@ def movie_menu(url):
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
     
+def series_menu(url):
+    categories = get_categories(url)
+    listing = []
+    
+    for category in categories:
+        title = category['title']
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        parameters = {'action': 'sortby', 'url': category['href']}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+    
 def get_sortings(url):
     url = url.replace('https', 'http')
     url = url.replace('{?dtg}', '')
