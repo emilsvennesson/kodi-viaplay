@@ -140,6 +140,32 @@ def get_categories(url):
         categories = data['_links']['viaplay:categoryFilters']
     return categories
     
+def root_menu(url):
+    categories = get_categories(url)
+    listing = []
+    
+    for category in categories:
+        type = category['name']
+        title = category['title']
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        if type == 'series':
+            parameters = {'action': 'series', 'url': category['url']}
+        elif type == 'movie':
+            parameters = {'action': 'movie', 'url': category['url']}
+        elif type == 'sport':
+            parameters = {'action': 'sport', 'url': category['url']}
+        elif type == 'kids':
+            parameters = {'action': 'kids', 'url': category['url']}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+    xbmcplugin.endOfDirectory(_handle)
+       
 def next_page(data):
     """Return next page if the current page is less than the total page count."""
     try:
@@ -348,49 +374,6 @@ def art(item):
         }
     return art
 
-def list_categories(url):
-    """Create the list of video categories in the Kodi interface."""
-    categories = get_categories(url)
-    listing = []
-    for category in categories:
-        title = category['title']
-        try:
-            type = category['name']
-        except:
-            type = None
-        category_url = category['href']
-        addon_log('category type %s' % type)
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setInfo('video', {'title': title, 'genre': title})
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        # Create a URL for the plugin recursive callback.
-        # Example: plugin://plugin.video.example/?action=listing&category=Animals
-        if type == 'sport':
-            url = '{0}?action=sports&url={1}'.format(_url, category_url)
-        elif 'film/' in category_url:
-            url = '{0}?action=movies&url={1}'.format(_url, category_url)
-        elif 'serier/' in category_url:
-            url = '{0}?action=series&url={1}'.format(_url, category_url)
-        elif 'barn/' in category_url:
-            url = '{0}?action=barn&url={1}'.format(_url, category_url)
-        else:
-            url = '{0}?action=listcategories&url={1}'.format(_url, category_url)
-        #addon_log('recursive callback url: %s' % url)
-        # is_folder = True means that this item opens a sub-list of lower level items.
-        is_folder = True
-        # Add our item to the listing as a 3-element tuple.
-        listing.append((url, list_item, is_folder))
-    # Add our listing to Kodi.
-    # Large lists and/or slower systems benefit from adding all items at once via addDirectoryItems
-    # instead of adding one by ove via addDirectoryItem.
-    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    # Add a sort method for the virtual folder items (alphabetically, ignore articles)
-#    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-    # Finish creating a virtual folder.
-    xbmcplugin.endOfDirectory(_handle)
-
 def play_video(guid):
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=get_streams(guid))
@@ -432,7 +415,7 @@ def main():
             dialog.ok(language(30005),
             language(30006))
             sys.exit(0)
-    list_categories(base_url)
+    root_menu(base_url)
     
 def sports_category(url):
     live_url = 'http://content.viaplay.se/androiddash-se/sport2' # hardcoded as it's not available on all platforms
