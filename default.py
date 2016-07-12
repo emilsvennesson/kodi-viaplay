@@ -9,11 +9,6 @@ import xbmcaddon
 import xbmcvfs
 import xbmcgui
 import xbmcplugin
-addon = xbmcaddon.Addon()
-addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
-addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
-base_resource_path = os.path.join(addon_path, 'resources', 'lib')
-sys.path.append(base_resource_path)
 import cookielib
 import urllib
 import urlparse
@@ -23,6 +18,9 @@ import uuid
 from collections import defaultdict
 import HTMLParser
 
+addon = xbmcaddon.Addon()
+addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
+addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
 language = addon.getLocalizedString
 logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
 
