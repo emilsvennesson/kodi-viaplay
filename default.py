@@ -204,12 +204,12 @@ def kids_menu(url):
     listing = []
     
     for category in categories:
-        title = category['title']
+        title = category['group']['title'].title() + ': ' + category['title']
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'sortby', 'url': category['href']}
+        parameters = {'action': 'listproducts', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
@@ -290,7 +290,6 @@ def list_products(url):
             url = '{0}?action=seasons&url={1}'.format(_url, self_url)
             is_folder = True
             is_playable = 'false'
-            sort = True
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', is_playable)
         list_item.setInfo('video', item_information(item))
@@ -345,7 +344,7 @@ def list_seasons(url):
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'series', 'url': season['url']}
+        parameters = {'action': 'listproducts', 'url': season['url']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
@@ -544,4 +543,3 @@ if __name__ == '__main__':
     # Call the router function and pass the plugin call parameters to it.
     # We use string slicing to trim the leading '?' from the plugin call paramstring
     router(sys.argv[2][1:])
-    
