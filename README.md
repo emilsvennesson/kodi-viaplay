@@ -6,11 +6,10 @@ This plugin was written based on Viaplay's JSON API.
 
 ## Dependencies: ##
  * Requests 2.x (http://mirrors.kodi.tv/addons/jarvis/script.module.requests)
- * Beautiful Soup 4.x (http://mirrors.kodi.tv/addons/jarvis/script.module.beautifulsoup4)
 
 This plugin requires Kodi Jarvis or later.
 
-# Features #
+# Features: #
  * Internal video playback
  * Basic movie support
  * Basic TV shows support 
