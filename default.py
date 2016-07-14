@@ -143,23 +143,25 @@ def root_menu(url):
     listing = []
     
     for category in categories:
-        type = category['name']
+        categorytype = category['type']
+        videotype = category['name']
         title = category['title']
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        if type == 'series':
-            parameters = {'action': 'series', 'url': category['href']}
-        elif type == 'movie':
-            parameters = {'action': 'movie', 'url': category['href']}
-        elif type == 'sport':
-            parameters = {'action': 'sport', 'url': category['href']}
-        elif type == 'kids':
-            parameters = {'action': 'kids', 'url': category['href']}
-        recursive_url = _url + '?' + urllib.urlencode(parameters)
-        is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        if categorytype == 'vod':
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setProperty('IsPlayable', 'false')
+            list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+            list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+            if videotype == 'series':
+                parameters = {'action': 'series', 'url': category['href']}
+            elif videotype == 'movie':
+                parameters = {'action': 'movie', 'url': category['href']}
+            elif videotype == 'sport':
+                parameters = {'action': 'sport', 'url': category['href']}
+            elif videotype == 'kids':
+                parameters = {'action': 'kids', 'url': category['href']}
+            recursive_url = _url + '?' + urllib.urlencode(parameters)
+            is_folder = True
+            listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
     
