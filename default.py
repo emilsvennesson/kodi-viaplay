@@ -458,6 +458,7 @@ def get_subtitles(subdict):
         sami = req.content.decode('utf-8', 'ignore').strip()
         htmlparser = HTMLParser.HTMLParser()
         subtitle = htmlparser.unescape(sami).encode('utf-8')
+        subtitle = subtitle.replace('  ', ' ') # replace two spaces with one
         
         if '_sv' in samiurl:
             path = os.path.join(addon_profile, 'swe.smi')
