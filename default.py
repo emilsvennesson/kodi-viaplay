@@ -255,7 +255,7 @@ def next_page(data):
         except:
             return data['_links']['next']['href']
     
-def list_products(url):
+def list_products(url, *display):
     url = url.replace('https', 'http')
     url = url.replace('{?dtg}', '')
     data = make_request(url=url, method='get')
@@ -266,35 +266,66 @@ def list_products(url):
     
     for item in products:
         type = item['type']
+        
         if type == 'episode':
             title = item['content']['series']['episodeTitle']
             url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
             is_playable = 'true'
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setProperty('IsPlayable', is_playable)
+            list_item.setInfo('video', item_information(item))
+            list_item.setArt(art(item))
+            listing.append((url, list_item, is_folder))
+            
         if type == 'sport':
-            if 'isLive' in item['system']['flags']:
-                title = 'Live: ' + item['content']['title'].encode('utf-8')
+            status = sports_status(item)
+            if status == 'archive':
+                title = 'Archive: ' + item['content']['title'].encode('utf-8')
+                is_playable = 'true'
             else:
                 title = item['content']['title'].encode('utf-8')
+                is_playable = 'true'
             url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
-            is_playable = 'true'
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setProperty('IsPlayable', is_playable)
+            list_item.setInfo('video', item_information(item))
+            list_item.setArt(art(item))
+            if 'live' in display:
+                if status == 'live':
+                    listing.append((url, list_item, is_folder))
+            elif 'upcoming' in display:
+                if status == 'upcoming':
+                    listing.append((url, list_item, is_folder))
+            elif 'archive' in display:
+                if status == 'archive':
+                    listing.append((url, list_item, is_folder))
+            else:
+                listing.append((url, list_item, is_folder))
+            
         elif type == 'movie':
             title = item['content']['title'].encode('utf-8') + ' ' + '(' + str(item['content']['production']['year']) + ')'
             url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
             is_playable = 'true'
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setProperty('IsPlayable', is_playable)
+            list_item.setInfo('video', item_information(item))
+            list_item.setArt(art(item))
+            listing.append((url, list_item, is_folder))
+            
         elif type == 'series':
             title = item['content']['series']['title'].encode('utf-8')      
             self_url = item['_links']['viaplay:page']['href']
             url = '{0}?action=seasons&url={1}'.format(_url, self_url)
             is_folder = True
             is_playable = 'false'
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', is_playable)
-        list_item.setInfo('video', item_information(item))
-        list_item.setArt(art(item))
-        listing.append((url, list_item, is_folder))
+            list_item = xbmcgui.ListItem(label=title)
+            list_item.setProperty('IsPlayable', is_playable)
+            list_item.setInfo('video', item_information(item))
+            list_item.setArt(art(item))
+            listing.append((url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     if sort is True:
         xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
