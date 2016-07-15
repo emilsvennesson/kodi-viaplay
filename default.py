@@ -490,11 +490,17 @@ def sports_menu(url):
     live_url = 'http://content.viaplay.se/androiddash-se/sport2' # hardcoded as it's not available on all platforms
     listing = []
     categories = get_categories(live_url)
+    now = datetime.now()
+   
     for category in categories:
+        date_object = datetime(*(time.strptime(category['date'], '%Y-%m-%d')[0:6])) # http://forum.kodi.tv/showthread.php?tid=112916
         title = category['date']
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
-        parameters = {'action': 'listsports', 'url': category['href'].replace('{&dtg}', '')}
+        if date_object.date() == now.date():
+            parameters = {'action': 'sportstoday', 'url': category['href'].replace('{&dtg}', '')}
+        else:
+            parameters = {'action': 'listsports', 'url': category['href'].replace('{&dtg}', '')}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
@@ -514,6 +520,19 @@ def sports_status(item):
     elif producttime_end < now:
         status = 'archive'
     return status
+    
+def sports_today(url):
+    types = ['live', 'upcoming', 'archive']
+    listing = []
+    for type in types:
+        list_item = xbmcgui.ListItem(label=type.title())
+        list_item.setProperty('IsPlayable', 'false')
+        parameters = {'action': 'listsportstoday', 'url': url, 'display': type}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
        
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring"""
