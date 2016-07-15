@@ -588,6 +588,10 @@ def router(paramstring):
             list_products(params['url'])
         elif params['action'] == 'listsports':
             list_products(params['url'])
+        elif params['action'] == 'sportstoday':
+            sports_today(params['url'])
+        elif params['action'] == 'listsportstoday':
+            list_products(params['url'], params['display'])
         elif params['action'] == 'play':
             play_video(params['guid'])
         elif params['action'] == 'sortby':
