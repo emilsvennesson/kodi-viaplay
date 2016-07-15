@@ -572,9 +572,7 @@ def router(paramstring):
     params = dict(urlparse.parse_qsl(paramstring))
     # Check the parameters passed to the plugin
     if params:
-        if params['action'] == 'listcategories':
-            list_categories(params['url'])
-        elif params['action'] == 'movie':
+        if params['action'] == 'movie':
             movie_menu(params['url'])
         elif params['action'] == 'kids':
             kids_menu(params['url'])
