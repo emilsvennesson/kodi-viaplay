@@ -500,6 +500,20 @@ def sports_menu(url):
         listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
+    
+def sports_status(item):
+    now = datetime.utcnow()
+    producttime_start = dateutil.parser.parse(item['epg']['start'])
+    producttime_start = producttime_start.replace(tzinfo=None)
+    producttime_end = dateutil.parser.parse(item['epg']['end'])
+    producttime_end = producttime_end.replace(tzinfo=None)
+    if 'isLive' in item['system']['flags']:
+        status = 'live'
+    elif producttime_start > now:
+        status = 'upcoming'
+    elif producttime_end < now:
+        status = 'archive'
+    return status
        
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring"""
