@@ -4,19 +4,24 @@ A Kodi plugin for Viaplay
 """
 import sys
 import os
-import xbmc
-import xbmcaddon
-import xbmcvfs
-import xbmcgui
-import xbmcplugin
 import cookielib
 import urllib
 import urlparse
+from datetime import datetime
+from datetime import date
+import dateutil.parser
+import time
 import json
 import requests
 import uuid
 from collections import defaultdict
 import HTMLParser
+
+import xbmc
+import xbmcaddon
+import xbmcvfs
+import xbmcgui
+import xbmcplugin
 
 addon = xbmcaddon.Addon()
 addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
