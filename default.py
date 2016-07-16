@@ -434,7 +434,10 @@ def item_information(item):
         mediatype = 'tvshow'
         title = item['content']['series']['title'].encode('utf-8')
         tvshowtitle = item['content']['series']['title'].encode('utf-8')
-        plot = item['content']['series']['synopsis'].encode('utf-8')
+        try:
+            plot = item['content']['series']['synopsis'].encode('utf-8')
+        except KeyError:
+            plot = item['content']['synopsis'].encode('utf-8') # needed for alphabetical listing
         xbmcplugin.setContent(_handle, 'tvshows')
     elif type == 'movie':
         mediatype = 'movie'
