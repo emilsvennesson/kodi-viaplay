@@ -536,6 +536,8 @@ def sports_menu(url):
         title = category['date']
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         if date_object.date() == now.date():
             parameters = {'action': 'sportstoday', 'url': category['href'].replace('{&dtg}', '')}
         else:
@@ -566,6 +568,8 @@ def sports_today(url):
     for type in types:
         list_item = xbmcgui.ListItem(label=type.title())
         list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'listsportstoday', 'url': url, 'display': type}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
