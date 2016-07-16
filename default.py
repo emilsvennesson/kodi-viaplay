@@ -7,9 +7,9 @@ import os
 import cookielib
 import urllib
 import urlparse
-from datetime import datetime
-from datetime import date
+from datetime import datetime, date
 import dateutil.parser
+from dateutil import tz
 import time
 import json
 import requests
@@ -284,12 +284,15 @@ def list_products(url, *display):
             listing.append((url, list_item, is_folder))
             
         if type == 'sport':
+            local_tz = tz.tzlocal()
+            startdate_utc = dateutil.parser.parse(item['epg']['start'])
+            startdate_local = startdate_utc.astimezone(local_tz)
             status = sports_status(item)
             if status == 'archive':
                 title = 'Archive: ' + item['content']['title'].encode('utf-8')
                 is_playable = 'true'
             else:
-                title = item['content']['title'].encode('utf-8')
+                title = item['content']['title'].encode('utf-8') + ' (' + startdate_local.strftime("%H:%M") + ')'
                 is_playable = 'true'
             url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
