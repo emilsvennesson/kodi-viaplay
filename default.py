@@ -73,7 +73,6 @@ def url_parser(url):
 def make_request(url, method, payload=None, headers=None):
     """Make an HTTP request. Return the response as JSON."""
     addon_log('Request URL: %s' % url)
-    addon_log('Headers: %s' % headers)
     if method == 'get':
         req = http_session.get(url, params=payload, headers=headers, allow_redirects=False, verify=False)
     else:
@@ -122,8 +121,7 @@ def get_streams(guid):
     'guid': guid
     }
 
-    headers = {'User-Agent': 'AppleTV/2.4'}
-    data = make_request(url=url, method='get', payload=payload, headers=headers)
+    data = make_request(url=url, method='get', payload=payload)
     m3u8_url = data['_links']['viaplay:playlist']['href']
     try:
         subtitles = data['_links']['viaplay:sami']
