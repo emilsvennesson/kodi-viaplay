@@ -11,6 +11,7 @@ from datetime import datetime, date
 import dateutil.parser
 from dateutil import tz
 import time
+import re
 import json
 import requests
 import uuid
@@ -59,6 +60,13 @@ else:
 def addon_log(string):
     if debug:
         xbmc.log("%s: %s" %(logging_prefix, string))
+        
+def url_parser(url):
+    """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
+    Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
+    url = url.replace('https', 'http') # http://forum.kodi.tv/showthread.php?tid=270336
+    parsed_url = re.match('[^{]+', url).group()
+    return parsed_url
                      
 def make_request(url, method, payload=None, headers=None):
     """Make an HTTP request. Return the response as JSON."""
@@ -125,9 +133,7 @@ def get_streams(guid):
     return m3u8_url
     
 def get_categories(url):
-    url = url.replace('https', 'http')
-    url = url.replace('{?dtg}', '')
-    data = make_request(url=url, method='get')
+    data = make_request(url=url_parser(url), method='get')
     pageType = data['pageType']
     try:
         sectionType = data['sectionType']
@@ -144,7 +150,7 @@ def get_categories(url):
     return categories
     
 def root_menu(url):
-    categories = get_categories(url)
+    categories = get_categories(url_parser(url))
     listing = []
     
     for category in categories:
@@ -171,7 +177,7 @@ def root_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def movie_menu(url):
-    categories = get_categories(url)
+    categories = get_categories(url_parser(url))
     listing = []
     
     for category in categories:
@@ -188,7 +194,7 @@ def movie_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def series_menu(url):
-    categories = get_categories(url)
+    categories = get_categories(url_parser(url))
     listing = []
     
     for category in categories:
@@ -205,7 +211,7 @@ def series_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def kids_menu(url):
-    categories = get_categories(url)
+    categories = get_categories(url_parser(url))
     listing = []
     
     for category in categories:
@@ -222,15 +228,12 @@ def kids_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def get_sortings(url):
-    url = url.replace('https', 'http')
-    url = url.replace('{?dtg}', '')
-    data = make_request(url=url, method='get')
-    
+    data = make_request(url=url_parser(url), method='get')
     sorttypes = data['_links']['viaplay:sortings']
     return sorttypes
      
 def sort_by(url):
-    sortings = get_sortings(url)
+    sortings = get_sortings(url_parser(url))
     listing = []
     
     for sorting in sortings:
@@ -261,9 +264,7 @@ def next_page(data):
             return data['_links']['next']['href']
     
 def list_products(url, *display):
-    url = url.replace('https', 'http')
-    url = url.replace('{?dtg}', '')
-    data = make_request(url=url, method='get')
+    data = make_request(url=url_parser(url), method='get')
     products = get_products(data)
     listing = []
     sort = None
@@ -358,9 +359,7 @@ def get_products(data):
     
 def get_seasons(url):
     """Return all available seasons as a list."""
-    url = url.replace('https', 'http')
-    url = url.replace('{?dtg}', '')
-    data = make_request(url=url, method='get')
+    data = make_request(url=url_parser(url), method='get')
     seasons = []
     
     products = data['_embedded']['viaplay:blocks']
@@ -370,8 +369,7 @@ def get_seasons(url):
     return seasons
         
 def list_seasons(url):
-    url = url.replace('https', 'http')
-    seasons = get_seasons(url)
+    seasons = get_seasons(url_parser(url))
     listing = []
     for season in seasons:
         title = 'Season ' + season['title']
@@ -539,9 +537,9 @@ def sports_menu(url):
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         if date_object.date() == now.date():
-            parameters = {'action': 'sportstoday', 'url': category['href'].replace('{&dtg}', '')}
+            parameters = {'action': 'sportstoday', 'url': category['href']}
         else:
-            parameters = {'action': 'listsports', 'url': category['href'].replace('{&dtg}', '')}
+            parameters = {'action': 'listsports', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
