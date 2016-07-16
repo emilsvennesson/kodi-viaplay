@@ -64,8 +64,10 @@ def addon_log(string):
 def url_parser(url):
     """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
     Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
+    addon_log('Original URL: %s' % url)
     url = url.replace('https', 'http') # http://forum.kodi.tv/showthread.php?tid=270336
     parsed_url = re.match('[^{]+', url).group()
+    addon_log('Parsed URL: %s' % parsed_url)
     return parsed_url
                      
 def make_request(url, method, payload=None, headers=None):
@@ -150,7 +152,7 @@ def get_categories(url):
     return categories
     
 def root_menu(url):
-    categories = get_categories(url_parser(url))
+    categories = get_categories(url)
     listing = []
     
     for category in categories:
@@ -177,7 +179,7 @@ def root_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def movie_menu(url):
-    categories = get_categories(url_parser(url))
+    categories = get_categories(url)
     listing = []
     
     for category in categories:
@@ -194,7 +196,7 @@ def movie_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def series_menu(url):
-    categories = get_categories(url_parser(url))
+    categories = get_categories(url)
     listing = []
     
     for category in categories:
@@ -211,7 +213,7 @@ def series_menu(url):
     xbmcplugin.endOfDirectory(_handle)
     
 def kids_menu(url):
-    categories = get_categories(url_parser(url))
+    categories = get_categories(url)
     listing = []
     
     for category in categories:
@@ -233,7 +235,7 @@ def get_sortings(url):
     return sorttypes
      
 def sort_by(url):
-    sortings = get_sortings(url_parser(url))
+    sortings = get_sortings(url)
     listing = []
     
     for sorting in sortings:
@@ -369,7 +371,7 @@ def get_seasons(url):
     return seasons
         
 def list_seasons(url):
-    seasons = get_seasons(url_parser(url))
+    seasons = get_seasons(url)
     listing = []
     for season in seasons:
         title = 'Season ' + season['title']
