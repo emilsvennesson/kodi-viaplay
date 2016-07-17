@@ -374,13 +374,13 @@ def list_products(url, *display):
             list_item.setArt(art(item))
             if 'live' in display:
                 if status == 'live':
-                    listing.append((url, list_item, is_folder))
+                    listing.append((recursive_url, list_item, is_folder))
             elif 'upcoming' in display:
                 if status == 'upcoming':
-                    listing.append((url, list_item, is_folder))
+                    listing.append((recursive_url, list_item, is_folder))
             elif 'archive' in display:
                 if status == 'archive':
-                    listing.append((url, list_item, is_folder))
+                    listing.append((recursive_url, list_item, is_folder))
             else:
                 listing.append((recursive_url, list_item, is_folder))
             
