@@ -37,3 +37,22 @@ msgctxt "#30006"
 msgid "Login failed. Please make sure that your account information is correct."
 msgstr ""
 
+msgctxt "#30007"
+msgid "Country"
+msgstr ""
+
+msgctxt "#30008"
+msgid "Sweden"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Denmark"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Norway"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Finland"
+msgstr ""
