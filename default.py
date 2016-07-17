@@ -56,6 +56,11 @@ if addon.getSetting('debug') == 'false':
 else:
     debug = True
     
+if addon.getSetting('subtitles') == 'false':
+    subtitles = False
+else:
+    subtitles = True
+    
 if addon.getSetting('country') == '0':
     country = 'se'
 elif addon.getSetting('country') == '1':
@@ -133,13 +138,14 @@ def get_streams(guid):
 
     data = make_request(url=url, method='get', payload=payload)
     m3u8_url = data['_links']['viaplay:playlist']['href']
-    try:
-        subtitles = data['_links']['viaplay:sami']
-        for sub in subtitles:
-            url = sub['href']
-            subdict[guid].append(url)
-    except:
-        addon_log('No subtitles found for guid %s' % guid)
+    if subtitles:
+        try:
+            subtitle_urls = data['_links']['viaplay:sami']
+            for sub in subtitle_urls:
+                suburl = sub['href']
+                subdict[guid].append(suburl)
+        except:
+            addon_log('No subtitles found for guid %s' % guid)
     return m3u8_url
     
 def get_categories(url):
@@ -497,14 +503,15 @@ def play_video(guid):
     # Create a playable item with a path to play.
     play_item = xbmcgui.ListItem(path=get_streams(guid))
     play_item.setProperty('IsPlayable', 'true')
-    play_item.setSubtitles(get_subtitles(subdict[guid]))
+    if subtitles:
+        play_item.setSubtitles(get_subtitles(subdict[guid]))
     # Pass the item to the Kodi player.
     xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
     
 def get_subtitles(subdict):
     """Download the SAMI subtitles, decode the HTML entities and save to addon profile.
     Return a list of the path to the subtitles."""
-    subtitles = []
+    subtitle_paths = []
     for samiurl in subdict:
         req = requests.get(samiurl)
         sami = req.content.decode('utf-8', 'ignore').strip()
@@ -523,8 +530,8 @@ def get_subtitles(subdict):
         f = open(path, 'w')
         f.write(subtitle)
         f.close()
-        subtitles.append(path)
-    return subtitles
+        subtitle_paths.append(path)
+    return subtitle_paths
 
 
 def main():
