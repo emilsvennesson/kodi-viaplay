@@ -60,3 +60,11 @@ msgstr ""
 msgctxt "#30012"
 msgid "Download subtitles if available"
 msgstr ""
+
+msgctxt "#30013"
+msgid "List all in alphabetical order"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Season"
+msgstr ""

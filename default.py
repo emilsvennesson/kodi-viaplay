@@ -455,7 +455,7 @@ def list_seasons(url):
     seasons = get_seasons(url)
     listing = []
     for season in seasons:
-        title = 'Season ' + season['title']
+        title = language(30014) + ' ' + season['title']
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
