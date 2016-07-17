@@ -1,5 +1,6 @@
 ﻿<settings>
   <category label="30003">
+    <setting id="country" type="enum" label="30007" lvalues="30008|30009|30010|30011" default='0'/>
     <setting id="email" type="text" label="30001" default=""/>
     <setting id="password" type="text" label="30002" option="hidden"  enable="!eq(-1,)" default=""/>
   </category>

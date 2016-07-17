@@ -49,18 +49,28 @@ http_session.cookies = cookie_jar
     
 username = addon.getSetting('email')
 password = addon.getSetting('password')
-base_url = 'http://content.viaplay.se/pc-se'
 subdict = defaultdict(list)
 
 if addon.getSetting('debug') == 'false':
     debug = False
 else:
     debug = True
-
+    
+if addon.getSetting('country') == '0':
+    country = 'se'
+elif addon.getSetting('country') == '1':
+    country = 'dk'
+elif addon.getSetting('country') == '2':
+    country = 'no'
+else:
+    country = 'fi'
+    
+base_url = 'http://content.viaplay.' + country + '/pc-' + country
+    
 def addon_log(string):
     if debug:
         xbmc.log("%s: %s" %(logging_prefix, string))
-        
+               
 def url_parser(url):
     """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
     Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
@@ -84,7 +94,7 @@ def make_request(url, method, payload=None, headers=None):
    
 def login(username, password):
     """Login to Viaplay. Return True/False based on the result."""
-    url = 'http://login.viaplay.se/api/login/v1'
+    url = 'http://login.viaplay.' + country + '/api/login/v1'
     payload = {
     'deviceKey': 'atv-se',
     'username': username,
@@ -99,7 +109,7 @@ def login(username, password):
         
 def validate_session():
     """Check if our session cookies are still valid."""
-    url = 'http://login.viaplay.se/api/persistentLogin/v1'
+    url = 'http://login.viaplay.' + country + '/api/persistentLogin/v1'
     payload = {
         'deviceKey': 'atv-se'
     }
@@ -111,7 +121,7 @@ def validate_session():
 
 def get_streams(guid):
     """Return the URL for a stream. Append all available SAMI subtitle URL:s in the dict subguid."""
-    url = 'http://play.viaplay.se/api/stream/byguid'
+    url = 'http://play.viaplay.' + country + '/api/stream/byguid'
     payload = {
     'deviceId': uuid.uuid4(),
     'deviceName': 'atv',
@@ -527,7 +537,11 @@ def main():
     root_menu(base_url)
     
 def sports_menu(url):
-    live_url = 'http://content.viaplay.se/androiddash-se/sport2' # hardcoded as it's not available on all platforms
+    # URL is hardcoded for now as the sports date listing is not available on all platforms
+    if int(addon.getSetting('country')) > 2:
+        live_url = 'https://content.viaplay.fi/androiddash-fi/urheilu2'
+    else:
+        live_url = 'http://content.viaplay.' + country + '/androiddash-' + country + '/sport2'
     listing = []
     categories = get_categories(live_url)
     now = datetime.now()
