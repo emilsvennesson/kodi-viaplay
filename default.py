@@ -235,10 +235,7 @@ def kids_menu(url):
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        if category['id'] == 'alphabetical':
-            parameters = {'action': 'listalphabetical', 'url': category['href']}
-        else:
-            parameters = {'action': 'listproducts', 'url': category['href']}
+        parameters = {'action': 'listproducts', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
@@ -253,9 +250,7 @@ def get_available_characters(url):
         if not item['group'] in characters:
             characters.append(item['group'])
     return characters
-    
-def alphabetical_menu(url)
-    
+       
 def get_sortings(url):
     data = make_request(url=url, method='get')
     sorttypes = data['_links']['viaplay:sortings']
@@ -271,7 +266,45 @@ def sort_by(url):
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': sorting['href']}
+        try:
+            if sorting['id'] == 'alphabetical':
+                parameters = {'action': 'listalphabetical', 'url': sorting['href']}
+            else:
+                parameters = {'action': 'listproducts', 'url': sorting['href']}
+        except TypeError:
+            parameters = {'action': 'listproducts', 'url': sorting['href']}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, list_item, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+    
+def get_characters(url):
+    characters = []
+    products = get_products(make_request(url=url_parser(url), method='get'))
+    for item in products:
+        character = item['group']
+        if not character in characters:
+            characters.append(item['group'])
+    return characters
+    
+def alphabetical_menu(url):
+    url = url_parser(url)
+    characters = get_characters(url)
+    listing = []
+    
+    for character in characters:
+        title = character.encode('utf-8')
+        if character == '0-9':
+            # 0-9 needs to be sent as a URL-encoded pound-sign
+            letter = '%23'.encode('utf-8')
+        else:
+            letter = title.lower()
+        list_item = xbmcgui.ListItem(label=title)
+        list_item.setProperty('IsPlayable', 'false')
+        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        parameters = {'action': 'listproducts', 'url': url + '&letter=' + letter}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
@@ -666,6 +699,8 @@ def router(paramstring):
             sort_by(params['url'])
         elif params['action'] == 'listproducts':
             list_products(params['url'])
+        elif params['action'] == 'listalphabetical':
+            alphabetical_menu(params['url'])
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
