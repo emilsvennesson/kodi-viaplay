@@ -276,6 +276,16 @@ def sort_by(url):
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
+        
+    list_all_item = xbmcgui.ListItem(label=language(30013))
+    list_all_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+    list_all_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+    # show all products in alphabetical order
+    parameters = {'action': 'listproducts', 'url': url + '?sort=alphabetical'}
+    recursive_url = _url + '?' + urllib.urlencode(parameters)
+    is_folder = True
+    
+    xbmcplugin.addDirectoryItem(_handle, recursive_url, list_all_item, is_folder)
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
     
