@@ -412,7 +412,8 @@ def item_information(item):
     episode = None
     year = None
     plot = None
-    genre = None
+    director = None
+    cast = []
     try:
         duration = int(item['content']['duration']['milliseconds']) / 1000
     except:
@@ -434,9 +435,16 @@ def item_information(item):
     except:
         year = None
     try:
-        genre = item['_links']['viaplay:genres'][0]['title']
+        genres = []
+        for genre in item['_links']['viaplay:genres']:
+            genres.append(genre['title'])
+        genre = ', '.join(genres)  
     except:
         genre = None
+    try:
+        mpaa = item['content']['parentalRating']
+    except KeyError:
+        mpaa = None
             
     if type == 'episode':
         mediatype = 'episode'
@@ -459,6 +467,18 @@ def item_information(item):
         mediatype = 'movie'
         title = item['content']['title'].encode('utf-8')
         plot = item['content']['synopsis'].encode('utf-8')
+        try:
+            for actor in item['content']['people']['actors']:
+                cast.append(actor)
+        except KeyError:
+            pass
+        try:
+            directors = []
+            for director in item['content']['people']['directors']:
+                directors.append(director)
+            director = ', '.join(directors)
+        except KeyError:
+            pass
         xbmcplugin.setContent(_handle, 'movies')
     elif type == 'sport':
         mediatype = 'video'
@@ -477,7 +497,10 @@ def item_information(item):
         'code': imdb_code,
         'rating': rating,
         'votes': votes,
-        'genre': genre
+        'genre': genre,
+        'director': director,
+        'mpaa': mpaa,
+        'cast': cast
         }
     return info
         
