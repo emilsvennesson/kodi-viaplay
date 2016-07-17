@@ -79,19 +79,18 @@ def addon_log(string):
 def url_parser(url):
     """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
     Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-    addon_log('Original URL: %s' % url)
     url = url.replace('https', 'http') # http://forum.kodi.tv/showthread.php?tid=270336
     parsed_url = re.match('[^{]+', url).group()
-    addon_log('Parsed URL: %s' % parsed_url)
     return parsed_url
                      
 def make_request(url, method, payload=None, headers=None):
     """Make an HTTP request. Return the response as JSON."""
-    addon_log('Request URL: %s' % url)
+    addon_log('Original URL: %s' % url)
+    addon_log('Request & Parsed URL: %s' % url_parser(url))
     if method == 'get':
-        req = http_session.get(url, params=payload, headers=headers, allow_redirects=False, verify=False)
+        req = http_session.get(url_parser(url), params=payload, headers=headers, allow_redirects=False, verify=False)
     else:
-        req = http_session.post(url, data=payload, headers=headers, allow_redirects=False, verify=False)
+        req = http_session.post(url_parser(url), data=payload, headers=headers, allow_redirects=False, verify=False)
     addon_log('Response code: %s' % req.status_code)
     addon_log('Response: %s' % req.content)
     cookie_jar.save(ignore_discard=True, ignore_expires=False)
@@ -149,7 +148,7 @@ def get_streams(guid):
     return m3u8_url
     
 def get_categories(url):
-    data = make_request(url=url_parser(url), method='get')
+    data = make_request(url=url, method='get')
     pageType = data['pageType']
     try:
         sectionType = data['sectionType']
@@ -236,15 +235,29 @@ def kids_menu(url):
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': category['href']}
+        if category['id'] == 'alphabetical':
+            parameters = {'action': 'listalphabetical', 'url': category['href']}
+        else:
+            parameters = {'action': 'listproducts', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
     
+def get_available_characters(url):
+    characters = []
+    data = make_request(url=url, method='get')
+    
+    for item in data['_embedded']['viaplay:products']:
+        if not item['group'] in characters:
+            characters.append(item['group'])
+    return characters
+    
+def alphabetical_menu(url)
+    
 def get_sortings(url):
-    data = make_request(url=url_parser(url), method='get')
+    data = make_request(url=url, method='get')
     sorttypes = data['_links']['viaplay:sortings']
     return sorttypes
      
@@ -280,7 +293,7 @@ def next_page(data):
             return data['_links']['next']['href']
     
 def list_products(url, *display):
-    data = make_request(url=url_parser(url), method='get')
+    data = make_request(url=url, method='get')
     products = get_products(data)
     listing = []
     sort = None
@@ -375,7 +388,7 @@ def get_products(data):
     
 def get_seasons(url):
     """Return all available seasons as a list."""
-    data = make_request(url=url_parser(url), method='get')
+    data = make_request(url=url, method='get')
     seasons = []
     
     products = data['_embedded']['viaplay:blocks']
