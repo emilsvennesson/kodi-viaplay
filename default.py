@@ -86,7 +86,7 @@ def url_parser(url):
 def make_request(url, method, payload=None, headers=None):
     """Make an HTTP request. Return the response as JSON."""
     addon_log('Original URL: %s' % url)
-    addon_log('Request & Parsed URL: %s' % url_parser(url))
+    addon_log('Request & parsed URL: %s' % url_parser(url))
     if method == 'get':
         req = http_session.get(url_parser(url), params=payload, headers=headers, allow_redirects=False, verify=False)
     else:
@@ -281,7 +281,7 @@ def sort_by(url):
     
 def get_characters(url):
     characters = []
-    products = get_products(make_request(url=url_parser(url), method='get'))
+    products = get_products(make_request(url=url, method='get'))
     for item in products:
         character = item['group']
         if not character in characters:
@@ -289,7 +289,7 @@ def get_characters(url):
     return characters
     
 def alphabetical_menu(url):
-    url = url_parser(url)
+    url = url_parser(url) # needed to get rid of {&letter}
     characters = get_characters(url)
     listing = []
     
@@ -334,17 +334,27 @@ def list_products(url, *display):
     
     for item in products:
         type = item['type']
-        
+        try:
+            playid = item['system']['guid']
+            streamtype = 'guid'
+        except KeyError:
+            """The guid is not always available from the category listing.
+            Send the self URL and let play_video grab the guid from there instead
+            as it always provides more detailed data about each product."""
+            playid = item['_links']['self']['href']
+            streamtype = 'url'
+        parameters = {'action': 'play', 'playid': playid, 'streamtype': streamtype}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+
         if type == 'episode':
             title = item['content']['series']['episodeTitle']
-            url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
             is_playable = 'true'
             list_item = xbmcgui.ListItem(label=title)
             list_item.setProperty('IsPlayable', is_playable)
             list_item.setInfo('video', item_information(item))
             list_item.setArt(art(item))
-            listing.append((url, list_item, is_folder))
+            listing.append((recursive_url, list_item, is_folder))
             
         if type == 'sport':
             local_tz = tz.tzlocal()
@@ -357,7 +367,6 @@ def list_products(url, *display):
             else:
                 title = item['content']['title'].encode('utf-8') + ' (' + startdate_local.strftime("%H:%M") + ')'
                 is_playable = 'true'
-            url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
             list_item = xbmcgui.ListItem(label=title)
             list_item.setProperty('IsPlayable', is_playable)
@@ -373,30 +382,30 @@ def list_products(url, *display):
                 if status == 'archive':
                     listing.append((url, list_item, is_folder))
             else:
-                listing.append((url, list_item, is_folder))
+                listing.append((recursive_url, list_item, is_folder))
             
         elif type == 'movie':
             title = item['content']['title'].encode('utf-8') + ' ' + '(' + str(item['content']['production']['year']) + ')'
-            url = '{0}?action=play&guid={1}'.format(_url, item['system']['guid'])
             is_folder = False
             is_playable = 'true'
             list_item = xbmcgui.ListItem(label=title)
             list_item.setProperty('IsPlayable', is_playable)
             list_item.setInfo('video', item_information(item))
             list_item.setArt(art(item))
-            listing.append((url, list_item, is_folder))
+            listing.append((recursive_url, list_item, is_folder))
             
         elif type == 'series':
             title = item['content']['series']['title'].encode('utf-8')      
             self_url = item['_links']['viaplay:page']['href']
-            url = '{0}?action=seasons&url={1}'.format(_url, self_url)
+            parameters = {'action': 'seasons', 'url': self_url}
+            recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             is_playable = 'false'
             list_item = xbmcgui.ListItem(label=title)
             list_item.setProperty('IsPlayable', is_playable)
             list_item.setInfo('video', item_information(item))
             list_item.setArt(art(item))
-            listing.append((url, list_item, is_folder))
+            listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     if sort is True:
         xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
@@ -412,6 +421,8 @@ def list_products(url, *display):
 def get_products(data):
     if data['type'] == 'season-list' or data['type'] == 'list':
         products = data['_embedded']['viaplay:products']
+    elif data['type'] == 'product':
+        products = data['_embedded']['viaplay:product']
     else:
         try:
             products = data['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:products']
@@ -568,8 +579,13 @@ def art(item):
         }
     return art
 
-def play_video(guid):
+def play_video(playid, streamtype):
     # Create a playable item with a path to play.
+    if streamtype == 'url':
+        data = make_request(playid, 'get')
+        guid = get_products(data)['system']['guid']
+    else:
+        guid = playid
     play_item = xbmcgui.ListItem(path=get_streams(guid))
     play_item.setProperty('IsPlayable', 'true')
     if subtitles:
@@ -694,7 +710,7 @@ def router(paramstring):
         elif params['action'] == 'listsportstoday':
             list_products(params['url'], params['display'])
         elif params['action'] == 'play':
-            play_video(params['guid'])
+            play_video(params['playid'], params['streamtype'])
         elif params['action'] == 'sortby':
             sort_by(params['url'])
         elif params['action'] == 'listproducts':
