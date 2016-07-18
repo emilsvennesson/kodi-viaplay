@@ -121,7 +121,21 @@ def validate_session():
     if data['success'] is False:
         return False
     else:
-        return True 
+        return True
+        
+def check_loginstatus(data):
+    try:
+        if data['name'] == 'MissingSessionCookieError':
+            session = validate_session()
+            if session is False:
+                login_success = login(username, password)
+            else:
+                login_success = True
+        else:
+            login_success = True
+    except KeyError:
+        login_success = True
+    return login_success
 
 def get_streams(guid):
     """Return the URL for a stream. Append all available SAMI subtitle URL:s in the dict subguid."""
@@ -136,17 +150,42 @@ def get_streams(guid):
     }
 
     data = make_request(url=url, method='get', payload=payload)
-    m3u8_url = data['_links']['viaplay:playlist']['href']
-    if subtitles:
+    login_status = check_loginstatus(data)
+    if login_status is True:
         try:
-            subtitle_urls = data['_links']['viaplay:sami']
-            for sub in subtitle_urls:
-                suburl = sub['href']
-                subdict[guid].append(suburl)
-        except:
-            addon_log('No subtitles found for guid %s' % guid)
-    return m3u8_url
-    
+            m3u8_url = data['_links']['viaplay:playlist']['href']
+            status = True
+        except KeyError:
+            # we might have to request the stream again after logging in
+            if data['name'] == 'MissingSessionCookieError':
+                data = make_request(url=url, method='get', payload=payload)
+            try:
+                m3u8_url = data['_links']['viaplay:playlist']['href']
+                status = True
+            except KeyError:
+                if data['success'] is False:
+                    status = data['message']
+        if status is True:
+            if subtitles:
+                try:
+                    subtitle_urls = data['_links']['viaplay:sami']
+                    for sub in subtitle_urls:
+                        suburl = sub['href']
+                        subdict[guid].append(suburl)
+                except KeyError:
+                    addon_log('No subtitles found for guid %s' % guid)
+            return m3u8_url
+        else:
+            dialog = xbmcgui.Dialog()
+            dialog.ok(language(30005),
+            status)
+            return False
+    else:
+        dialog = xbmcgui.Dialog()
+        dialog.ok(language(30005),
+        language(30006))
+        return False
+         
 def get_categories(url):
     data = make_request(url=url, method='get')
     pageType = data['pageType']
@@ -596,12 +635,14 @@ def play_video(playid, streamtype):
         guid = get_products(data)['system']['guid']
     else:
         guid = playid
-    play_item = xbmcgui.ListItem(path=get_streams(guid))
-    play_item.setProperty('IsPlayable', 'true')
-    if subtitles:
-        play_item.setSubtitles(get_subtitles(subdict[guid]))
-    # Pass the item to the Kodi player.
-    xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+    stream = get_streams(guid)
+    if stream is not False:
+        play_item = xbmcgui.ListItem(path=get_streams(guid))
+        play_item.setProperty('IsPlayable', 'true')
+        if subtitles:
+            play_item.setSubtitles(get_subtitles(subdict[guid]))
+        # Pass the item to the Kodi player.
+        xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
     
 def get_subtitles(subdict):
     """Download the SAMI subtitles, decode the HTML entities and save to addon profile.
@@ -627,16 +668,6 @@ def get_subtitles(subdict):
         f.close()
         subtitle_paths.append(path)
     return subtitle_paths
-
-
-def main():
-    if validate_session() is False:
-        if login(username, password) is False:
-            dialog = xbmcgui.Dialog()
-            dialog.ok(language(30005),
-            language(30006))
-            sys.exit(0)
-    root_menu(base_url)
     
 def sports_menu(url):
     # URL is hardcoded for now as the sports date listing is not available on all platforms
@@ -730,7 +761,7 @@ def router(paramstring):
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
-        main()
+        root_menu(base_url)
 
 if __name__ == '__main__':
     # Call the router function and pass the plugin call parameters to it.
