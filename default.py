@@ -70,7 +70,7 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
     
-base_url = 'http://content.viaplay.%s/pc-%s' % (country, country)
+base_url = 'http://content.viaplay.%s/pchls-%s' % (country, country)
     
 def addon_log(string):
     if debug:
@@ -100,7 +100,7 @@ def login(username, password):
     """Login to Viaplay. Return True/False based on the result."""
     url = 'http://login.viaplay.%s/api/login/v1' % country
     payload = {
-    'deviceKey': 'atv-%s' % country,
+    'deviceKey': 'pchls-%s' % country,
     'username': username,
     'password': password,
     'persistent': 'true'
@@ -115,7 +115,7 @@ def validate_session():
     """Check if our session cookies are still valid."""
     url = 'http://login.viaplay.%s/api/persistentLogin/v1' % country
     payload = {
-        'deviceKey': 'atv-%s' % country
+        'deviceKey': 'pchls-%s' % country
     }
     data = make_request(url=url, method='get', payload=payload)
     if data['success'] is False:
@@ -142,10 +142,10 @@ def get_streams(guid):
     url = 'http://play.viaplay.%s/api/stream/byguid' % country
     payload = {
     'deviceId': uuid.uuid4(),
-    'deviceName': 'atv',
-    'deviceType': 'atv',
-    'userAgent': 'AppleTV/2.4',
-    'deviceKey': 'atv-se',
+    'deviceName': 'web',
+    'deviceType': 'pc',
+    'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
+    'deviceKey': 'pchls-se',
     'guid': guid
     }
 
@@ -655,10 +655,13 @@ def get_userinput(title):
     return query
     
 def search(url):
-    query = urllib.quote(get_userinput(language(30015)))
-    if len(query) > 0:
-        url = '%s?query=%s' % (url_parser(url), query)
-        list_products(url)
+    try:
+        query = urllib.quote(get_userinput(language(30015)))
+        if len(query) > 0:
+            url = '%s?query=%s' % (url_parser(url), query)
+            list_products(url)
+    except TypeError:
+        pass
 
 def play_video(playid, streamtype):
     # Create a playable item with a path to play.
