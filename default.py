@@ -100,7 +100,7 @@ def login(username, password):
     """Login to Viaplay. Return True/False based on the result."""
     url = 'http://login.viaplay.%s/api/login/v1' % country
     payload = {
-    'deviceKey': 'atv-se',
+    'deviceKey': 'atv-%s' % country,
     'username': username,
     'password': password,
     'persistent': 'true'
@@ -115,7 +115,7 @@ def validate_session():
     """Check if our session cookies are still valid."""
     url = 'http://login.viaplay.%s/api/persistentLogin/v1' % country
     payload = {
-        'deviceKey': 'atv-se'
+        'deviceKey': 'atv-%s' % country
     }
     data = make_request(url=url, method='get', payload=payload)
     if data['success'] is False:
