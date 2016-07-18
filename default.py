@@ -650,7 +650,7 @@ def get_userinput(title):
     return query
     
 def search(url):
-    query = urllib.quote(get_userinput('Search'))
+    query = urllib.quote(get_userinput(language(30015)))
     if len(query) > 0:
         url = url_parser(url) + '?query=' + query
         list_products(url)

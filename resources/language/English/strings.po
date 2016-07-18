@@ -68,3 +68,7 @@ msgstr ""
 msgctxt "#30014"
 msgid "Season"
 msgstr ""
+
+msgctxt "#30015"
+msgid "Search"
+msgstr ""
