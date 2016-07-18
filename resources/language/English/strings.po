@@ -72,3 +72,11 @@ msgstr ""
 msgctxt "#30015"
 msgid "Search"
 msgstr ""
+
+msgctxt "#30016"
+msgid "This event starts at"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Information"
+msgstr ""

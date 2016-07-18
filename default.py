@@ -418,6 +418,10 @@ def list_products(url, *display):
             else:
                 title = item['content']['title'].encode('utf-8') + ' (' + startdate_local.strftime("%H:%M") + ')'
                 is_playable = 'true'
+            if status == 'upcoming':
+                parameters = {'action': 'upcominggame', 'message': '%s %s.' % (language(30016), startdate_local.strftime("%Y-%m-%d %H:%M"))}
+                recursive_url = _url + '?' + urllib.urlencode(parameters)
+                is_playable = 'false'
             is_folder = False
             list_item = xbmcgui.ListItem(label=title)
             list_item.setProperty('IsPlayable', is_playable)
@@ -787,6 +791,10 @@ def router(paramstring):
             alphabetical_menu(params['url'])
         elif params['action'] == 'search':
             search(params['url'])
+        elif params['action'] == 'upcominggame':
+            dialog = xbmcgui.Dialog()
+            dialog.ok(language(30017),
+            params['message'])
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
