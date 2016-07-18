@@ -221,7 +221,7 @@ def root_menu(url):
             elif videotype == 'sport':
                 parameters = {'action': 'sport', 'url': category['href']}
             elif videotype == 'kids':
-                parameters = {'action': 'sport', 'url': category['href']}
+                parameters = {'action': 'kids', 'url': category['href']}
             else:
                 addon_log('Unsupported videotype found: %s' % videotype)
                 parameters = {'action': 'showmessage', 'message': 'This type (%s) is not supported yet.' % videotype}
