@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.viaplay"
-       version="0.0.1"
+       version="1.0.0"
        name="Viaplay"
        provider-name="emilsvennesson">
   <requires>
@@ -13,6 +13,11 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <description lang="en">Watch content from Viaplay.</description>
-    <disclaimer lang="en">This addon requires you to have a subscription to Viaplay.[CR]This addon is completely unofficial and is not endorsed by Viaplay in any way.</disclaimer>
+    <description lang="sv">Titta på innehåll från Viaplay.</description>
+    <platform>all</platform>
+    <language>sv dk no fi en</language>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
+    <source>https://github.com/emilsvennesson/kodi-viaplay</source>
+    <disclaimer>This addon requires you to have a subscription to Viaplay.[CR]This addon is completely unofficial and is not endorsed by Viaplay in any way.</disclaimer>
   </extension>
 </addon>
