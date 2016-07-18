@@ -32,5 +32,5 @@ Currently unsupported features:
  
 ## Known issues: ##
 #### No audio on live sports ####
-This is due to a bug in Kodi/ffmpeg. Viaplay uses HLS v4 for live sports and supplies the audio as an external track. Unfortunately, this is currently not supported. However, with Krypton and its new input stream add-ons, a fix is hopefully just around the corner.
+This is due to a bug in Kodi/ffmpeg. Viaplay uses HLS v4 for live sports and supplies the audio as an external track. Unfortunately, this is currently not working properly in Kodi. However, with Krypton and its new input stream add-ons, a fix is hopefully just around the corner.
  
