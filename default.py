@@ -228,7 +228,9 @@ def root_menu(url):
             is_folder = True
             listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    list_search()
     xbmcplugin.endOfDirectory(_handle)
+    
     
 def movie_menu(url):
     categories = get_categories(url)
@@ -345,10 +347,10 @@ def alphabetical_menu(url):
     for character in characters:
         title = character.encode('utf-8')
         if character == '0-9':
-            # 0-9 needs to be sent as a URL-encoded pound-sign
-            letter = '%23'.encode('utf-8')
+            # 0-9 needs to be sent as a pound-sign
+            letter = urllib.quote('#')
         else:
-            letter = title.lower()
+            letter = urllib.quote(title.lower())
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
@@ -627,6 +629,31 @@ def art(item):
         'cover': cover
         }
     return art
+    
+def list_search():
+    data = make_request(base_url, 'get')
+    list_search = xbmcgui.ListItem(label=data['_links']['viaplay:search']['title'])
+    list_search.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+    list_search.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+    parameters = {'action': 'search', 'url': data['_links']['viaplay:search']['href']}
+    recursive_url = _url + '?' + urllib.urlencode(parameters)
+    is_folder = True
+    xbmcplugin.addDirectoryItem(_handle, recursive_url, list_search, is_folder)
+    
+def get_userinput(title):
+    query = None
+    keyboard = xbmc.Keyboard('', title)
+    keyboard.doModal()
+    if keyboard.isConfirmed():
+        query = keyboard.getText()
+    addon_log('User input string: %s' % query)
+    return query
+    
+def search(url):
+    query = urllib.quote(get_userinput('Search'))
+    if len(query) > 0:
+        url = url_parser(url) + '?query=' + query
+        list_products(url)
 
 def play_video(playid, streamtype):
     # Create a playable item with a path to play.
@@ -758,6 +785,8 @@ def router(paramstring):
             list_products(params['url'])
         elif params['action'] == 'listalphabetical':
             alphabetical_menu(params['url'])
+        elif params['action'] == 'search':
+            search(params['url'])
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
