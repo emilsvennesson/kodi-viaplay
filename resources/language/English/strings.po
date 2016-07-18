@@ -80,3 +80,7 @@ msgstr ""
 msgctxt "#30017"
 msgid "Information"
 msgstr ""
+
+msgctxt "#30018"
+msgid "Next Page"
+msgstr ""

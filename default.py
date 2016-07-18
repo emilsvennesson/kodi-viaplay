@@ -70,11 +70,11 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
     
-base_url = 'http://content.viaplay.' + country + '/pc-' + country
+base_url = 'http://content.viaplay.%s/pc-%s' % (country, country)
     
 def addon_log(string):
     if debug:
-        xbmc.log("%s: %s" %(logging_prefix, string))
+        xbmc.log("%s: %s" % (logging_prefix, string))
                
 def url_parser(url):
     """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
@@ -98,7 +98,7 @@ def make_request(url, method, payload=None, headers=None):
    
 def login(username, password):
     """Login to Viaplay. Return True/False based on the result."""
-    url = 'http://login.viaplay.' + country + '/api/login/v1'
+    url = 'http://login.viaplay.%s/api/login/v1' % country
     payload = {
     'deviceKey': 'atv-se',
     'username': username,
@@ -113,7 +113,7 @@ def login(username, password):
         
 def validate_session():
     """Check if our session cookies are still valid."""
-    url = 'http://login.viaplay.' + country + '/api/persistentLogin/v1'
+    url = 'http://login.viaplay.%s/api/persistentLogin/v1' % country
     payload = {
         'deviceKey': 'atv-se'
     }
@@ -139,7 +139,7 @@ def check_loginstatus(data):
 
 def get_streams(guid):
     """Return the URL for a stream. Append all available SAMI subtitle URL:s in the dict subguid."""
-    url = 'http://play.viaplay.' + country + '/api/stream/byguid'
+    url = 'http://play.viaplay.%s/api/stream/byguid' % country
     payload = {
     'deviceId': uuid.uuid4(),
     'deviceName': 'atv',
@@ -191,10 +191,8 @@ def get_categories(url):
     pageType = data['pageType']
     try:
         sectionType = data['sectionType']
-    except:
+    except KeyError:
         sectionType = None
-    addon_log('pageType: %s' % pageType)
-    addon_log('sectionType: %s' % sectionType)
     if sectionType == 'sportPerDay':
         categories = data['_links']['viaplay:days']
     elif pageType == 'root':
@@ -223,7 +221,10 @@ def root_menu(url):
             elif videotype == 'sport':
                 parameters = {'action': 'sport', 'url': category['href']}
             elif videotype == 'kids':
-                parameters = {'action': 'kids', 'url': category['href']}
+                parameters = {'action': 'sport', 'url': category['href']}
+            else:
+                addon_log('Unsupported videotype found: %s' % videotype)
+                parameters = {'action': 'showmessage', 'message': 'This type (%s) is not supported yet.' % videotype}
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             listing.append((recursive_url, list_item, is_folder))
@@ -271,7 +272,7 @@ def kids_menu(url):
     listing = []
     
     for category in categories:
-        title = category['group']['title'].title() + ': ' + category['title']
+        title = '%s: %s' % (category['group']['title'].title(), category['title'])
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
@@ -367,13 +368,13 @@ def next_page(data):
     try:
         currentPage = data['_embedded']['viaplay:blocks'][0]['currentPage']
         pageCount = data['_embedded']['viaplay:blocks'][0]['pageCount']
-    except:
+    except KeyError:
         currentPage = data['currentPage']
         pageCount = data['pageCount']
     if pageCount > currentPage:
         try:
             return data['_embedded']['viaplay:blocks'][0]['_links']['next']['href']
-        except:
+        except KeyError:
             return data['_links']['next']['href']
     
 def list_products(url, *display):
@@ -413,13 +414,13 @@ def list_products(url, *display):
             startdate_local = startdate_utc.astimezone(local_tz)
             status = sports_status(item)
             if status == 'archive':
-                title = 'Archive: ' + item['content']['title'].encode('utf-8')
+                title = 'Archive: %s' % item['content']['title'].encode('utf-8')
                 is_playable = 'true'
             else:
-                title = item['content']['title'].encode('utf-8') + ' (' + startdate_local.strftime("%H:%M") + ')'
+                title = '%s (%s)' % (item['content']['title'].encode('utf-8'), startdate_local.strftime("%H:%M"))
                 is_playable = 'true'
             if status == 'upcoming':
-                parameters = {'action': 'upcominggame', 'message': '%s %s.' % (language(30016), startdate_local.strftime("%Y-%m-%d %H:%M"))}
+                parameters = {'action': 'showmessage', 'message': '%s %s.' % (language(30016), startdate_local.strftime("%Y-%m-%d %H:%M"))}
                 recursive_url = _url + '?' + urllib.urlencode(parameters)
                 is_playable = 'false'
             is_folder = False
@@ -440,7 +441,7 @@ def list_products(url, *display):
                 listing.append((recursive_url, list_item, is_folder))
             
         elif type == 'movie':
-            title = item['content']['title'].encode('utf-8') + ' ' + '(' + str(item['content']['production']['year']) + ')'
+            title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
             is_folder = False
             is_playable = 'true'
             list_item = xbmcgui.ListItem(label=title)
@@ -465,7 +466,7 @@ def list_products(url, *display):
     if sort is True:
         xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     if list_next_page is not None:
-        list_nextpage = xbmcgui.ListItem(label='Next Page')
+        list_nextpage = xbmcgui.ListItem(label=language(30018))
         parameters = {'action': 'nextpage', 'url': list_next_page}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
@@ -481,7 +482,7 @@ def get_products(data):
     else:
         try:
             products = data['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:products']
-        except:
+        except KeyError:
             products = data['_embedded']['viaplay:blocks'][1]['_embedded']['viaplay:products']
     return products
     
@@ -500,7 +501,7 @@ def list_seasons(url):
     seasons = get_seasons(url)
     listing = []
     for season in seasons:
-        title = language(30014) + ' ' + season['title']
+        title = '%s %s' % (language(30014), season['title'])
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
@@ -528,30 +529,30 @@ def item_information(item):
     cast = []
     try:
         duration = int(item['content']['duration']['milliseconds']) / 1000
-    except:
+    except KeyError:
         duration = None
     try:
         imdb_code = item['content']['imdb']['id']
-    except:
+    except KeyError:
         imdb_code = None
     try:
         rating = float(item['content']['imdb']['rating'])
-    except:
+    except KeyError:
         rating = None
     try:
         votes = str(item['content']['imdb']['votes'])
-    except:
+    except KeyError:
         votes = None
     try:
         year = int(item['content']['production']['year'])
-    except:
+    except KeyError:
         year = None
     try:
         genres = []
         for genre in item['_links']['viaplay:genres']:
             genres.append(genre['title'])
         genre = ', '.join(genres)  
-    except:
+    except KeyError:
         genre = None
     try:
         mpaa = item['content']['parentalRating']
@@ -623,7 +624,7 @@ def art(item):
     fanart = item['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
     try:
         cover = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
-    except:
+    except KeyError:
         cover = None
     banner = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'    
     art = {
@@ -656,7 +657,7 @@ def get_userinput(title):
 def search(url):
     query = urllib.quote(get_userinput(language(30015)))
     if len(query) > 0:
-        url = url_parser(url) + '?query=' + query
+        url = '%s?query=%s' % (url_parser(url), query)
         list_products(url)
 
 def play_video(playid, streamtype):
@@ -703,7 +704,7 @@ def get_subtitles(subdict):
 def sports_menu(url):
     # URL is hardcoded for now as the sports date listing is not available on all platforms
     if int(addon.getSetting('country')) > 2:
-        live_url = 'https://content.viaplay.fi/androiddash-fi/urheilu2'
+        live_url = 'http://content.viaplay.fi/androiddash-fi/urheilu2'
     else:
         live_url = 'http://content.viaplay.' + country + '/androiddash-' + country + '/sport2'
     listing = []
@@ -791,7 +792,7 @@ def router(paramstring):
             alphabetical_menu(params['url'])
         elif params['action'] == 'search':
             search(params['url'])
-        elif params['action'] == 'upcominggame':
+        elif params['action'] == 'showmessage':
             dialog = xbmcgui.Dialog()
             dialog.ok(language(30017),
             params['message'])
