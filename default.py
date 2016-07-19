@@ -70,7 +70,7 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
     
-base_url = 'http://content.viaplay.%s/pchls-%s' % (country, country)
+base_url = 'http://content.viaplay.%s/pc-%s' % (country, country)
     
 def addon_log(string):
     if debug:
@@ -100,7 +100,7 @@ def login(username, password):
     """Login to Viaplay. Return True/False based on the result."""
     url = 'http://login.viaplay.%s/api/login/v1' % country
     payload = {
-    'deviceKey': 'pchls-%s' % country,
+    'deviceKey': 'pc-%s' % country,
     'username': username,
     'password': password,
     'persistent': 'true'
@@ -115,7 +115,7 @@ def validate_session():
     """Check if our session cookies are still valid."""
     url = 'http://login.viaplay.%s/api/persistentLogin/v1' % country
     payload = {
-        'deviceKey': 'pchls-%s' % country
+        'deviceKey': 'pc-%s' % country
     }
     data = make_request(url=url, method='get', payload=payload)
     if data['success'] is False:
