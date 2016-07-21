@@ -75,7 +75,7 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
     
-base_url = 'http://content.viaplay.%s/pc-%s' % (country, country)
+base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
     
 def addon_log(string):
     if debug:
