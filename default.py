@@ -52,9 +52,9 @@ password = addon.getSetting('password')
 subdict = defaultdict(list)
 
 if addon.getSetting('ssl') == 'false':
-    ssl = False
+    disable_ssl = False
 else:
-    ssl = True
+    disable_ssl = True
 
 if addon.getSetting('debug') == 'false':
     debug = False
@@ -84,7 +84,7 @@ def addon_log(string):
 def url_parser(url):
     """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
     Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-    if ssl:
+    if disable_ssl:
         url = url.replace('https', 'http') # http://forum.kodi.tv/showthread.php?tid=270336
     parsed_url = re.match('[^{]+', url).group()
     return parsed_url
