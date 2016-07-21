@@ -231,8 +231,7 @@ def root_menu(url):
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     list_search()
     xbmcplugin.endOfDirectory(_handle)
-    
-    
+
 def movie_menu(url):
     categories = get_categories(url)
     listing = []
@@ -283,16 +282,7 @@ def kids_menu(url):
         listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
-    
-def get_available_characters(url):
-    characters = []
-    data = make_request(url=url, method='get')
-    
-    for item in data['_embedded']['viaplay:products']:
-        if not item['group'] in characters:
-            characters.append(item['group'])
-    return characters
-       
+
 def get_sortings(url):
     data = make_request(url=url, method='get')
     sorttypes = data['_links']['viaplay:sortings']
@@ -318,11 +308,11 @@ def sort_by(url):
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
-        
+
+    # show all products in alphabetical order
     list_all_item = xbmcgui.ListItem(label=language(30013))
     list_all_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
     list_all_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    # show all products in alphabetical order
     parameters = {'action': 'listproducts', 'url': url + '?sort=alphabetical'}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
@@ -331,23 +321,23 @@ def sort_by(url):
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
     
-def get_characters(url):
-    characters = []
+def get_letters(url):
+    letters = []
     products = get_products(make_request(url=url, method='get'))
     for item in products:
-        character = item['group']
-        if not character in characters:
-            characters.append(item['group'])
-    return characters
+        letter = item['group']
+        if not letter in letters:
+            letters.append(letter)
+    return letters
     
 def alphabetical_menu(url):
     url = url_parser(url) # needed to get rid of {&letter}
-    characters = get_characters(url)
+    letters = get_letters(url)
     listing = []
     
-    for character in characters:
-        title = character.encode('utf-8')
-        if character == '0-9':
+    for letter in letters:
+        title = letter.encode('utf-8')
+        if letter == '0-9':
             # 0-9 needs to be sent as a pound-sign
             letter = urllib.quote('#')
         else:
@@ -709,7 +699,7 @@ def sports_menu(url):
     if int(addon.getSetting('country')) > 2:
         live_url = 'http://content.viaplay.fi/androiddash-fi/urheilu2'
     else:
-        live_url = 'http://content.viaplay.' + country + '/androiddash-' + country + '/sport2'
+        live_url = 'http://content.viaplay.%s/androiddash-%s/sport2' % (country, country)
     listing = []
     categories = get_categories(live_url)
     now = datetime.now()
