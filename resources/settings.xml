@@ -7,5 +7,6 @@
   </category>
   <category label="30004">
     <setting id="debug" type="bool" label="Add-on debugging" default="false"/>
+    <setting id="ssl" type="bool" label="30019" default="false"/>
   </category>
 </settings>

@@ -84,3 +84,7 @@ msgstr ""
 msgctxt "#30018"
 msgid "Next Page"
 msgstr ""
+
+msgctxt "#30019"
+msgid "Disable SSL (not recommended)"
+msgstr ""
