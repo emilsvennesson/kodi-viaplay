@@ -640,13 +640,22 @@ def item_information(item):
 def art(item):
     """Return the available art in a xbmcgui.setArt friendly tuple."""
     type = item['type']
-    thumbnail = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
-    fanart = item['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
+    try:
+        thumbnail = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
+    except KeyError:
+        thumbnail = None
+    try:
+        fanart = item['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
+    except KeyError:
+        fanart = None
     try:
         cover = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
         cover = None
-    banner = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
+    try:
+        banner = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
+    except KeyError:
+        banner = None
     art = {
         'thumb': thumbnail,
         'fanart': fanart,
