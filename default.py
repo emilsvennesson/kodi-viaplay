@@ -232,7 +232,7 @@ def root_menu(url):
             list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
             if videotype == 'series':
                 parameters = {'action': 'series', 'url': category['href']}
-            elif videotype == 'movie' or 'rental':
+            elif videotype == 'movie' or videotype == 'rental':
                 parameters = {'action': 'movie', 'url': category['href']}
             elif videotype == 'sport':
                 parameters = {'action': 'sport', 'url': category['href']}
