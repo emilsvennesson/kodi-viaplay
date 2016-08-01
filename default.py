@@ -232,7 +232,7 @@ def root_menu(url):
             list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
             if videotype == 'series':
                 parameters = {'action': 'series', 'url': category['href']}
-            elif videotype == 'movie':
+            elif videotype == 'movie' or 'rental':
                 parameters = {'action': 'movie', 'url': category['href']}
             elif videotype == 'sport':
                 parameters = {'action': 'sport', 'url': category['href']}
@@ -240,7 +240,7 @@ def root_menu(url):
                 parameters = {'action': 'kids', 'url': category['href']}
             else:
                 addon_log('Unsupported videotype found: %s' % videotype)
-                parameters = {'action': 'showmessage', 'message': 'This type (%s) is not supported yet.' % videotype}
+                parameters = {'action': 'showmessage', 'message': 'This type (%s) is not yet supported.' % videotype}
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             listing.append((recursive_url, list_item, is_folder))
@@ -410,7 +410,7 @@ def list_products(url, *display):
             as it always provides more detailed data about each product."""
             playid = item['_links']['self']['href']
             streamtype = 'url'
-        parameters = {'action': 'play', 'playid': playid, 'streamtype': streamtype}
+        parameters = {'action': 'play', 'playid': playid.encode('utf-8'), 'streamtype': streamtype}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
 
         if type == 'episode':
@@ -457,7 +457,10 @@ def list_products(url, *display):
                 listing.append((recursive_url, list_item, is_folder))
 
         elif type == 'movie':
-            title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
+            if item['system']['availability']['planInfo']['isRental'] is True:
+                title = '%s (%s) *' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
+            else:
+                title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
             is_folder = False
             is_playable = 'true'
             list_item = xbmcgui.ListItem(label=title)
