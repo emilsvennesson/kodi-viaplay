@@ -168,18 +168,19 @@ def get_streams(guid):
     if login_status is True:
         try:
             m3u8_url = data['_links']['viaplay:playlist']['href']
-            status = True
+            success = True
         except KeyError:
             # we might have to request the stream again after logging in
             if data['name'] == 'MissingSessionCookieError':
                 data = make_request(url=url, method='get', payload=payload)
             try:
                 m3u8_url = data['_links']['viaplay:playlist']['href']
-                status = True
+                success = True
             except KeyError:
                 if data['success'] is False:
-                    status = data['message']
-        if status is True:
+                    display_auth_message(data)
+                    success = False
+        if success is True:
             if subtitles:
                 try:
                     subtitle_urls = data['_links']['viaplay:sami']
@@ -189,16 +190,23 @@ def get_streams(guid):
                 except KeyError:
                     addon_log('No subtitles found for guid %s' % guid)
             return m3u8_url
-        else:
-            dialog = xbmcgui.Dialog()
-            dialog.ok(language(30005),
-                      status)
-            return False
     else:
         dialog = xbmcgui.Dialog()
         dialog.ok(language(30005),
                   language(30006))
-        return False
+
+
+def display_auth_message(data):
+    if data['name'] == 'UserNotAuthorizedForContentError':
+        message = language(30020)
+    elif data['name'] == 'PurchaseConfirmationRequiredError':
+        message = language(30021)
+    elif data['name'] == 'UserNotAuthorizedRegionBlockedError':
+        message = language(30022)
+    else:
+        message = data['message']
+    dialog = xbmcgui.Dialog()
+    dialog.ok(language(30017), message)
 
 
 def get_categories(url):
