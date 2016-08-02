@@ -136,18 +136,22 @@ def validate_session():
         return True
 
 
-def check_loginstatus(data):
+def verify_login(data):
     try:
         if data['name'] == 'MissingSessionCookieError':
             session = validate_session()
             if session is False:
                 login_success = login(username, password)
+                if login_success is False:
+                        dialog = xbmcgui.Dialog()
+                        dialog.ok(language(30005),
+                        language(30006))  
             else:
                 login_success = True
         else:
             login_success = True
     except KeyError:
-        login_success = True
+        login_success = True  
     return login_success
 
 
@@ -164,7 +168,7 @@ def get_streams(guid):
     }
 
     data = make_request(url=url, method='get', payload=payload)
-    login_status = check_loginstatus(data)
+    login_status = verify_login(data)
     if login_status is True:
         try:
             m3u8_url = data['_links']['viaplay:playlist']['href']
@@ -190,10 +194,6 @@ def get_streams(guid):
                 except KeyError:
                     addon_log('No subtitles found for guid %s' % guid)
             return m3u8_url
-    else:
-        dialog = xbmcgui.Dialog()
-        dialog.ok(language(30005),
-                  language(30006))
 
 
 def display_auth_message(data):
