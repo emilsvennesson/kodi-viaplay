@@ -85,22 +85,27 @@ def addon_log(string):
 
 
 def url_parser(url):
-    """Sometimes, Viaplay adds some weird templated stuff to the end of the URL.
-    Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
+    """Sometimes, Viaplay adds some weird templated stuff to the end of the URL
+    we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
     if disable_ssl:
         url = url.replace('https', 'http')  # http://forum.kodi.tv/showthread.php?tid=270336
-    parsed_url = re.match('[^{]+', url).group()
-    return parsed_url
+    template = re.search('\{.+?\}', url)
+    if template is not None:
+        url = url.replace(template.group(), '')
+    return url
 
 
 def make_request(url, method, payload=None, headers=None):
     """Make an HTTP request. Return the response as JSON."""
-    addon_log('Original URL: %s' % url)
-    addon_log('Request & parsed URL: %s' % url_parser(url))
+    parsed_url = url_parser(url)
+    addon_log('URL: %s' % url)
+    if parsed_url != url:
+        addon_log('Parsed URL: %s' % parsed_url)
+        
     if method == 'get':
-        req = http_session.get(url_parser(url), params=payload, headers=headers, allow_redirects=False, verify=False)
+        req = http_session.get(parsed_url, params=payload, headers=headers, allow_redirects=False, verify=False)
     else:
-        req = http_session.post(url_parser(url), data=payload, headers=headers, allow_redirects=False, verify=False)
+        req = http_session.post(parsed_url, data=payload, headers=headers, allow_redirects=False, verify=False)
     addon_log('Response code: %s' % req.status_code)
     addon_log('Response: %s' % req.content)
     cookie_jar.save(ignore_discard=True, ignore_expires=False)
@@ -362,7 +367,6 @@ def get_letters(url):
 
 
 def alphabetical_menu(url):
-    url = url_parser(url)  # needed to get rid of {&letter}
     letters = get_letters(url)
     listing = []
 
@@ -701,7 +705,7 @@ def search(url):
     try:
         query = urllib.quote(get_userinput(language(30015)))
         if len(query) > 0:
-            url = '%s?query=%s' % (url_parser(url), query)
+            url = '%s?query=%s' % (url, query)
             list_products(url)
     except TypeError:
         pass
