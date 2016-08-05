@@ -21,17 +21,18 @@ This plugin supports Kodi Jarvis or later. While it may work fine on older versi
  * TV shows
  * Kids
  * Sports
+ * Store
  * Subtitles
  * Search
  * A-Ö alphabetical listing
  
 Currently unsupported features:
- * Store
+
  * Viasat TV To Go
  * Starred
  * Activity list
  * Parental control
- * ...And quite possibly more that I'm forgetting about!
+ * ... And quite possibly more that I'm forgetting about!
  
 ## Known issues: ##
 #### No audio on live sports ####
