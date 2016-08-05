@@ -101,7 +101,7 @@ def make_request(url, method, payload=None, headers=None):
     addon_log('URL: %s' % url)
     if parsed_url != url:
         addon_log('Parsed URL: %s' % parsed_url)
-        
+
     if method == 'get':
         req = http_session.get(parsed_url, params=payload, headers=headers, allow_redirects=False, verify=False)
     else:
@@ -144,19 +144,17 @@ def validate_session():
 def verify_login(data):
     try:
         if data['name'] == 'MissingSessionCookieError':
-            session = validate_session()
-            if session is False:
+            login_success = validate_session()
+            if login_success is False:
                 login_success = login(username, password)
                 if login_success is False:
-                        dialog = xbmcgui.Dialog()
-                        dialog.ok(language(30005),
-                        language(30006))  
-            else:
-                login_success = True
+                    dialog = xbmcgui.Dialog()
+                    dialog.ok(language(30005),
+                              language(30006))
         else:
             login_success = True
     except KeyError:
-        login_success = True  
+        login_success = True
     return login_success
 
 
@@ -374,14 +372,14 @@ def alphabetical_menu(url):
         title = letter.encode('utf-8')
         if letter == '0-9':
             # 0-9 needs to be sent as a pound-sign
-            letter = urllib.quote('#')
+            letter = '#'
         else:
-            letter = urllib.quote(title.lower())
+            letter = title.lower()
         list_item = xbmcgui.ListItem(label=title)
         list_item.setProperty('IsPlayable', 'false')
         list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': url + '&letter=' + letter}
+        parameters = {'action': 'listproducts', 'url': url + '&letter=' + urllib.quote(letter)}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
@@ -469,10 +467,9 @@ def list_products(url, *display):
                 listing.append((recursive_url, list_item, is_folder))
 
         elif type == 'movie':
+            title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
             if item['system']['availability']['planInfo']['isRental'] is True:
-                title = '%s (%s) *' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
-            else:
-                title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
+                title = title + ' *'  # mark rental products with an asterisk
             is_folder = False
             is_playable = 'true'
             list_item = xbmcgui.ListItem(label=title)
@@ -550,7 +547,7 @@ def list_seasons(url):
 
 
 def item_information(item):
-    """Return the product information in a xbmcgui.setInfo friendly tuple.
+    """Return the product information in a xbmcgui.setInfo friendly dict.
     Supported content types: episode, series, movie, sport"""
     type = item['type']
     mediatype = None
@@ -653,7 +650,7 @@ def item_information(item):
 
 
 def art(item):
-    """Return the available art in a xbmcgui.setArt friendly tuple."""
+    """Return the available art in a xbmcgui.setArt friendly dict."""
     type = item['type']
     try:
         thumbnail = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
@@ -697,15 +694,15 @@ def get_userinput(title):
     keyboard.doModal()
     if keyboard.isConfirmed():
         query = keyboard.getText()
-    addon_log('User input string: %s' % query)
+        addon_log('User input string: %s' % query)
     return query
 
 
 def search(url):
     try:
-        query = urllib.quote(get_userinput(language(30015)))
+        query = get_userinput(language(30015))
         if len(query) > 0:
-            url = '%s?query=%s' % (url, query)
+            url = '%s?query=%s' % (url, urllib.quote(query))
             list_products(url)
     except TypeError:
         pass
