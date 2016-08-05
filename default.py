@@ -628,7 +628,7 @@ def item_information(item):
         mediatype = 'video'
         title = item['content']['title'].encode('utf-8')
         plot = item['content']['synopsis'].encode('utf-8')
-        xbmcplugin.setContent(_handle, 'movies')
+        xbmcplugin.setContent(_handle, 'episodes')
     info = {
         'mediatype': mediatype,
         'title': title,
@@ -653,21 +653,34 @@ def art(item):
     """Return the available art in a xbmcgui.setArt friendly dict."""
     type = item['type']
     try:
-        thumbnail = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
+        boxart = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
     except KeyError:
-        thumbnail = None
+        boxart = None
     try:
-        fanart = item['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
+        hero169 = item['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
-        fanart = None
+        hero169 = None
     try:
-        cover = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
+        coverart23 = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
-        cover = None
+        coverart23 = None
     try:
-        banner = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
+        coverart169 = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
-        banner = None
+        coverart169 = None
+    try:
+        landscape = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
+    except KeyError:
+        landscape = None
+        
+    if type == 'episode' or type == 'sport':    
+        thumbnail = landscape
+    else:
+        thumbnail = boxart
+    fanart = hero169
+    banner = landscape
+    cover = coverart23
+        
     art = {
         'thumb': thumbnail,
         'fanart': fanart,
