@@ -12,7 +12,6 @@ import time
 import re
 import json
 import uuid
-from collections import defaultdict
 import HTMLParser
 
 import dateutil.parser
@@ -50,7 +49,6 @@ http_session.cookies = cookie_jar
 
 username = addon.getSetting('email')
 password = addon.getSetting('password')
-subdict = defaultdict(list)
 
 if addon.getSetting('ssl') == 'false':
     disable_ssl = False
@@ -158,8 +156,9 @@ def verify_login(data):
     return login_success
 
 
-def get_streams(guid):
-    """Return the URL for a stream. Append all available SAMI subtitle URL:s in the dict subguid."""
+def get_video_urls(guid):
+    """Return a dict with the stream URL and available subtitle URL:s."""
+    video_urls = {}
     url = 'https://play.viaplay.%s/api/stream/byguid' % country
     payload = {
         'deviceId': uuid.uuid4(),
@@ -187,16 +186,18 @@ def get_streams(guid):
                 if data['success'] is False:
                     display_auth_message(data)
                     success = False
+
         if success is True:
+            video_urls['stream_url'] = m3u8_url
+            video_urls['subtitle_urls'] = []
             if subtitles:
                 try:
-                    subtitle_urls = data['_links']['viaplay:sami']
-                    for sub in subtitle_urls:
-                        suburl = sub['href']
-                        subdict[guid].append(suburl)
+                    for subtitle in data['_links']['viaplay:sami']:
+                        video_urls['subtitle_urls'].append(subtitle['href'])
                 except KeyError:
                     addon_log('No subtitles found for guid %s' % guid)
-            return m3u8_url
+
+            return video_urls
 
 
 def display_auth_message(data):
@@ -728,12 +729,12 @@ def play_video(playid, streamtype):
         guid = get_products(data)['system']['guid']
     else:
         guid = playid
-    stream = get_streams(guid)
-    if stream is not False:
-        play_item = xbmcgui.ListItem(path=stream)
+    video_urls = get_video_urls(guid)
+    if video_urls is not False:
+        play_item = xbmcgui.ListItem(path=video_urls['stream_url'])
         play_item.setProperty('IsPlayable', 'true')
         if subtitles:
-            play_item.setSubtitles(get_subtitles(subdict[guid]))
+            play_item.setSubtitles(get_subtitles(video_urls['subtitle_urls']))
         # Pass the item to the Kodi player.
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
