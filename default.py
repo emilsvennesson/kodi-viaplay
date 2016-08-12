@@ -110,7 +110,7 @@ def get_video_urls(guid):
     video_urls = {}
     url = 'https://play.viaplay.%s/api/stream/byguid' % country
     payload = {
-        'deviceId': uuid.uuid4(),
+        'deviceId': deviceId,
         'deviceName': 'web',
         'deviceType': 'pc',
         'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
@@ -838,12 +838,23 @@ _handle = int(sys.argv[1])  # get the plugin handle as an integer number
 
 http_session = requests.Session()
 cookie_file = os.path.join(addon_profile, 'viaplay_cookies')
+deviceid_file = os.path.join(addon_profile, 'deviceId')
 cookie_jar = cookielib.LWPCookieJar(cookie_file)
+
 try:
     cookie_jar.load(ignore_discard=True, ignore_expires=True)
 except IOError:
     pass
 http_session.cookies = cookie_jar
+
+# read/write deviceId (generated UUID4)
+try:
+    deviceId = open(deviceid_file, 'r').read()
+except IOError:
+    fhandle = open(deviceid_file, 'w')
+    deviceId = str(uuid.uuid4())
+    fhandle.write(deviceId)
+    fhandle.close()
 
 username = addon.getSetting('email')
 password = addon.getSetting('password')
@@ -874,6 +885,7 @@ else:
 
 base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
 base_data = make_request(url=base_url, method='get')
+
 
 if __name__ == '__main__':
     router(sys.argv[2][1:])  # trim the leading '?' from the plugin call paramstring
