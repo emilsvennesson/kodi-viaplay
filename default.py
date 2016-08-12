@@ -16,6 +16,7 @@ import HTMLParser
 
 import dateutil.parser
 from dateutil import tz
+
 import requests
 
 import xbmc
@@ -23,58 +24,6 @@ import xbmcaddon
 import xbmcvfs
 import xbmcgui
 import xbmcplugin
-
-addon = xbmcaddon.Addon()
-addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
-addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
-language = addon.getLocalizedString
-logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
-
-if not xbmcvfs.exists(addon_profile):
-    xbmcvfs.mkdir(addon_profile)
-
-# Get the plugin url in plugin:// notation.
-_url = sys.argv[0]
-# Get the plugin handle as an integer number.
-_handle = int(sys.argv[1])
-
-http_session = requests.Session()
-cookie_file = os.path.join(addon_profile, 'viaplay_cookies')
-cookie_jar = cookielib.LWPCookieJar(cookie_file)
-try:
-    cookie_jar.load(ignore_discard=True, ignore_expires=True)
-except IOError:
-    pass
-http_session.cookies = cookie_jar
-
-username = addon.getSetting('email')
-password = addon.getSetting('password')
-
-if addon.getSetting('ssl') == 'false':
-    disable_ssl = False
-else:
-    disable_ssl = True
-
-if addon.getSetting('debug') == 'false':
-    debug = False
-else:
-    debug = True
-
-if addon.getSetting('subtitles') == 'false':
-    subtitles = False
-else:
-    subtitles = True
-
-if addon.getSetting('country') == '0':
-    country = 'se'
-elif addon.getSetting('country') == '1':
-    country = 'dk'
-elif addon.getSetting('country') == '2':
-    country = 'no'
-else:
-    country = 'fi'
-
-base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
 
 
 def addon_log(string):
@@ -189,8 +138,8 @@ def get_video_urls(guid):
 
         if success is True:
             video_urls['stream_url'] = m3u8_url
-            video_urls['subtitle_urls'] = []
             if subtitles:
+                video_urls['subtitle_urls'] = []
                 try:
                     for subtitle in data['_links']['viaplay:sami']:
                         video_urls['subtitle_urls'].append(subtitle['href'])
@@ -213,8 +162,12 @@ def display_auth_message(data):
     dialog.ok(language(30017), message)
 
 
-def get_categories(url):
-    data = make_request(url=url, method='get')
+def get_categories(input, method=None):
+    if method == 'data':
+        data = input
+    else:
+        data = make_request(url=input, method='get')
+
     pageType = data['pageType']
     try:
         sectionType = data['sectionType']
@@ -229,8 +182,8 @@ def get_categories(url):
     return categories
 
 
-def root_menu(url):
-    categories = get_categories(url)
+def root_menu():
+    categories = get_categories(input=base_data, method='data')
     listing = []
 
     for category in categories:
@@ -342,22 +295,25 @@ def sort_by(url):
         is_folder = True
         listing.append((recursive_url, list_item, is_folder))
 
-    # show all products in alphabetical order
-    list_all_item = xbmcgui.ListItem(label=language(30013))
-    list_all_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-    list_all_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    parameters = {'action': 'listproducts', 'url': url + '?sort=alphabetical'}
-    recursive_url = _url + '?' + urllib.urlencode(parameters)
-    is_folder = True
-
-    xbmcplugin.addDirectoryItem(_handle, recursive_url, list_all_item, is_folder)
+    list_products_alphabetical(url)
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
 
+def list_products_alphabetical(url):
+    """List all products in alphabetical order."""
+    list_item = xbmcgui.ListItem(label=language(30013))
+    list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+    list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+    parameters = {'action': 'listproducts', 'url': url + '?sort=alphabetical'}
+    recursive_url = _url + '?' + urllib.urlencode(parameters)
+    is_folder = True
+    xbmcplugin.addDirectoryItem(_handle, recursive_url, list_item, is_folder)
+
+
 def get_letters(url):
     letters = []
-    products = get_products(make_request(url=url, method='get'))
+    products = get_products(input=url, method='url')
     for item in products:
         letter = item['group']
         if letter not in letters:
@@ -388,8 +344,8 @@ def alphabetical_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def next_page(data):
-    """Return next page if the current page is less than the total page count."""
+def list_next_page(data):
+    """Return a 'next page item' if the current page is less than the total page count."""
     try:
         currentPage = data['_embedded']['viaplay:blocks'][0]['currentPage']
         pageCount = data['_embedded']['viaplay:blocks'][0]['pageCount']
@@ -398,17 +354,22 @@ def next_page(data):
         pageCount = data['pageCount']
     if pageCount > currentPage:
         try:
-            return data['_embedded']['viaplay:blocks'][0]['_links']['next']['href']
+            url = data['_embedded']['viaplay:blocks'][0]['_links']['next']['href']
         except KeyError:
-            return data['_links']['next']['href']
+            url = data['_links']['next']['href']
+
+        list_item = xbmcgui.ListItem(label=language(30018))
+        parameters = {'action': 'nextpage', 'url': url}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        xbmcplugin.addDirectoryItem(_handle, recursive_url, list_item, is_folder)
 
 
 def list_products(url, *display):
     data = make_request(url=url, method='get')
-    products = get_products(data)
+    products = get_products(input=data, method='data')
     listing = []
     sort = None
-    list_next_page = next_page(data)
 
     for item in products:
         type = item['type']
@@ -491,20 +452,21 @@ def list_products(url, *display):
             list_item.setInfo('video', item_information(item))
             list_item.setArt(art(item))
             listing.append((recursive_url, list_item, is_folder))
+
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     if sort is True:
         xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-    if list_next_page is not None:
-        list_nextpage = xbmcgui.ListItem(label=language(30018))
-        parameters = {'action': 'nextpage', 'url': list_next_page}
-        recursive_url = _url + '?' + urllib.urlencode(parameters)
-        is_folder = True
-        xbmcplugin.addDirectoryItem(_handle, recursive_url, list_nextpage, is_folder)
+    list_next_page(data)
     # xbmc.executebuiltin("Container.SetViewMode(500)") - force media view
     xbmcplugin.endOfDirectory(_handle)
 
 
-def get_products(data):
+def get_products(input, method=None):
+    if method == 'data':
+        data = input
+    else:
+        data = make_request(url=input, method='get')
+
     if data['type'] == 'season-list' or data['type'] == 'list':
         products = data['_embedded']['viaplay:products']
     elif data['type'] == 'product':
@@ -673,15 +635,15 @@ def art(item):
         landscape = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
     except KeyError:
         landscape = None
-        
-    if type == 'episode' or type == 'sport':    
+
+    if type == 'episode' or type == 'sport':
         thumbnail = landscape
     else:
         thumbnail = boxart
     fanart = hero169
     banner = landscape
     cover = coverart23
-        
+
     art = {
         'thumb': thumbnail,
         'fanart': fanart,
@@ -692,11 +654,10 @@ def art(item):
 
 
 def list_search():
-    data = make_request(base_url, 'get')
-    list_search = xbmcgui.ListItem(label=data['_links']['viaplay:search']['title'])
+    list_search = xbmcgui.ListItem(label=base_data['_links']['viaplay:search']['title'])
     list_search.setArt({'icon': os.path.join(addon_path, 'icon.png')})
     list_search.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    parameters = {'action': 'search', 'url': data['_links']['viaplay:search']['href']}
+    parameters = {'action': 'search', 'url': base_data['_links']['viaplay:search']['href']}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
     xbmcplugin.addDirectoryItem(_handle, recursive_url, list_search, is_folder)
@@ -723,10 +684,9 @@ def search(url):
 
 
 def play_video(playid, streamtype):
-    # Create a playable item with a path to play.
     if streamtype == 'url':
-        data = make_request(playid, 'get')
-        guid = get_products(data)['system']['guid']
+        url = playid
+        guid = get_products(input=url, method='url')['system']['guid']
     else:
         guid = playid
     video_urls = get_video_urls(guid)
@@ -735,7 +695,6 @@ def play_video(playid, streamtype):
         play_item.setProperty('IsPlayable', 'true')
         if subtitles:
             play_item.setSubtitles(get_subtitles(video_urls['subtitle_urls']))
-        # Pass the item to the Kodi player.
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 
@@ -826,11 +785,8 @@ def sports_today(url):
 
 
 def router(paramstring):
-    """Router function that calls other functions depending on the provided paramstring"""
-    # Parse a URL-encoded paramstring to the dictionary of
-    # {<parameter>: <value>} elements
+    """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
-    # Check the parameters passed to the plugin
     if params:
         if params['action'] == 'movie':
             movie_menu(params['url'])
@@ -865,12 +821,59 @@ def router(paramstring):
             dialog.ok(language(30017),
                       params['message'])
     else:
-        # If the plugin is called from Kodi UI without any parameters,
-        # display the list of video categories
-        root_menu(base_url)
+        root_menu()
 
+
+addon = xbmcaddon.Addon()
+addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
+addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
+language = addon.getLocalizedString
+logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
+
+if not xbmcvfs.exists(addon_profile):
+    xbmcvfs.mkdir(addon_profile)
+
+_url = sys.argv[0]  # get the plugin url in plugin:// notation.
+_handle = int(sys.argv[1])  # get the plugin handle as an integer number
+
+http_session = requests.Session()
+cookie_file = os.path.join(addon_profile, 'viaplay_cookies')
+cookie_jar = cookielib.LWPCookieJar(cookie_file)
+try:
+    cookie_jar.load(ignore_discard=True, ignore_expires=True)
+except IOError:
+    pass
+http_session.cookies = cookie_jar
+
+username = addon.getSetting('email')
+password = addon.getSetting('password')
+
+if addon.getSetting('ssl') == 'false':
+    disable_ssl = False
+else:
+    disable_ssl = True
+
+if addon.getSetting('debug') == 'false':
+    debug = False
+else:
+    debug = True
+
+if addon.getSetting('subtitles') == 'false':
+    subtitles = False
+else:
+    subtitles = True
+
+if addon.getSetting('country') == '0':
+    country = 'se'
+elif addon.getSetting('country') == '1':
+    country = 'dk'
+elif addon.getSetting('country') == '2':
+    country = 'no'
+else:
+    country = 'fi'
+
+base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
+base_data = make_request(url=base_url, method='get')
 
 if __name__ == '__main__':
-    # Call the router function and pass the plugin call parameters to it.
-    # We use string slicing to trim the leading '?' from the plugin call paramstring
-    router(sys.argv[2][1:])
+    router(sys.argv[2][1:])  # trim the leading '?' from the plugin call paramstring
