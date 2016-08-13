@@ -110,7 +110,7 @@ def get_video_urls(guid):
     video_urls = {}
     url = 'https://play.viaplay.%s/api/stream/byguid' % country
     payload = {
-        'deviceId': deviceId,
+        'deviceId': get_deviceId(),
         'deviceName': 'web',
         'deviceType': 'pc',
         'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
@@ -783,6 +783,19 @@ def sports_today(url):
         listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
+    
+    
+def get_deviceId():
+    """"Read/write deviceId (generated UUID4) from/to file and return it."""
+    try:
+        deviceId = open(deviceid_file, 'r').read()
+        return deviceId
+    except IOError:
+        deviceId = str(uuid.uuid4())
+        fhandle = open(deviceid_file, 'w')
+        fhandle.write(deviceId)
+        fhandle.close()
+        return deviceId
 
 
 def router(paramstring):
@@ -847,15 +860,6 @@ try:
 except IOError:
     pass
 http_session.cookies = cookie_jar
-
-# read/write deviceId (generated UUID4)
-try:
-    deviceId = open(deviceid_file, 'r').read()
-except IOError:
-    fhandle = open(deviceid_file, 'w')
-    deviceId = str(uuid.uuid4())
-    fhandle.write(deviceId)
-    fhandle.close()
 
 username = addon.getSetting('email')
 password = addon.getSetting('password')
