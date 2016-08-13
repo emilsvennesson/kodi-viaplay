@@ -690,7 +690,8 @@ def play_video(playid, streamtype):
     else:
         guid = playid
     video_urls = get_video_urls(guid)
-    if video_urls is not False:
+    
+    if video_urls is not None:
         play_item = xbmcgui.ListItem(path=video_urls['stream_url'])
         play_item.setProperty('IsPlayable', 'true')
         if subtitles:
