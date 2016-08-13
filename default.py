@@ -643,13 +643,16 @@ def art(item):
     fanart = hero169
     banner = landscape
     cover = coverart23
+    poster = boxart
 
     art = {
         'thumb': thumbnail,
         'fanart': fanart,
         'banner': banner,
-        'cover': cover
+        'cover': cover,
+        'poster': poster
     }
+    
     return art
 
 
