@@ -135,17 +135,10 @@ def get_video_urls(guid):
                 if data['success'] is False:
                     display_auth_message(data)
                     success = False
-
         if success is True:
             video_urls['stream_url'] = m3u8_url
-            if subtitles:
-                video_urls['subtitle_urls'] = []
-                try:
-                    for subtitle in data['_links']['viaplay:sami']:
-                        video_urls['subtitle_urls'].append(subtitle['href'])
-                except KeyError:
-                    addon_log('No subtitles found for guid %s' % guid)
-
+            video_urls['subtitle_urls'] = get_subtitle_urls(data, guid)
+            
             return video_urls
 
 
@@ -698,33 +691,46 @@ def play_video(playid, streamtype):
         play_item = xbmcgui.ListItem(path=video_urls['stream_url'])
         play_item.setProperty('IsPlayable', 'true')
         if subtitles:
-            play_item.setSubtitles(get_subtitles(video_urls['subtitle_urls']))
+            play_item.setSubtitles(download_subtitles(video_urls['subtitle_urls']))
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+        
+        
+def get_subtitle_urls(data, guid):
+    subtitle_urls = []
+    if subtitles:
+        try:
+            for subtitle in data['_links']['viaplay:sami']:
+                subtitle_urls.append(subtitle['href'])
+        except KeyError:
+            addon_log('No subtitles found for guid %s' % guid)
+            
+    return subtitle_urls
 
 
-def get_subtitles(subdict):
+def download_subtitles(suburls):
     """Download the SAMI subtitles, decode the HTML entities and save to addon profile.
-    Return a list of the path to the subtitles."""
+    Return a list of the path to the downloaded subtitles."""
     subtitle_paths = []
-    for samiurl in subdict:
-        req = requests.get(samiurl)
+    for suburl in suburls:
+        req = requests.get(suburl)
         sami = req.content.decode('utf-8', 'ignore').strip()
         htmlparser = HTMLParser.HTMLParser()
         subtitle = htmlparser.unescape(sami).encode('utf-8')
         subtitle = subtitle.replace('  ', ' ')  # replace two spaces with one
 
-        if '_sv' in samiurl:
+        if '_sv' in suburl:
             path = os.path.join(addon_profile, 'swe.smi')
-        elif '_no' in samiurl:
+        elif '_no' in suburl:
             path = os.path.join(addon_profile, 'nor.smi')
-        elif '_da' in samiurl:
+        elif '_da' in suburl:
             path = os.path.join(addon_profile, 'dan.smi')
-        elif '_fi' in samiurl:
+        elif '_fi' in suburl:
             path = os.path.join(addon_profile, 'fin.smi')
         f = open(path, 'w')
         f.write(subtitle)
         f.close()
         subtitle_paths.append(path)
+        
     return subtitle_paths
 
 
