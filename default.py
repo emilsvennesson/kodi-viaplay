@@ -4,20 +4,14 @@ A Kodi plugin for Viaplay
 """
 import sys
 import os
-import cookielib
 import urllib
 import urlparse
 from datetime import datetime
 import time
-import re
-import json
-import uuid
-import HTMLParser
 
 import dateutil.parser
 from dateutil import tz
-
-import requests
+from resources.lib.vialib import vialib
 
 import xbmc
 import xbmcaddon
@@ -25,158 +19,73 @@ import xbmcvfs
 import xbmcgui
 import xbmcplugin
 
+addon = xbmcaddon.Addon()
+addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
+addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
+tempdir = os.path.join(addon_profile, 'tmp')
+language = addon.getLocalizedString
+logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
+
+if not xbmcvfs.exists(addon_profile):
+    xbmcvfs.mkdir(addon_profile)
+if not xbmcvfs.exists(tempdir):
+    xbmcvfs.mkdir(tempdir)
+
+_url = sys.argv[0]  # get the plugin url in plugin:// notation.
+_handle = int(sys.argv[1])  # get the plugin handle as an integer number
+
+username = addon.getSetting('email')
+password = addon.getSetting('password')
+cookie_file = os.path.join(addon_profile, 'cookie_file')
+deviceid_file = os.path.join(addon_profile, 'deviceId')
+
+if addon.getSetting('ssl') == 'false':
+    disable_ssl = False
+else:
+    disable_ssl = True
+
+if addon.getSetting('debug') == 'false':
+    debug = False
+else:
+    debug = True
+
+if addon.getSetting('subtitles') == 'false':
+    subtitles = False
+else:
+    subtitles = True
+
+if addon.getSetting('country') == '0':
+    country = 'se'
+elif addon.getSetting('country') == '1':
+    country = 'dk'
+elif addon.getSetting('country') == '2':
+    country = 'no'
+else:
+    country = 'fi'
+
+vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, disable_ssl, debug)
+
 
 def addon_log(string):
     if debug:
         xbmc.log("%s: %s" % (logging_prefix, string))
 
 
-def url_parser(url):
-    """Sometimes, Viaplay adds some weird templated stuff to the end of the URL
-    we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-    if disable_ssl:
-        url = url.replace('https', 'http')  # http://forum.kodi.tv/showthread.php?tid=270336
-    template = re.search('\{.+?\}', url)
-    if template is not None:
-        url = url.replace(template.group(), '')
-    return url
-
-
-def make_request(url, method, payload=None, headers=None):
-    """Make an HTTP request. Return the response as JSON."""
-    parsed_url = url_parser(url)
-    addon_log('URL: %s' % url)
-    if parsed_url != url:
-        addon_log('Parsed URL: %s' % parsed_url)
-
-    if method == 'get':
-        req = http_session.get(parsed_url, params=payload, headers=headers, allow_redirects=False, verify=False)
-    else:
-        req = http_session.post(parsed_url, data=payload, headers=headers, allow_redirects=False, verify=False)
-    addon_log('Response code: %s' % req.status_code)
-    addon_log('Response: %s' % req.content)
-    cookie_jar.save(ignore_discard=True, ignore_expires=False)
-    return json.loads(req.content)
-
-
-def login(username, password):
-    """Login to Viaplay. Return True/False based on the result."""
-    url = 'https://login.viaplay.%s/api/login/v1' % country
-    payload = {
-        'deviceKey': 'pc-%s' % country,
-        'username': username,
-        'password': password,
-        'persistent': 'true'
-    }
-    data = make_request(url=url, method='get', payload=payload)
-    if data['success'] is False:
-        return False
-    else:
-        return True
-
-
-def validate_session():
-    """Check if our session cookies are still valid."""
-    url = 'https://login.viaplay.%s/api/persistentLogin/v1' % country
-    payload = {
-        'deviceKey': 'pc-%s' % country
-    }
-    data = make_request(url=url, method='get', payload=payload)
-    if data['success'] is False:
-        return False
-    else:
-        return True
-
-
-def verify_login(data):
-    try:
-        if data['name'] == 'MissingSessionCookieError':
-            login_success = validate_session()
-            if login_success is False:
-                login_success = login(username, password)
-                if login_success is False:
-                    dialog = xbmcgui.Dialog()
-                    dialog.ok(language(30005),
-                              language(30006))
-        else:
-            login_success = True
-    except KeyError:
-        login_success = True
-    return login_success
-
-
-def get_video_urls(guid):
-    """Return a dict with the stream URL and available subtitle URL:s."""
-    video_urls = {}
-    url = 'https://play.viaplay.%s/api/stream/byguid' % country
-    payload = {
-        'deviceId': get_deviceId(),
-        'deviceName': 'web',
-        'deviceType': 'pc',
-        'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
-        'deviceKey': 'pchls-%s' % country,
-        'guid': guid
-    }
-
-    data = make_request(url=url, method='get', payload=payload)
-    login_status = verify_login(data)
-    if login_status is True:
-        try:
-            m3u8_url = data['_links']['viaplay:playlist']['href']
-            success = True
-        except KeyError:
-            # we might have to request the stream again after logging in
-            if data['name'] == 'MissingSessionCookieError':
-                data = make_request(url=url, method='get', payload=payload)
-            try:
-                m3u8_url = data['_links']['viaplay:playlist']['href']
-                success = True
-            except KeyError:
-                if data['success'] is False:
-                    display_auth_message(data)
-                    success = False
-        if success is True:
-            video_urls['stream_url'] = m3u8_url
-            video_urls['subtitle_urls'] = get_subtitle_urls(data, guid)
-            
-            return video_urls
-
-
-def display_auth_message(data):
-    if data['name'] == 'UserNotAuthorizedForContentError':
+def display_auth_message(error):
+    if error.value == 'UserNotAuthorizedForContentError':
         message = language(30020)
-    elif data['name'] == 'PurchaseConfirmationRequiredError':
+    elif error.value == 'PurchaseConfirmationRequiredError':
         message = language(30021)
-    elif data['name'] == 'UserNotAuthorizedRegionBlockedError':
+    elif error.value == 'UserNotAuthorizedRegionBlockedError':
         message = language(30022)
     else:
-        message = data['message']
+        message = error.value
     dialog = xbmcgui.Dialog()
     dialog.ok(language(30017), message)
 
 
-def get_categories(input, method=None):
-    if method == 'data':
-        data = input
-    else:
-        data = make_request(url=input, method='get')
-
-    pageType = data['pageType']
-    try:
-        sectionType = data['sectionType']
-    except KeyError:
-        sectionType = None
-    if sectionType == 'sportPerDay':
-        categories = data['_links']['viaplay:days']
-    elif pageType == 'root':
-        categories = data['_links']['viaplay:sections']
-    elif pageType == 'section':
-        categories = data['_links']['viaplay:categoryFilters']
-    return categories
-
-
 def root_menu():
-    categories = get_categories(input=base_data, method='data')
+    categories = vp.get_categories(input=vp.base_data, method='data')
     listing = []
 
     for category in categories:
@@ -208,7 +117,7 @@ def root_menu():
 
 
 def movie_menu(url):
-    categories = get_categories(url)
+    categories = vp.get_categories(url)
     listing = []
 
     for category in categories:
@@ -226,7 +135,7 @@ def movie_menu(url):
 
 
 def series_menu(url):
-    categories = get_categories(url)
+    categories = vp.get_categories(url)
     listing = []
 
     for category in categories:
@@ -244,7 +153,7 @@ def series_menu(url):
 
 
 def kids_menu(url):
-    categories = get_categories(url)
+    categories = vp.get_categories(url)
     listing = []
 
     for category in categories:
@@ -261,14 +170,8 @@ def kids_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def get_sortings(url):
-    data = make_request(url=url, method='get')
-    sorttypes = data['_links']['viaplay:sortings']
-    return sorttypes
-
-
 def sort_by(url):
-    sortings = get_sortings(url)
+    sortings = vp.get_sortings(url)
     listing = []
 
     for sorting in sortings:
@@ -304,18 +207,8 @@ def list_products_alphabetical(url):
     xbmcplugin.addDirectoryItem(_handle, recursive_url, list_item, is_folder)
 
 
-def get_letters(url):
-    letters = []
-    products = get_products(input=url, method='url')
-    for item in products:
-        letter = item['group']
-        if letter not in letters:
-            letters.append(letter)
-    return letters
-
-
 def alphabetical_menu(url):
-    letters = get_letters(url)
+    letters = vp.get_letters(url)
     listing = []
 
     for letter in letters:
@@ -359,8 +252,8 @@ def list_next_page(data):
 
 
 def list_products(url, *display):
-    data = make_request(url=url, method='get')
-    products = get_products(input=data, method='data')
+    data = vp.make_request(url=url, method='get')
+    products = vp.get_products(input=data, method='data')
     listing = []
     sort = None
 
@@ -392,7 +285,7 @@ def list_products(url, *display):
             local_tz = tz.tzlocal()
             startdate_utc = dateutil.parser.parse(item['epg']['start'])
             startdate_local = startdate_utc.astimezone(local_tz)
-            status = sports_status(item)
+            status = vp.get_sports_status(item)
             if status == 'archive':
                 title = 'Archive: %s' % item['content']['title'].encode('utf-8')
                 is_playable = 'true'
@@ -454,38 +347,8 @@ def list_products(url, *display):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def get_products(input, method=None):
-    if method == 'data':
-        data = input
-    else:
-        data = make_request(url=input, method='get')
-
-    if data['type'] == 'season-list' or data['type'] == 'list':
-        products = data['_embedded']['viaplay:products']
-    elif data['type'] == 'product':
-        products = data['_embedded']['viaplay:product']
-    else:
-        try:
-            products = data['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:products']
-        except KeyError:
-            products = data['_embedded']['viaplay:blocks'][1]['_embedded']['viaplay:products']
-    return products
-
-
-def get_seasons(url):
-    """Return all available seasons as a list."""
-    data = make_request(url=url, method='get')
-    seasons = []
-
-    items = data['_embedded']['viaplay:blocks']
-    for item in items:
-        if item['type'] == 'season-list':
-            seasons.append(item)
-    return seasons
-
-
 def list_seasons(url):
-    seasons = get_seasons(url)
+    seasons = vp.get_seasons(url)
     listing = []
     for season in seasons:
         title = '%s %s' % (language(30014), season['title'])
@@ -645,15 +508,15 @@ def art(item):
         'cover': cover,
         'poster': poster
     }
-    
+
     return art
 
 
 def list_search():
-    list_search = xbmcgui.ListItem(label=base_data['_links']['viaplay:search']['title'])
+    list_search = xbmcgui.ListItem(label=vp.base_data['_links']['viaplay:search']['title'])
     list_search.setArt({'icon': os.path.join(addon_path, 'icon.png')})
     list_search.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    parameters = {'action': 'search', 'url': base_data['_links']['viaplay:search']['href']}
+    parameters = {'action': 'search', 'url': vp.base_data['_links']['viaplay:search']['href']}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
     xbmcplugin.addDirectoryItem(_handle, recursive_url, list_search, is_folder)
@@ -682,56 +545,27 @@ def search(url):
 def play_video(playid, streamtype):
     if streamtype == 'url':
         url = playid
-        guid = get_products(input=url, method='url')['system']['guid']
+        guid = vp.get_products(input=url, method='url')['system']['guid']
     else:
         guid = playid
-    video_urls = get_video_urls(guid)
-    
-    if video_urls is not None:
+
+    try:
+        video_urls = vp.get_video_urls(guid)
+    except vp.AuthFailure as error:
+        video_urls = False
+        display_auth_message(error)
+    except vp.LoginFailure:
+        video_urls = False
+        dialog = xbmcgui.Dialog()
+        dialog.ok(language(30005),
+                  language(30006))
+
+    if video_urls:
         play_item = xbmcgui.ListItem(path=video_urls['stream_url'])
         play_item.setProperty('IsPlayable', 'true')
         if subtitles:
-            play_item.setSubtitles(download_subtitles(video_urls['subtitle_urls']))
+            play_item.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
-        
-        
-def get_subtitle_urls(data, guid):
-    subtitle_urls = []
-    if subtitles:
-        try:
-            for subtitle in data['_links']['viaplay:sami']:
-                subtitle_urls.append(subtitle['href'])
-        except KeyError:
-            addon_log('No subtitles found for guid %s' % guid)
-            
-    return subtitle_urls
-
-
-def download_subtitles(suburls):
-    """Download the SAMI subtitles, decode the HTML entities and save to addon profile.
-    Return a list of the path to the downloaded subtitles."""
-    subtitle_paths = []
-    for suburl in suburls:
-        req = requests.get(suburl)
-        sami = req.content.decode('utf-8', 'ignore').strip()
-        htmlparser = HTMLParser.HTMLParser()
-        subtitle = htmlparser.unescape(sami).encode('utf-8')
-        subtitle = subtitle.replace('  ', ' ')  # replace two spaces with one
-
-        if '_sv' in suburl:
-            path = os.path.join(addon_profile, 'swe.smi')
-        elif '_no' in suburl:
-            path = os.path.join(addon_profile, 'nor.smi')
-        elif '_da' in suburl:
-            path = os.path.join(addon_profile, 'dan.smi')
-        elif '_fi' in suburl:
-            path = os.path.join(addon_profile, 'fin.smi')
-        f = open(path, 'w')
-        f.write(subtitle)
-        f.close()
-        subtitle_paths.append(path)
-        
-    return subtitle_paths
 
 
 def sports_menu(url):
@@ -741,7 +575,7 @@ def sports_menu(url):
     else:
         live_url = 'https://content.viaplay.%s/androiddash-%s/sport2' % (country, country)
     listing = []
-    categories = get_categories(live_url)
+    categories = vp.get_categories(live_url)
     now = datetime.now()
 
     for category in categories:
@@ -763,21 +597,6 @@ def sports_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def sports_status(item):
-    now = datetime.utcnow()
-    producttime_start = dateutil.parser.parse(item['epg']['start'])
-    producttime_start = producttime_start.replace(tzinfo=None)
-    producttime_end = dateutil.parser.parse(item['epg']['end'])
-    producttime_end = producttime_end.replace(tzinfo=None)
-    if 'isLive' in item['system']['flags']:
-        status = 'live'
-    elif producttime_start > now:
-        status = 'upcoming'
-    elif producttime_end < now:
-        status = 'archive'
-    return status
-
-
 def sports_today(url):
     types = ['live', 'upcoming', 'archive']
     listing = []
@@ -792,19 +611,6 @@ def sports_today(url):
         listing.append((recursive_url, list_item, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
-    
-    
-def get_deviceId():
-    """"Read/write deviceId (generated UUID4) from/to file and return it."""
-    try:
-        deviceId = open(deviceid_file, 'r').read()
-        return deviceId
-    except IOError:
-        deviceId = str(uuid.uuid4())
-        fhandle = open(deviceid_file, 'w')
-        fhandle.write(deviceId)
-        fhandle.close()
-        return deviceId
 
 
 def router(paramstring):
@@ -845,60 +651,6 @@ def router(paramstring):
                       params['message'])
     else:
         root_menu()
-
-
-addon = xbmcaddon.Addon()
-addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
-addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
-language = addon.getLocalizedString
-logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
-
-if not xbmcvfs.exists(addon_profile):
-    xbmcvfs.mkdir(addon_profile)
-
-_url = sys.argv[0]  # get the plugin url in plugin:// notation.
-_handle = int(sys.argv[1])  # get the plugin handle as an integer number
-
-http_session = requests.Session()
-cookie_file = os.path.join(addon_profile, 'viaplay_cookies')
-deviceid_file = os.path.join(addon_profile, 'deviceId')
-cookie_jar = cookielib.LWPCookieJar(cookie_file)
-
-try:
-    cookie_jar.load(ignore_discard=True, ignore_expires=True)
-except IOError:
-    pass
-http_session.cookies = cookie_jar
-
-username = addon.getSetting('email')
-password = addon.getSetting('password')
-
-if addon.getSetting('ssl') == 'false':
-    disable_ssl = False
-else:
-    disable_ssl = True
-
-if addon.getSetting('debug') == 'false':
-    debug = False
-else:
-    debug = True
-
-if addon.getSetting('subtitles') == 'false':
-    subtitles = False
-else:
-    subtitles = True
-
-if addon.getSetting('country') == '0':
-    country = 'se'
-elif addon.getSetting('country') == '1':
-    country = 'dk'
-elif addon.getSetting('country') == '2':
-    country = 'no'
-else:
-    country = 'fi'
-
-base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
-base_data = make_request(url=base_url, method='get')
 
 
 if __name__ == '__main__':
