@@ -31,7 +31,7 @@ if not xbmcvfs.exists(addon_profile):
 if not xbmcvfs.exists(tempdir):
     xbmcvfs.mkdir(tempdir)
 
-_url = sys.argv[0]  # get the plugin url in plugin:// notation.
+_url = sys.argv[0]  # get the plugin url in plugin:// notation
 _handle = int(sys.argv[1])  # get the plugin handle as an integer number
 
 username = addon.getSetting('email')
@@ -48,11 +48,6 @@ if addon.getSetting('debug') == 'false':
     debug = False
 else:
     debug = True
-
-if addon.getSetting('subtitles') == 'false':
-    subtitles = False
-else:
-    subtitles = True
 
 if addon.getSetting('country') == '0':
     country = 'se'
@@ -93,10 +88,10 @@ def root_menu():
         videotype = category['name']
         title = category['title']
         if categorytype == 'vod':
-            list_item = xbmcgui.ListItem(label=title)
-            list_item.setProperty('IsPlayable', 'false')
-            list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-            list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', 'false')
+            listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+            listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
             if videotype == 'series':
                 parameters = {'action': 'series', 'url': category['href']}
             elif videotype == 'movie' or videotype == 'rental':
@@ -110,7 +105,7 @@ def root_menu():
                 parameters = {'action': 'showmessage', 'message': 'This type (%s) is not yet supported.' % videotype}
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
-            listing.append((recursive_url, list_item, is_folder))
+            listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     list_search()
     xbmcplugin.endOfDirectory(_handle)
@@ -122,14 +117,14 @@ def movie_menu(url):
 
     for category in categories:
         title = category['title']
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'sortby', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -140,14 +135,14 @@ def series_menu(url):
 
     for category in categories:
         title = category['title']
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'sortby', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -158,14 +153,14 @@ def kids_menu(url):
 
     for category in categories:
         title = '%s: %s' % (category['group']['title'].title(), category['title'])
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'listproducts', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -176,10 +171,10 @@ def sort_by(url):
 
     for sorting in sortings:
         title = sorting['title']
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         try:
             if sorting['id'] == 'alphabetical':
                 parameters = {'action': 'listalphabetical', 'url': sorting['href']}
@@ -189,7 +184,7 @@ def sort_by(url):
             parameters = {'action': 'listproducts', 'url': sorting['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
 
     list_products_alphabetical(url)
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -198,13 +193,13 @@ def sort_by(url):
 
 def list_products_alphabetical(url):
     """List all products in alphabetical order."""
-    list_item = xbmcgui.ListItem(label=language(30013))
-    list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-    list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+    listitem = xbmcgui.ListItem(label=language(30013))
+    listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+    listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
     parameters = {'action': 'listproducts', 'url': url + '?sort=alphabetical'}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
-    xbmcplugin.addDirectoryItem(_handle, recursive_url, list_item, is_folder)
+    xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
 def alphabetical_menu(url):
@@ -218,14 +213,14 @@ def alphabetical_menu(url):
             letter = '#'
         else:
             letter = title.lower()
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'listproducts', 'url': url + '&letter=' + urllib.quote(letter)}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -244,11 +239,11 @@ def list_next_page(data):
         except KeyError:
             url = data['_links']['next']['href']
 
-        list_item = xbmcgui.ListItem(label=language(30018))
+        listitem = xbmcgui.ListItem(label=language(30018))
         parameters = {'action': 'nextpage', 'url': url}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        xbmcplugin.addDirectoryItem(_handle, recursive_url, list_item, is_folder)
+        xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
 def list_products(url, *display):
@@ -275,11 +270,11 @@ def list_products(url, *display):
             title = item['content']['series']['episodeTitle']
             is_folder = False
             is_playable = 'true'
-            list_item = xbmcgui.ListItem(label=title)
-            list_item.setProperty('IsPlayable', is_playable)
-            list_item.setInfo('video', item_information(item))
-            list_item.setArt(art(item))
-            listing.append((recursive_url, list_item, is_folder))
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', is_playable)
+            listitem.setInfo('video', item_information(item))
+            listitem.setArt(art(item))
+            listing.append((recursive_url, listitem, is_folder))
 
         if type == 'sport':
             local_tz = tz.tzlocal()
@@ -298,21 +293,21 @@ def list_products(url, *display):
                 recursive_url = _url + '?' + urllib.urlencode(parameters)
                 is_playable = 'false'
             is_folder = False
-            list_item = xbmcgui.ListItem(label=title)
-            list_item.setProperty('IsPlayable', is_playable)
-            list_item.setInfo('video', item_information(item))
-            list_item.setArt(art(item))
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', is_playable)
+            listitem.setInfo('video', item_information(item))
+            listitem.setArt(art(item))
             if 'live' in display:
                 if status == 'live':
-                    listing.append((recursive_url, list_item, is_folder))
+                    listing.append((recursive_url, listitem, is_folder))
             elif 'upcoming' in display:
                 if status == 'upcoming':
-                    listing.append((recursive_url, list_item, is_folder))
+                    listing.append((recursive_url, listitem, is_folder))
             elif 'archive' in display:
                 if status == 'archive':
-                    listing.append((recursive_url, list_item, is_folder))
+                    listing.append((recursive_url, listitem, is_folder))
             else:
-                listing.append((recursive_url, list_item, is_folder))
+                listing.append((recursive_url, listitem, is_folder))
 
         elif type == 'movie':
             title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
@@ -320,11 +315,11 @@ def list_products(url, *display):
                 title = title + ' *'  # mark rental products with an asterisk
             is_folder = False
             is_playable = 'true'
-            list_item = xbmcgui.ListItem(label=title)
-            list_item.setProperty('IsPlayable', is_playable)
-            list_item.setInfo('video', item_information(item))
-            list_item.setArt(art(item))
-            listing.append((recursive_url, list_item, is_folder))
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', is_playable)
+            listitem.setInfo('video', item_information(item))
+            listitem.setArt(art(item))
+            listing.append((recursive_url, listitem, is_folder))
 
         elif type == 'series':
             title = item['content']['series']['title'].encode('utf-8')
@@ -333,11 +328,11 @@ def list_products(url, *display):
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             is_playable = 'false'
-            list_item = xbmcgui.ListItem(label=title)
-            list_item.setProperty('IsPlayable', is_playable)
-            list_item.setInfo('video', item_information(item))
-            list_item.setArt(art(item))
-            listing.append((recursive_url, list_item, is_folder))
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', is_playable)
+            listitem.setInfo('video', item_information(item))
+            listitem.setArt(art(item))
+            listing.append((recursive_url, listitem, is_folder))
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     if sort is True:
@@ -352,14 +347,14 @@ def list_seasons(url):
     listing = []
     for season in seasons:
         title = '%s %s' % (language(30014), season['title'])
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'listproducts', 'url': season['_links']['self']['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.endOfDirectory(_handle)
@@ -513,13 +508,13 @@ def art(item):
 
 
 def list_search():
-    list_search = xbmcgui.ListItem(label=vp.base_data['_links']['viaplay:search']['title'])
-    list_search.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-    list_search.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+    listitem = xbmcgui.ListItem(label=vp.base_data['_links']['viaplay:search']['title'])
+    listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+    listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
     parameters = {'action': 'search', 'url': vp.base_data['_links']['viaplay:search']['href']}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
-    xbmcplugin.addDirectoryItem(_handle, recursive_url, list_search, is_folder)
+    xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
 def get_userinput(title):
@@ -542,12 +537,12 @@ def search(url):
         pass
 
 
-def play_video(playid, streamtype):
+def play_video(input, streamtype):
     if streamtype == 'url':
-        url = playid
+        url = input
         guid = vp.get_products(input=url, method='url')['system']['guid']
     else:
-        guid = playid
+        guid = input
 
     try:
         video_urls = vp.get_video_urls(guid)
@@ -563,7 +558,7 @@ def play_video(playid, streamtype):
     if video_urls:
         play_item = xbmcgui.ListItem(path=video_urls['stream_url'])
         play_item.setProperty('IsPlayable', 'true')
-        if subtitles:
+        if addon.getSetting('subtitles') == 'true':
             play_item.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
@@ -582,17 +577,17 @@ def sports_menu(url):
         date_object = datetime(
             *(time.strptime(category['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
         title = category['date']
-        list_item = xbmcgui.ListItem(label=title)
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=title)
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         if date_object.date() == now.date():
             parameters = {'action': 'sportstoday', 'url': category['href']}
         else:
             parameters = {'action': 'listsports', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -601,14 +596,14 @@ def sports_today(url):
     types = ['live', 'upcoming', 'archive']
     listing = []
     for type in types:
-        list_item = xbmcgui.ListItem(label=type.title())
-        list_item.setProperty('IsPlayable', 'false')
-        list_item.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        list_item.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        listitem = xbmcgui.ListItem(label=type.title())
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         parameters = {'action': 'listsportstoday', 'url': url, 'display': type}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
-        listing.append((recursive_url, list_item, is_folder))
+        listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
