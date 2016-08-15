@@ -3,7 +3,6 @@
 A Kodi-agnostic library for Viaplay
 """
 import codecs
-import sys
 import os
 import cookielib
 from datetime import datetime
@@ -25,20 +24,14 @@ class vialib(object):
         self.disable_ssl = disable_ssl
         self.deviceid_file = deviceid_file
         self.tempdir = tempdir
-
+        self.base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
         self.http_session = requests.Session()
         self.cookie_jar = cookielib.LWPCookieJar(cookie_file)
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
             pass
-        self.http_session.cookies = self.cookie_jar
-
-        self.log('Debugging enabled.')
-        self.log('Python version: %s' % sys.version)
-
-        self.base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
-        self.base_data = self.make_request(url=self.base_url, method='get')
+        self.http_session.cookies = self.cookie_jar      
 
     class LoginFailure(Exception):
         def __init__(self, value):
@@ -71,7 +64,7 @@ class vialib(object):
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
         if self.disable_ssl:
             url = url.replace('https', 'http')  # http://forum.kodi.tv/showthread.php?tid=270336
-        template = re.search('\{.+?\}', url)
+        template = re.search(r'\{.+?\}', url)
         if template is not None:
             url = url.replace(template.group(), '')
 
@@ -142,7 +135,7 @@ class vialib(object):
         video_urls = {}
         url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
         payload = {
-            'deviceId': self.get_deviceId(),
+            'deviceId': self.get_deviceid(),
             'deviceName': 'web',
             'deviceType': 'pc',
             'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
@@ -276,17 +269,17 @@ class vialib(object):
 
         return subtitle_paths
 
-    def get_deviceId(self):
+    def get_deviceid(self):
         """"Read/write deviceId (generated UUID4) from/to file and return it."""
         try:
-            deviceId = open(self.deviceid_file, 'r').read()
-            return deviceId
+            deviceid = open(self.deviceid_file, 'r').read()
+            return deviceid
         except IOError:
-            deviceId = str(uuid.uuid4())
+            deviceid = str(uuid.uuid4())
             fhandle = open(self.deviceid_file, 'w')
-            fhandle.write(deviceId)
+            fhandle.write(deviceid)
             fhandle.close()
-            return deviceId
+            return deviceid
 
     def get_sports_status(self, data):
         """Return whether the event is live/upcoming/archive."""

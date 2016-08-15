@@ -80,7 +80,8 @@ def display_auth_message(error):
 
 
 def root_menu():
-    categories = vp.get_categories(input=vp.base_data, method='data')
+    data = vp.make_request(url=vp.base_url, method='get')
+    categories = vp.get_categories(input=data, method='data')
     listing = []
 
     for category in categories:
@@ -107,7 +108,7 @@ def root_menu():
             is_folder = True
             listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    list_search()
+    list_search(data)
     xbmcplugin.endOfDirectory(_handle)
 
 
@@ -507,11 +508,11 @@ def art(item):
     return art
 
 
-def list_search():
-    listitem = xbmcgui.ListItem(label=vp.base_data['_links']['viaplay:search']['title'])
+def list_search(data):
+    listitem = xbmcgui.ListItem(label=data['_links']['viaplay:search']['title'])
     listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
     listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    parameters = {'action': 'search', 'url': vp.base_data['_links']['viaplay:search']['href']}
+    parameters = {'action': 'search', 'url': data['_links']['viaplay:search']['href']}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
     xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
