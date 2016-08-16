@@ -39,10 +39,10 @@ password = addon.getSetting('password')
 cookie_file = os.path.join(addon_profile, 'cookie_file')
 deviceid_file = os.path.join(addon_profile, 'deviceId')
 
-if addon.getSetting('ssl') == 'false':
-    disable_ssl = False
+if addon.getSetting('disablessl') == 'true':
+    ssl = False
 else:
-    disable_ssl = True
+    ssl = True
 
 if addon.getSetting('debug') == 'false':
     debug = False
@@ -58,7 +58,7 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
 
-vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, disable_ssl, debug)
+vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, ssl, debug)
 
 
 def addon_log(string):

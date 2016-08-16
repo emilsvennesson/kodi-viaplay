@@ -16,17 +16,17 @@ import requests
 
 
 class vialib(object):
-    def __init__(self, username, password, cookie_file, deviceid_file, tempdir, country, disable_ssl, debug=False):
+    def __init__(self, username, password, cookie_file, deviceid_file, tempdir, country, ssl, debug=False):
         self.debug = debug
         self.username = username
         self.password = password
         self.country = country
-        self.disable_ssl = disable_ssl
+        self.ssl = ssl
         self.deviceid_file = deviceid_file
         self.tempdir = tempdir
-        self.base_url = 'https://content.viaplay.%s/pc-%s' % (country, country)
         self.http_session = requests.Session()
         self.cookie_jar = cookielib.LWPCookieJar(cookie_file)
+        self.base_url = 'https://content.viaplay.%s/pc-%s' % (self.country, self.country)
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
@@ -62,7 +62,7 @@ class vialib(object):
     def url_parser(self, url):
         """Sometimes, Viaplay adds some weird templated stuff to the URL
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-        if self.disable_ssl:
+        if self.ssl is False:
             url = url.replace('https', 'http')  # http://forum.kodi.tv/showthread.php?tid=270336
         template = re.search(r'\{.+?\}', url)
         if template is not None:
