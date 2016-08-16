@@ -227,21 +227,11 @@ def alphabetical_menu(url):
 
 
 def list_next_page(data):
-    """Return a 'next page item' if the current page is less than the total page count."""
-    try:
-        currentPage = data['_embedded']['viaplay:blocks'][0]['currentPage']
-        pageCount = data['_embedded']['viaplay:blocks'][0]['pageCount']
-    except KeyError:
-        currentPage = data['currentPage']
-        pageCount = data['pageCount']
-    if pageCount > currentPage:
-        try:
-            url = data['_embedded']['viaplay:blocks'][0]['_links']['next']['href']
-        except KeyError:
-            url = data['_links']['next']['href']
-
+    if vp.get_next_page(data):
         listitem = xbmcgui.ListItem(label=language(30018))
-        parameters = {'action': 'nextpage', 'url': url}
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        parameters = {'action': 'nextpage', 'url': vp.get_next_page(data)}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)

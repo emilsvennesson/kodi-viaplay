@@ -330,7 +330,15 @@ class vialib(object):
                 stream_url = playlist.uri + '?' + manifest_url.split('?')[1]
             else:
                 stream_url = manifest_url[:manifest_url.rfind('/') + 1] + playlist.uri + '?' + \
-                                        manifest_url.split('?')[1]                          
+                             manifest_url.split('?')[1]
             streams[str(bitrate)] = stream_url + '|' + urlencode(m3u8_header)
 
         return streams
+
+    def get_next_page(self, data):
+        """Return the URL to the next page if the current page count is less than the total page count."""
+        if data['type'] == 'page':  # first page is always from viaplay:blocks
+            data = data['_embedded']['viaplay:blocks'][0]
+        if int(data['pageCount']) > int(data['currentPage']):
+            next_page_url = data['_links']['next']['href']
+            return next_page_url
