@@ -100,3 +100,15 @@ msgstr ""
 msgctxt "#30022"
 msgid "You're not allowed to watch content from this region."
 msgstr ""
+
+msgctxt "#30023"
+msgid "Preferred stream quality"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Always use highest bitrate"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Ask"
+msgstr ""

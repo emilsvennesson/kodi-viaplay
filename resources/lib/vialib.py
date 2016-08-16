@@ -6,6 +6,7 @@ import codecs
 import os
 import cookielib
 from datetime import datetime
+from urllib import urlencode
 import re
 import json
 import uuid
@@ -13,6 +14,7 @@ import HTMLParser
 
 import dateutil.parser
 import requests
+import m3u8
 
 
 class vialib(object):
@@ -31,7 +33,7 @@ class vialib(object):
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
             pass
-        self.http_session.cookies = self.cookie_jar      
+        self.http_session.cookies = self.cookie_jar
 
     class LoginFailure(Exception):
         def __init__(self, value):
@@ -131,7 +133,7 @@ class vialib(object):
         return login_success
 
     def get_video_urls(self, guid):
-        """Return a dict with the stream URL and available subtitle URL:s."""
+        """Return a dict with the stream URL:s and available subtitle URL:s."""
         video_urls = {}
         url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
         payload = {
@@ -147,20 +149,20 @@ class vialib(object):
         login_status = self.verify_login(data)
         if login_status is True:
             try:
-                m3u8_url = data['_links']['viaplay:playlist']['href']
+                manifest_url = data['_links']['viaplay:playlist']['href']
                 success = True
             except KeyError:
                 # we might have to request the stream again after logging in
                 if data['name'] == 'MissingSessionCookieError':
                     data = self.make_request(url=url, method='get', payload=payload)
                 try:
-                    m3u8_url = data['_links']['viaplay:playlist']['href']
+                    manifest_url = data['_links']['viaplay:playlist']['href']
                     success = True
                 except KeyError:
                     if data['success'] is False:
                         raise self.AuthFailure(data['name'])
             if success:
-                video_urls['stream_url'] = m3u8_url
+                video_urls['stream_urls'] = self.parse_m3u8_manifest(manifest_url)
                 video_urls['subtitle_urls'] = self.get_subtitle_urls(data, guid)
 
                 return video_urls
@@ -294,3 +296,41 @@ class vialib(object):
             status = 'archive'
 
         return status
+
+    def parse_m3u8_manifest(self, manifest_url):
+        """Return the stream URL along with its bitrate."""
+        streams = {}
+        req = requests.get(manifest_url)
+        m3u8_manifest = req.content
+        self.log('HLS manifest: \n %s' % m3u8_manifest)
+        if req.cookies:
+            self.log('Cookies: %s' % req.cookies)
+            try:
+                # the auth cookie differs depending on the CDN
+                hdntl_cookie = req.cookies['hdntl']
+                hdnts_cookie = req.cookies['hdnts']
+                auth_cookie = 'hdntl=%s; hdnts=%s' % (hdntl_cookie, hdnts_cookie)
+            except KeyError:
+                try:
+                    lvlt_tk = req.cookies['lvlt_tk']
+                    auth_cookie = 'lvlt_tk=%s' % lvlt_tk
+                except KeyError:
+                    hdntl_cookie = req.cookies['hdntl']
+                    auth_cookie = 'hdntl=%s' % hdntl_cookie
+        else:
+            auth_cookie = None
+
+        m3u8_header = {'Cookie': auth_cookie,
+                       'User-Agent': 'AppleCoreMedia/1.0.0.12B440 (iPad; U; CPU OS 8_1_2 like Mac OS X)',
+                       'Connection': 'keep-alive'}
+        m3u8_obj = m3u8.loads(m3u8_manifest)
+        for playlist in m3u8_obj.playlists:
+            bitrate = int(playlist.stream_info.bandwidth) / 1000
+            if playlist.uri.startswith('http'):
+                stream_url = playlist.uri + '?' + manifest_url.split('?')[1]
+            else:
+                stream_url = manifest_url[:manifest_url.rfind('/') + 1] + playlist.uri + '?' + \
+                                        manifest_url.split('?')[1]                          
+            streams[str(bitrate)] = stream_url + '|' + urlencode(m3u8_header)
+
+        return streams

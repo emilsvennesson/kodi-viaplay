@@ -39,7 +39,7 @@ password = addon.getSetting('password')
 cookie_file = os.path.join(addon_profile, 'cookie_file')
 deviceid_file = os.path.join(addon_profile, 'deviceId')
 
-if addon.getSetting('disablessl') == 'true':
+if addon.getSetting('disable_ssl') == 'true':
     ssl = False
 else:
     ssl = True
@@ -557,11 +557,13 @@ def play_video(input, streamtype):
                   language(30006))
 
     if video_urls:
-        play_item = xbmcgui.ListItem(path=video_urls['stream_url'])
-        play_item.setProperty('IsPlayable', 'true')
+        bitrate = select_bitrate(video_urls['stream_urls'].keys())
+        stream_url = video_urls['stream_urls'][bitrate]
+        playitem = xbmcgui.ListItem(path=stream_url)
+        playitem.setProperty('IsPlayable', 'true')
         if addon.getSetting('subtitles') == 'true':
-            play_item.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-        xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+            playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+        xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
 
 
 def sports_menu(url):
@@ -607,6 +609,32 @@ def sports_today(url):
         listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
+    
+    
+def ask_bitrate(bitrates):
+    """Presents a dialog for user to select from a list of bitrates.
+    Returns the value of the selected bitrate."""
+    options = []
+    for bitrate in bitrates:
+        options.append(bitrate + ' Kbps')
+    dialog = xbmcgui.Dialog()
+    ret = dialog.select(language(30023), options)
+    return bitrates[ret]
+    
+    
+def select_bitrate(manifest_bitrates=None):
+    """Returns a bitrate while honoring the user's preference."""
+    bitrate_setting = int(addon.getSetting('preferred_bitrate'))
+    if bitrate_setting == 0:
+        preferred_bitrate = 'highest'
+    else:
+        preferred_bitrate = 'ask'
+
+    manifest_bitrates.sort(key=int, reverse=True)
+    if preferred_bitrate == 'highest':
+        return manifest_bitrates[0]
+    else:
+        return ask_bitrate(manifest_bitrates)
 
 
 def router(paramstring):
