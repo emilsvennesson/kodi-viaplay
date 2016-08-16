@@ -73,7 +73,7 @@ class vialib(object):
         return url
 
     def make_request(self, url, method, payload=None, headers=None):
-        """Make an HTTP request. Return the response as JSON."""
+        """Make an HTTP request. Return the JSON response in a dict."""
         parsed_url = self.url_parser(url)
         self.log('URL: %s' % url)
         if parsed_url != url:
@@ -119,7 +119,7 @@ class vialib(object):
 
     def verify_login_status(self, data):
         """Check if we're logged in. If we're not, try to.
-        Raise possible errors as LoginFailure."""
+        Raise errors as LoginFailure."""
         if 'MissingSessionCookieError' in data.values():
             if not self.validate_session():
                 if not self.login(self.username, self.password):
@@ -153,7 +153,7 @@ class vialib(object):
                 return video_urls
 
     def check_for_subscription(self, data):
-        """Check if our account is authorized to watch the stream. 
+        """Check if the user is authorized to watch the requested stream. 
         Raise errors as AuthFailure."""
         try:
             if data['success'] is False:
@@ -168,16 +168,16 @@ class vialib(object):
         else:
             data = self.make_request(url=input, method='get')
 
-        pageType = data['pageType']
+        pagetype = data['pageType']
         try:
-            sectionType = data['sectionType']
+            sectiontype = data['sectionType']
         except KeyError:
-            sectionType = None
-        if sectionType == 'sportPerDay':
+            sectiontype = None
+        if sectiontype == 'sportPerDay':
             categories = data['_links']['viaplay:days']
-        elif pageType == 'root':
+        elif pagetype == 'root':
             categories = data['_links']['viaplay:sections']
-        elif pageType == 'section':
+        elif pagetype == 'section':
             categories = data['_links']['viaplay:categoryFilters']
 
         return categories
