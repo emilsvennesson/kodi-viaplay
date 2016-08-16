@@ -64,10 +64,10 @@ class vialib(object):
     def url_parser(self, url):
         """Sometimes, Viaplay adds some weird templated stuff to the URL
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-        if self.ssl is False:
+        if not self.ssl:
             url = url.replace('https', 'http')  # http://forum.kodi.tv/showthread.php?tid=270336
         template = re.search(r'\{.+?\}', url)
-        if template is not None:
+        if template:
             url = url.replace(template.group(), '')
 
         return url
@@ -117,20 +117,15 @@ class vialib(object):
         else:
             return True
 
-    def verify_login(self, data):
-        try:
-            if data['name'] == 'MissingSessionCookieError':
-                login_success = self.validate_session()
-                if login_success is False:
-                    login_success = self.login(self.username, self.password)
-                    if login_success is False:
-                        raise self.LoginFailure('login failed')
-            else:
-                login_success = True
-        except KeyError:
-            login_success = True
+    def verify_login_status(self, data):
+        """Check if we're logged in. If we're not, try to.
+        Raise possible errors as LoginFailure."""
+        if 'MissingSessionCookieError' in data.values():
+            if not self.validate_session():
+                if not self.login(self.username, self.password):
+                    raise self.LoginFailure('login failed')
 
-        return login_success
+        return True
 
     def get_video_urls(self, guid):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
@@ -146,26 +141,26 @@ class vialib(object):
         }
 
         data = self.make_request(url=url, method='get', payload=payload)
-        login_status = self.verify_login(data)
-        if login_status is True:
-            try:
+        if self.verify_login_status(data):
+            # we might have to request the stream again after logging in
+            if 'MissingSessionCookieError' in data.values():
+                data = self.make_request(url=url, method='get', payload=payload)
+            if self.check_for_subscription(data):
                 manifest_url = data['_links']['viaplay:playlist']['href']
-                success = True
-            except KeyError:
-                # we might have to request the stream again after logging in
-                if data['name'] == 'MissingSessionCookieError':
-                    data = self.make_request(url=url, method='get', payload=payload)
-                try:
-                    manifest_url = data['_links']['viaplay:playlist']['href']
-                    success = True
-                except KeyError:
-                    if data['success'] is False:
-                        raise self.AuthFailure(data['name'])
-            if success:
                 video_urls['stream_urls'] = self.parse_m3u8_manifest(manifest_url)
                 video_urls['subtitle_urls'] = self.get_subtitle_urls(data, guid)
 
                 return video_urls
+
+    def check_for_subscription(self, data):
+        """Check if our account is authorized to watch the stream. 
+        Raise errors as AuthFailure."""
+        try:
+            if data['success'] is False:
+                subscription_error = data['name']
+                raise self.AuthFailure(subscription_error)
+        except KeyError:
+            return True
 
     def get_categories(self, input, method=None):
         if method == 'data':
