@@ -18,6 +18,7 @@
     <language>sv dk no fi en</language>
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
     <source>https://github.com/emilsvennesson/kodi-viaplay</source>
+    <forum>http://forum.kodi.tv/showthread.php?tid=286387</forum>
     <disclaimer>This addon requires you to have a subscription to Viaplay.[CR]This addon is completely unofficial and is not endorsed by Viaplay in any way.</disclaimer>
   </extension>
 </addon>
