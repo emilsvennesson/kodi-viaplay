@@ -94,13 +94,13 @@ def root_menu():
             listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
             listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
             if videotype == 'series':
-                parameters = {'action': 'series', 'url': category['href']}
+                parameters = {'action': 'series_menu', 'url': category['href']}
             elif videotype == 'movie' or videotype == 'rental':
-                parameters = {'action': 'movie', 'url': category['href']}
+                parameters = {'action': 'movies_menu', 'url': category['href']}
             elif videotype == 'sport':
-                parameters = {'action': 'sport', 'url': category['href']}
+                parameters = {'action': 'sports_menu', 'url': category['href']}
             elif videotype == 'kids':
-                parameters = {'action': 'kids', 'url': category['href']}
+                parameters = {'action': 'kids_menu', 'url': category['href']}
             else:
                 addon_log('Unsupported videotype found: %s' % videotype)
                 parameters = {'action': 'showmessage', 'message': 'This type (%s) is not yet supported.' % videotype}
@@ -112,7 +112,7 @@ def root_menu():
     xbmcplugin.endOfDirectory(_handle)
 
 
-def movie_menu(url):
+def movies_menu(url):
     categories = vp.get_categories(url)
     listing = []
 
@@ -122,7 +122,7 @@ def movie_menu(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'sortby', 'url': category['href']}
+        parameters = {'action': 'sortings_menu', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -140,7 +140,7 @@ def series_menu(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'sortby', 'url': category['href']}
+        parameters = {'action': 'sortings_menu', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -158,7 +158,7 @@ def kids_menu(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': category['href']}
+        parameters = {'action': 'list_products', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -166,7 +166,7 @@ def kids_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def sort_by(url):
+def sortings_menu(url):
     sortings = vp.get_sortings(url)
     listing = []
 
@@ -178,11 +178,11 @@ def sort_by(url):
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         try:
             if sorting['id'] == 'alphabetical':
-                parameters = {'action': 'listalphabetical', 'url': sorting['href']}
+                parameters = {'action': 'alphabetical_letters_menu', 'url': sorting['href']}
             else:
-                parameters = {'action': 'listproducts', 'url': sorting['href']}
+                parameters = {'action': 'list_products', 'url': sorting['href']}
         except TypeError:
-            parameters = {'action': 'listproducts', 'url': sorting['href']}
+            parameters = {'action': 'list_products', 'url': sorting['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -197,13 +197,13 @@ def list_products_alphabetical(url):
     listitem = xbmcgui.ListItem(label=language(30013))
     listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
     listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    parameters = {'action': 'listproducts', 'url': url + '?sort=alphabetical'}
+    parameters = {'action': 'list_products', 'url': url + '?sort=alphabetical'}
     recursive_url = _url + '?' + urllib.urlencode(parameters)
     is_folder = True
     xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
-def alphabetical_menu(url):
+def alphabetical_letters_menu(url):
     letters = vp.get_letters(url)
     listing = []
 
@@ -218,7 +218,7 @@ def alphabetical_menu(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': url + '&letter=' + urllib.quote(letter)}
+        parameters = {'action': 'list_products', 'url': url + '&letter=' + urllib.quote(letter)}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -231,7 +231,7 @@ def list_next_page(data):
         listitem = xbmcgui.ListItem(label=language(30018))
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'nextpage', 'url': vp.get_next_page(data)}
+        parameters = {'action': 'list_products', 'url': vp.get_next_page(data)}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
@@ -254,7 +254,7 @@ def list_products(url, *display):
             as it always provides more detailed data about each product."""
             playid = item['_links']['self']['href']
             streamtype = 'url'
-        parameters = {'action': 'play', 'playid': playid.encode('utf-8'), 'streamtype': streamtype}
+        parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
 
         if type == 'episode':
@@ -315,7 +315,7 @@ def list_products(url, *display):
         elif type == 'series':
             title = item['content']['series']['title'].encode('utf-8')
             self_url = item['_links']['viaplay:page']['href']
-            parameters = {'action': 'seasons', 'url': self_url}
+            parameters = {'action': 'list_seasons', 'url': self_url}
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             is_playable = 'false'
@@ -342,7 +342,7 @@ def list_seasons(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listproducts', 'url': season['_links']['self']['href']}
+        parameters = {'action': 'list_products', 'url': season['_links']['self']['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -451,6 +451,7 @@ def item_information(item):
         'mpaa': mpaa,
         'cast': cast
     }
+    
     return info
 
 
@@ -575,9 +576,9 @@ def sports_menu(url):
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         if date_object.date() == now.date():
-            parameters = {'action': 'sportstoday', 'url': category['href']}
+            parameters = {'action': 'sports_today_menu', 'url': category['href']}
         else:
-            parameters = {'action': 'listsports', 'url': category['href']}
+            parameters = {'action': 'list_products', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -585,7 +586,7 @@ def sports_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def sports_today(url):
+def sports_today_menu(url):
     types = ['live', 'upcoming', 'archive']
     listing = []
     for type in types:
@@ -593,7 +594,7 @@ def sports_today(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'listsportstoday', 'url': url, 'display': type}
+        parameters = {'action': 'list_products_sports_today', 'url': url, 'display': type}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -631,32 +632,28 @@ def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
     if params:
-        if params['action'] == 'movie':
-            movie_menu(params['url'])
-        elif params['action'] == 'kids':
+        if params['action'] == 'movies_menu':
+            movies_menu(params['url'])
+        elif params['action'] == 'kids_menu':
             kids_menu(params['url'])
-        elif params['action'] == 'series':
+        elif params['action'] == 'series_menu':
             series_menu(params['url'])
-        elif params['action'] == 'sport':
+        elif params['action'] == 'sports_menu':
             sports_menu(params['url'])
-        elif params['action'] == 'seasons':
+        elif params['action'] == 'list_seasons':
             list_seasons(params['url'])
-        elif params['action'] == 'nextpage':
+        elif params['action'] == 'list_products':
             list_products(params['url'])
-        elif params['action'] == 'listsports':
-            list_products(params['url'])
-        elif params['action'] == 'sportstoday':
-            sports_today(params['url'])
-        elif params['action'] == 'listsportstoday':
+        elif params['action'] == 'sports_today_menu':
+            sports_today_menu(params['url'])
+        elif params['action'] == 'list_products_sports_today':
             list_products(params['url'], params['display'])
-        elif params['action'] == 'play':
+        elif params['action'] == 'play_video':
             play_video(params['playid'], params['streamtype'])
-        elif params['action'] == 'sortby':
-            sort_by(params['url'])
-        elif params['action'] == 'listproducts':
-            list_products(params['url'])
-        elif params['action'] == 'listalphabetical':
-            alphabetical_menu(params['url'])
+        elif params['action'] == 'sortings_menu':
+            sortings_menu(params['url'])
+        elif params['action'] == 'alphabetical_letters_menu':
+            alphabetical_letters_menu(params['url'])
         elif params['action'] == 'search':
             search(params['url'])
         elif params['action'] == 'showmessage':
