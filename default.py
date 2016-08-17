@@ -549,12 +549,13 @@ def play_video(input, streamtype):
 
     if video_urls:
         bitrate = select_bitrate(video_urls['stream_urls'].keys())
-        stream_url = video_urls['stream_urls'][bitrate]
-        playitem = xbmcgui.ListItem(path=stream_url)
-        playitem.setProperty('IsPlayable', 'true')
-        if addon.getSetting('subtitles') == 'true':
-            playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-        xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+        if bitrate:
+            stream_url = video_urls['stream_urls'][bitrate]
+            playitem = xbmcgui.ListItem(path=stream_url)
+            playitem.setProperty('IsPlayable', 'true')
+            if addon.getSetting('subtitles') == 'true':
+                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+            xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
 
 
 def sports_menu(url):
@@ -610,7 +611,8 @@ def ask_bitrate(bitrates):
         options.append(bitrate + ' Kbps')
     dialog = xbmcgui.Dialog()
     ret = dialog.select(language(30023), options)
-    return bitrates[ret]
+    if ret > -1:
+        return bitrates[ret]
     
     
 def select_bitrate(manifest_bitrates=None):
