@@ -329,7 +329,9 @@ class vialib(object):
 
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
-        data = self.get_products_block(data)
+        # first page is always (?) from viaplay:blocks
+        if data['type'] == 'page':
+            data = self.get_products_block(data)
         if int(data['pageCount']) > int(data['currentPage']):
             next_page_url = data['_links']['next']['href']
             return next_page_url
