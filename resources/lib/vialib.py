@@ -210,10 +210,7 @@ class vialib(object):
         elif data['type'] == 'product':
             products = data['_embedded']['viaplay:product']
         else:
-            for block in data['_embedded']['viaplay:blocks']:
-                # sort out the block containing all the products
-                if block['type'] == 'list':
-                    products = block['_embedded']['viaplay:products']
+            products = self.get_products_block(data)['_embedded']['viaplay:products']
 
         return products
 
@@ -332,11 +329,15 @@ class vialib(object):
 
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
-        if data['type'] == 'page':  # first page is always from viaplay:blocks
-            for block in data['_embedded']['viaplay:blocks']:
-                # sort out the block containing all the products
-                if block['type'] == 'list':
-                    data = block               
+        data = self.get_products_block(data)
         if int(data['pageCount']) > int(data['currentPage']):
             next_page_url = data['_links']['next']['href']
             return next_page_url
+
+    def get_products_block(self, data):
+        """Get the viaplay:blocks containing all product information."""
+        blocks = data['_embedded']['viaplay:blocks']
+        for block in blocks:
+            if block['type'] == 'list':
+                product_block = block
+        return product_block
