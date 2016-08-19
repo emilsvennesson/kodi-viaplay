@@ -340,6 +340,7 @@ class vialib(object):
         """Get the viaplay:blocks containing all product information."""
         blocks = data['_embedded']['viaplay:blocks']
         for block in blocks:
-            if block['type'] == 'list':
+            # example: https://content.viaplay.se/pc-se/film/disney?sort=alphabetical
+            if block['type'] != 'cms':
                 product_block = block
         return product_block
