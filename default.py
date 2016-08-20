@@ -334,21 +334,27 @@ def list_products(url, *display):
 
 
 def list_seasons(url):
+    """List all series seasons."""
     seasons = vp.get_seasons(url)
-    listing = []
-    for season in seasons:
-        title = '%s %s' % (language(30014), season['title'])
-        listitem = xbmcgui.ListItem(label=title)
-        listitem.setProperty('IsPlayable', 'false')
-        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'list_products', 'url': season['_links']['self']['href']}
-        recursive_url = _url + '?' + urllib.urlencode(parameters)
-        is_folder = True
-        listing.append((recursive_url, listitem, is_folder))
-    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
-    xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-    xbmcplugin.endOfDirectory(_handle)
+    if len(seasons) == 1:
+        # list products if there's only one season
+        season_url = seasons[0]['_links']['self']['href']
+        list_products(season_url)
+    else:
+        listing = []
+        for season in seasons:
+            season_url = season['_links']['self']['href']
+            title = '%s %s' % (language(30014), season['title'])
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', 'false')
+            listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+            listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+            parameters = {'action': 'list_products', 'url': season_url}
+            recursive_url = _url + '?' + urllib.urlencode(parameters)
+            is_folder = True
+            listing.append((recursive_url, listitem, is_folder))
+        xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+        xbmcplugin.endOfDirectory(_handle)
 
 
 def item_information(item):
