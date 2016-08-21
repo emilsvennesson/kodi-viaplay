@@ -74,16 +74,15 @@ class vialib(object):
 
     def make_request(self, url, method, payload=None, headers=None):
         """Make an HTTP request. Return the JSON response in a dict."""
-        parsed_url = self.url_parser(url)
         self.log('URL: %s' % url)
+        parsed_url = self.url_parser(url)
         if parsed_url != url:
-            self.log('Parsed URL: %s' % parsed_url)
-
+            url = parsed_url
+            self.log('Parsed URL: %s' % url)
         if method == 'get':
-            req = self.http_session.get(parsed_url, params=payload, headers=headers, allow_redirects=False,
-                                        verify=False)
+            req = self.http_session.get(url, params=payload, headers=headers, allow_redirects=False, verify=False)
         else:
-            req = self.http_session.post(parsed_url, data=payload, headers=headers, allow_redirects=False, verify=False)
+            req = self.http_session.post(url, data=payload, headers=headers, allow_redirects=False, verify=False)
         self.log('Response code: %s' % req.status_code)
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
@@ -160,6 +159,7 @@ class vialib(object):
                 subscription_error = data['name']
                 raise self.AuthFailure(subscription_error)
         except KeyError:
+            # 'success' won't be in response if it's successful
             return True
 
     def get_categories(self, input, method=None):
@@ -185,7 +185,6 @@ class vialib(object):
     def get_sortings(self, url):
         data = self.make_request(url=url, method='get')
         sorttypes = data['_links']['viaplay:sortings']
-
         return sorttypes
 
     def get_letters(self, url):
@@ -196,7 +195,7 @@ class vialib(object):
             letter = item['group']
             if letter not in letters:
                 letters.append(letter)
-
+                
         return letters
 
     def get_products(self, input, method=None):
@@ -211,7 +210,7 @@ class vialib(object):
             products = data['_embedded']['viaplay:product']
         else:
             products = self.get_products_block(data)['_embedded']['viaplay:products']
-
+            
         return products
 
     def get_seasons(self, url):
