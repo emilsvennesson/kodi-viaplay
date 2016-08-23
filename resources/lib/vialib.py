@@ -296,32 +296,28 @@ class vialib(object):
         self.log('HLS manifest: \n %s' % m3u8_manifest)
         if req.cookies:
             self.log('Cookies: %s' % req.cookies)
-            try:
-                # the auth cookie differs depending on the CDN
+            # the auth cookie differs depending on the CDN
+            if 'hdntl' and 'hdnts' in req.cookies.keys():
                 hdntl_cookie = req.cookies['hdntl']
                 hdnts_cookie = req.cookies['hdnts']
                 auth_cookie = 'hdntl=%s; hdnts=%s' % (hdntl_cookie, hdnts_cookie)
-            except KeyError:
-                try:
-                    lvlt_tk = req.cookies['lvlt_tk']
-                    auth_cookie = 'lvlt_tk=%s' % lvlt_tk
-                except KeyError:
-                    hdntl_cookie = req.cookies['hdntl']
-                    auth_cookie = 'hdntl=%s' % hdntl_cookie
+            elif 'lvlt_tk' in req.cookies.keys():
+                lvlt_tk = req.cookies['lvlt_tk']
+                auth_cookie = 'lvlt_tk=%s' % lvlt_tk
+            else:
+                hdntl_cookie = req.cookies['hdntl']
+                auth_cookie = 'hdntl=%s' % hdntl_cookie
         else:
             auth_cookie = None
 
-        m3u8_header = {'Cookie': auth_cookie,
-                       'User-Agent': 'AppleCoreMedia/1.0.0.12B440 (iPad; U; CPU OS 8_1_2 like Mac OS X)',
-                       'Connection': 'keep-alive'}
+        m3u8_header = {'Cookie': auth_cookie}
         m3u8_obj = m3u8.loads(m3u8_manifest)
         for playlist in m3u8_obj.playlists:
             bitrate = int(playlist.stream_info.bandwidth) / 1000
             if playlist.uri.startswith('http'):
-                stream_url = playlist.uri + '?' + manifest_url.split('?')[1]
+                stream_url = playlist.uri
             else:
-                stream_url = manifest_url[:manifest_url.rfind('/') + 1] + playlist.uri + '?' + \
-                             manifest_url.split('?')[1]
+                stream_url = manifest_url[:manifest_url.rfind('/') + 1] + playlist.uri
             streams[str(bitrate)] = stream_url + '|' + urlencode(m3u8_header)
 
         return streams
