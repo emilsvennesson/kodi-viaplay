@@ -95,7 +95,7 @@ msgstr "Ditt konto har inte tillgång till det här innehållet. Du hittar infor
 
 msgctxt "#30021"
 msgid "You need to purchase this movie on the Viaplay website before playing it."
-msgstr "Du måste köpa filmen på Viaplays hemsida innan du spelar upp den."
+msgstr "Du måste hyra/köpa filmen på Viaplays hemsida innan du spelar upp den."
 
 msgctxt "#30022"
 msgid "You're not allowed to watch content from this region."

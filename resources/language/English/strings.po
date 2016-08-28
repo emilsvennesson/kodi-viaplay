@@ -94,7 +94,7 @@ msgid "Your account is not authorized to watch this content. You will find infor
 msgstr ""
 
 msgctxt "#30021"
-msgid "You need to purchase this movie on the Viaplay website before playing it."
+msgid "You need to rent/purchase this movie on the Viaplay website before playing it."
 msgstr ""
 
 msgctxt "#30022"
