@@ -556,14 +556,21 @@ def play_video(input, streamtype, content):
                   language(30006))
 
     if video_urls:
-        bitrate = select_bitrate(video_urls['bitrates'].keys())
-        if bitrate:
-            stream_url = video_urls['bitrates'][bitrate]
+        if content == 'sport':
+            # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
+            stream_url = video_urls['manifest_url']
             playitem = xbmcgui.ListItem(path=stream_url)
             playitem.setProperty('IsPlayable', 'true')
-            if addon.getSetting('subtitles') == 'true':
-                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
             xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+        else:
+            bitrate = select_bitrate(video_urls['bitrates'].keys())
+            if bitrate:
+                stream_url = video_urls['bitrates'][bitrate]
+                playitem = xbmcgui.ListItem(path=stream_url)
+                playitem.setProperty('IsPlayable', 'true')
+                if addon.getSetting('subtitles') == 'true':
+                    playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+                xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
 
 
 def sports_menu(url):
