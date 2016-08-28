@@ -11,6 +11,7 @@ import time
 
 import dateutil.parser
 from dateutil import tz
+
 from resources.lib.vialib import vialib
 
 import xbmc
@@ -254,7 +255,8 @@ def list_products(url, *display):
             as it always provides more detailed data about each product."""
             playid = item['_links']['self']['href']
             streamtype = 'url'
-        parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype, 'content': type}
+        parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype,
+                      'content': type}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
 
         if type == 'episode':
@@ -457,7 +459,7 @@ def item_information(item):
         'mpaa': mpaa,
         'cast': cast
     }
-    
+
     return info
 
 
@@ -609,8 +611,8 @@ def sports_today_menu(url):
         listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
-    
-    
+
+
 def ask_bitrate(bitrates):
     """Presents a dialog for user to select from a list of bitrates.
     Returns the value of the selected bitrate."""
@@ -621,8 +623,8 @@ def ask_bitrate(bitrates):
     ret = dialog.select(language(30023), options)
     if ret > -1:
         return bitrates[ret]
-    
-    
+
+
 def select_bitrate(manifest_bitrates=None):
     """Returns a bitrate while honoring the user's preference."""
     bitrate_setting = int(addon.getSetting('preferred_bitrate'))

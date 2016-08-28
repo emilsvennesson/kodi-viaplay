@@ -196,7 +196,7 @@ class vialib(object):
             letter = item['group']
             if letter not in letters:
                 letters.append(letter)
-                
+
         return letters
 
     def get_products(self, input, method=None):
@@ -211,7 +211,7 @@ class vialib(object):
             products = data['_embedded']['viaplay:product']
         else:
             products = self.get_products_block(data)['_embedded']['viaplay:products']
-            
+
         return products
 
     def get_seasons(self, url):
