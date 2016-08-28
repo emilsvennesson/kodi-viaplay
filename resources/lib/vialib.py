@@ -146,7 +146,8 @@ class vialib(object):
                 data = self.make_request(url=url, method='get', payload=payload)
             if self.check_for_subscription(data):
                 manifest_url = data['_links']['viaplay:playlist']['href']
-                video_urls['stream_urls'] = self.parse_m3u8_manifest(manifest_url)
+                video_urls['manifest_url'] = manifest_url
+                video_urls['bitrates'] = self.parse_m3u8_manifest(manifest_url)
                 video_urls['subtitle_urls'] = self.get_subtitle_urls(data, guid)
 
                 return video_urls
@@ -302,8 +303,8 @@ class vialib(object):
                 hdnts_cookie = req.cookies['hdnts']
                 auth_cookie = 'hdntl=%s; hdnts=%s' % (hdntl_cookie, hdnts_cookie)
             elif 'lvlt_tk' in req.cookies.keys():
-                lvlt_tk = req.cookies['lvlt_tk']
-                auth_cookie = 'lvlt_tk=%s' % lvlt_tk
+                lvlt_tk_cookie = req.cookies['lvlt_tk']
+                auth_cookie = 'lvlt_tk=%s' % lvlt_tk_cookie
             else:
                 hdntl_cookie = req.cookies['hdntl']
                 auth_cookie = 'hdntl=%s' % hdntl_cookie

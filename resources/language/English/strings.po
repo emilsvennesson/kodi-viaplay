@@ -102,7 +102,7 @@ msgid "You're not allowed to watch content from this region."
 msgstr ""
 
 msgctxt "#30023"
-msgid "Preferred stream quality"
+msgid "Preferred stream quality (movies & TV)"
 msgstr ""
 
 msgctxt "#30024"

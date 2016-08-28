@@ -103,7 +103,7 @@ msgstr "Du har inte tillåtelse att spela upp innehåll från regionen du befinn
 
 msgctxt "#30023"
 msgid "Preferred stream quality"
-msgstr "Föredragen strömkvalitet"
+msgstr "Föredragen strömkvalitet (filmer & TV)"
 
 msgctxt "#30024"
 msgid "Always use highest bitrate"

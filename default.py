@@ -254,7 +254,7 @@ def list_products(url, *display):
             as it always provides more detailed data about each product."""
             playid = item['_links']['self']['href']
             streamtype = 'url'
-        parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype}
+        parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype, 'content': type}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
 
         if type == 'episode':
@@ -535,7 +535,7 @@ def search(url):
         pass
 
 
-def play_video(input, streamtype):
+def play_video(input, streamtype, content):
     if streamtype == 'url':
         url = input
         guid = vp.get_products(input=url, method='url')['system']['guid']
@@ -554,14 +554,21 @@ def play_video(input, streamtype):
                   language(30006))
 
     if video_urls:
-        bitrate = select_bitrate(video_urls['stream_urls'].keys())
-        if bitrate:
-            stream_url = video_urls['stream_urls'][bitrate]
+        if content == 'sport':
+            # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
+            stream_url = video_urls['manifest_url']
             playitem = xbmcgui.ListItem(path=stream_url)
             playitem.setProperty('IsPlayable', 'true')
-            if addon.getSetting('subtitles') == 'true':
-                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
             xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+        else:
+            bitrate = select_bitrate(video_urls['stream_urls'].keys())
+            if bitrate:
+                stream_url = video_urls['stream_urls'][bitrate]
+                playitem = xbmcgui.ListItem(path=stream_url)
+                playitem.setProperty('IsPlayable', 'true')
+                if addon.getSetting('subtitles') == 'true':
+                    playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+                xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
 
 
 def sports_menu(url):
@@ -657,7 +664,7 @@ def router(paramstring):
         elif params['action'] == 'list_products_sports_today':
             list_products(params['url'], params['display'])
         elif params['action'] == 'play_video':
-            play_video(params['playid'], params['streamtype'])
+            play_video(params['playid'], params['streamtype'], params['content'])
         elif params['action'] == 'sortings_menu':
             sortings_menu(params['url'])
         elif params['action'] == 'alphabetical_letters_menu':
