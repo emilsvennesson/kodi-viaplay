@@ -185,7 +185,11 @@ class vialib(object):
 
     def get_sortings(self, url):
         data = self.make_request(url=url, method='get')
-        sorttypes = data['_links']['viaplay:sortings']
+        try:
+            sorttypes = data['_links']['viaplay:sortings']
+        except KeyError:
+            self.log('No sortings available for this category.')
+            sorttypes = None
         return sorttypes
 
     def get_letters(self, url):

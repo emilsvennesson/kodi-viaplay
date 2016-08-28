@@ -168,27 +168,27 @@ def kids_menu(url):
 
 
 def sortings_menu(url):
-    sortings = vp.get_sortings(url)
     listing = []
-
-    for sorting in sortings:
-        title = sorting['title']
-        listitem = xbmcgui.ListItem(label=title)
-        listitem.setProperty('IsPlayable', 'false')
-        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        try:
-            if sorting['id'] == 'alphabetical':
-                parameters = {'action': 'alphabetical_letters_menu', 'url': sorting['href']}
-            else:
+    sortings = vp.get_sortings(url)
+    if sortings:
+        for sorting in sortings:
+            title = sorting['title']
+            listitem = xbmcgui.ListItem(label=title)
+            listitem.setProperty('IsPlayable', 'false')
+            listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+            listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+            try:
+                if sorting['id'] == 'alphabetical':
+                    parameters = {'action': 'alphabetical_letters_menu', 'url': sorting['href']}
+                else:
+                    parameters = {'action': 'list_products', 'url': sorting['href']}
+            except TypeError:
                 parameters = {'action': 'list_products', 'url': sorting['href']}
-        except TypeError:
-            parameters = {'action': 'list_products', 'url': sorting['href']}
-        recursive_url = _url + '?' + urllib.urlencode(parameters)
-        is_folder = True
-        listing.append((recursive_url, listitem, is_folder))
+            recursive_url = _url + '?' + urllib.urlencode(parameters)
+            is_folder = True
+            listing.append((recursive_url, listitem, is_folder))
 
-    list_products_alphabetical(url)
+        list_products_alphabetical(url)
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
 
@@ -556,21 +556,14 @@ def play_video(input, streamtype, content):
                   language(30006))
 
     if video_urls:
-        if content == 'sport':
-            # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
-            stream_url = video_urls['manifest_url']
+        bitrate = select_bitrate(video_urls['bitrates'].keys())
+        if bitrate:
+            stream_url = video_urls['bitrates'][bitrate]
             playitem = xbmcgui.ListItem(path=stream_url)
             playitem.setProperty('IsPlayable', 'true')
+            if addon.getSetting('subtitles') == 'true':
+                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
             xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
-        else:
-            bitrate = select_bitrate(video_urls['bitrates'].keys())
-            if bitrate:
-                stream_url = video_urls['bitrates'][bitrate]
-                playitem = xbmcgui.ListItem(path=stream_url)
-                playitem.setProperty('IsPlayable', 'true')
-                if addon.getSetting('subtitles') == 'true':
-                    playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-                xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
 
 
 def sports_menu(url):
