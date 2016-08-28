@@ -112,3 +112,7 @@ msgstr ""
 msgctxt "#30025"
 msgid "Ask"
 msgstr ""
+
+msgctxt "#30026"
+msgid "Select stream quality"
+msgstr ""

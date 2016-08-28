@@ -112,3 +112,7 @@ msgstr "Använd alltid högsta bitrate"
 msgctxt "#30025"
 msgid "Ask"
 msgstr "Fråga"
+
+msgctxt "#30026"
+msgid "Select stream quality"
+msgstr "Välj strömkvalitet"
