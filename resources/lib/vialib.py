@@ -148,7 +148,7 @@ class vialib(object):
                 manifest_url = data['_links']['viaplay:playlist']['href']
                 video_urls['manifest_url'] = manifest_url
                 video_urls['bitrates'] = self.parse_m3u8_manifest(manifest_url)
-                video_urls['subtitle_urls'] = self.get_subtitle_urls(data, guid)
+                video_urls['subtitle_urls'] = self.get_subtitle_urls(data)
 
                 return video_urls
 
@@ -230,14 +230,14 @@ class vialib(object):
 
         return seasons
 
-    def get_subtitle_urls(self, data, guid):
+    def get_subtitle_urls(self, data):
         """Return all subtitle SAMI URL:s in a list."""
         subtitle_urls = []
         try:
             for subtitle in data['_links']['viaplay:sami']:
                 subtitle_urls.append(subtitle['href'])
         except KeyError:
-            self.log('No subtitles found for guid %s' % guid)
+            self.log('No subtitles found for guid: %s' % data['socket2']['productGuid'])
 
         return subtitle_urls
 
