@@ -88,7 +88,7 @@ def root_menu():
         categorytype = category['type']
         videotype = category['name']
         title = category['title']
-        if categorytype == 'vod':
+        if categorytype != 'editorial':
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', 'false')
             listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
@@ -572,11 +572,6 @@ def play_video(input, streamtype, content):
 
 
 def sports_menu(url):
-    # URL is hardcoded for now as the sports date listing is not available on all platforms
-    if country == 'fi':
-        live_url = 'https://content.viaplay.fi/androiddash-fi/urheilu2'
-    else:
-        live_url = 'https://content.viaplay.%s/androiddash-%s/sport2' % (country, country)
     listing = []
     categories = vp.get_categories(live_url)
     now = datetime.now()
