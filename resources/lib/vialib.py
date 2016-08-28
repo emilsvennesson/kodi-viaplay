@@ -140,17 +140,17 @@ class vialib(object):
         }
 
         data = self.make_request(url=url, method='get', payload=payload)
-        if self.verify_login_status(data):
-            # we might have to request the stream again after logging in
-            if 'MissingSessionCookieError' in data.values():
-                data = self.make_request(url=url, method='get', payload=payload)
-            if self.check_for_subscription(data):
-                manifest_url = data['_links']['viaplay:playlist']['href']
-                video_urls['manifest_url'] = manifest_url
-                video_urls['bitrates'] = self.parse_m3u8_manifest(manifest_url)
-                video_urls['subtitle_urls'] = self.get_subtitle_urls(data)
+        self.verify_login_status(data)
+        # we might have to request the stream again after logging in
+        if 'MissingSessionCookieError' in data.values():
+            data = self.make_request(url=url, method='get', payload=payload)
+        self.check_for_subscription(data)
+        manifest_url = data['_links']['viaplay:playlist']['href']
+        video_urls['manifest_url'] = manifest_url
+        video_urls['bitrates'] = self.parse_m3u8_manifest(manifest_url)
+        video_urls['subtitle_urls'] = self.get_subtitle_urls(data)
 
-                return video_urls
+        return video_urls
 
     def check_for_subscription(self, data):
         """Check if the user is authorized to watch the requested stream. 
