@@ -5,14 +5,15 @@ A Kodi-agnostic library for Viaplay
 import codecs
 import os
 import cookielib
-from datetime import datetime
+import calendar
+from datetime import datetime, timedelta
 from urllib import urlencode
 import re
 import json
 import uuid
 import HTMLParser
 
-import dateutil.parser
+import iso8601
 import requests
 import m3u8
 
@@ -282,8 +283,7 @@ class vialib(object):
     def get_sports_status(self, data):
         """Return whether the event is live/upcoming/archive."""
         now = datetime.utcnow()
-        producttime_start = dateutil.parser.parse(data['epg']['start'])
-        producttime_start = producttime_start.replace(tzinfo=None)
+        producttime_start = self.parse_time(data['epg']['start'])
         if 'isLive' in data['system']['flags']:
             status = 'live'
         elif producttime_start >= now:
@@ -344,3 +344,16 @@ class vialib(object):
             if block['type'] != 'cms':
                 product_block = block
         return product_block
+
+    def utc_to_local(self, utc_dt):
+        # get integer timestamp to avoid precision lost
+        timestamp = calendar.timegm(utc_dt.timetuple())
+        local_dt = datetime.fromtimestamp(timestamp)
+        assert utc_dt.resolution >= timedelta(microseconds=1)
+        return local_dt.replace(microsecond=utc_dt.microsecond)
+
+    def parse_time(self, string):
+        """Parse ISO8601 string to datetime object & localize it."""
+        datetime_utc = iso8601.parse_date(string)
+        datetime_local = self.utc_to_local(datetime_utc)
+        return datetime_local

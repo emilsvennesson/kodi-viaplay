@@ -9,9 +9,6 @@ import urlparse
 from datetime import datetime
 import time
 
-import dateutil.parser
-from dateutil import tz
-
 from resources.lib.vialib import vialib
 
 import xbmc
@@ -270,19 +267,17 @@ def list_products(url, *display):
             listing.append((recursive_url, listitem, is_folder))
 
         if type == 'sport':
-            local_tz = tz.tzlocal()
-            startdate_utc = dateutil.parser.parse(item['epg']['start'])
-            startdate_local = startdate_utc.astimezone(local_tz)
+            startdate = vp.parse_time(item['epg']['start'])
             status = vp.get_sports_status(item)
             if status == 'archive':
                 title = 'Archive: %s' % item['content']['title'].encode('utf-8')
                 is_playable = 'true'
             else:
-                title = '%s (%s)' % (item['content']['title'].encode('utf-8'), startdate_local.strftime("%H:%M"))
+                title = '%s (%s)' % (item['content']['title'].encode('utf-8'), startdate.strftime("%H:%M"))
                 is_playable = 'true'
             if status == 'upcoming':
                 parameters = {'action': 'showmessage',
-                              'message': '%s %s.' % (language(30016), startdate_local.strftime("%Y-%m-%d %H:%M"))}
+                              'message': '%s %s.' % (language(30016), startdate.strftime("%Y-%m-%d %H:%M"))}
                 recursive_url = _url + '?' + urllib.urlencode(parameters)
                 is_playable = 'false'
             is_folder = False
