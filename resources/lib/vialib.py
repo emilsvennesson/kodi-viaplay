@@ -7,6 +7,7 @@ import os
 import cookielib
 import calendar
 from datetime import datetime, timedelta
+import time
 from urllib import urlencode
 import re
 import json
@@ -169,17 +170,10 @@ class vialib(object):
             data = input
         else:
             data = self.make_request(url=input, method='get')
-
-        pagetype = data['pageType']
-        try:
-            sectiontype = data['sectionType']
-        except KeyError:
-            sectiontype = None
-        if sectiontype == 'sportPerDay':
-            categories = data['_links']['viaplay:days']
-        elif pagetype == 'root':
+            
+        if data['pageType'] == 'root':
             categories = data['_links']['viaplay:sections']
-        elif pagetype == 'section':
+        elif data['pageType'] == 'section':
             categories = data['_links']['viaplay:categoryFilters']
 
         return categories
@@ -205,17 +199,24 @@ class vialib(object):
         return letters
 
     def get_products(self, input, method=None):
+        """Return a list of all available products."""
         if method == 'data':
             data = input
         else:
             data = self.make_request(url=input, method='get')
 
-        if data['type'] == 'season-list' or data['type'] == 'list':
+        if 'list' in data['type']:
             products = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':
             products = data['_embedded']['viaplay:product']
         else:
-            products = self.get_products_block(data)['_embedded']['viaplay:products']
+            products = []
+            blocks = self.get_products_block(data)
+            for block in blocks:
+                viaplay_products = block['_embedded']['viaplay:products']
+                for product in viaplay_products:
+                    if product not in products:
+                        products.append(product)
 
         return products
 
@@ -292,6 +293,28 @@ class vialib(object):
             status = 'archive'
 
         return status
+        
+    def get_sports_dates(self, url, event_date=None):
+        """Return the available sports dates.
+        Filter upcoming/previous dates with the event_date parameter."""
+        dates = []
+        data = self.make_request(url=url, method='get')
+        dates_data = data['_links']['viaplay:days']
+        now = datetime.now()
+
+        for date in dates_data:
+            date_object = datetime(*(time.strptime(date['date'], '%Y-%m-%d')[0:6])) # http://forum.kodi.tv/showthread.php?tid=112916
+            if event_date == 'upcoming':
+                if date_object.date() > now.date():
+                    dates.append(date)
+            elif event_date == 'archive':
+                if date_object.date() < now.date():
+                    dates.append(date)
+            else:
+                dates.append(date)
+                    
+        return dates
+                
 
     def parse_m3u8_manifest(self, manifest_url):
         """Return the stream URL along with its bitrate."""
@@ -331,19 +354,21 @@ class vialib(object):
         """Return the URL to the next page if the current page count is less than the total page count."""
         # first page is always (?) from viaplay:blocks
         if data['type'] == 'page':
-            data = self.get_products_block(data)
+            data = self.get_products_block(data)[0]
         if int(data['pageCount']) > int(data['currentPage']):
             next_page_url = data['_links']['next']['href']
             return next_page_url
 
     def get_products_block(self, data):
         """Get the viaplay:blocks containing all product information."""
-        blocks = data['_embedded']['viaplay:blocks']
-        for block in blocks:
-            # example: https://content.viaplay.se/pc-se/film/disney?sort=alphabetical
-            if block['type'] != 'cms':
-                product_block = block
-        return product_block
+        blocks = []
+        blocks_data = data['_embedded']['viaplay:blocks']
+        for block in blocks_data:
+            # example: https://content.viaplay.se/pc-se/sport
+            if 'viaplay:products' in block['_embedded'].keys():
+                blocks.append(block)
+                
+        return blocks
 
     def utc_to_local(self, utc_dt):
         # get integer timestamp to avoid precision lost

@@ -116,3 +116,23 @@ msgstr ""
 msgctxt "#30026"
 msgid "Select stream quality"
 msgstr ""
+
+msgctxt "#30027"
+msgid "Today"
+msgstr ""
+
+msgctxt "#30028"
+msgid "Upcoming days"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Previous days"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Upcoming events"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Archived events"
+msgstr ""

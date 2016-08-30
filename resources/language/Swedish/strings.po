@@ -116,3 +116,23 @@ msgstr "Fråga"
 msgctxt "#30026"
 msgid "Select stream quality"
 msgstr "Välj strömkvalitet"
+
+msgctxt "#30027"
+msgid "Today"
+msgstr "Idag"
+
+msgctxt "#30028"
+msgid "Upcoming days"
+msgstr "Kommande dagar"
+
+msgctxt "#30029"
+msgid "Archived days"
+msgstr "Föregående dagar"
+
+msgctxt "#30030"
+msgid "Upcoming events"
+msgstr "Kommande evenemang"
+
+msgctxt "#30031"
+msgid "Archived events"
+msgstr "Arkiverade evenemang"

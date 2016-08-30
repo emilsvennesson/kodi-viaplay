@@ -6,8 +6,6 @@ import sys
 import os
 import urllib
 import urlparse
-from datetime import datetime
-import time
 
 from resources.lib.vialib import vialib
 
@@ -235,14 +233,14 @@ def list_next_page(data):
         xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
-def list_products(url, *display):
+def list_products(url, filter_sports_event=None):
     data = vp.make_request(url=url, method='get')
     products = vp.get_products(input=data, method='data')
     listing = []
     sort = None
 
     for item in products:
-        type = item['type']
+        content = item['type']
         try:
             playid = item['system']['guid']
             streamtype = 'guid'
@@ -253,10 +251,10 @@ def list_products(url, *display):
             playid = item['_links']['self']['href']
             streamtype = 'url'
         parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype,
-                      'content': type}
+                      'content': content}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
 
-        if type == 'episode':
+        if content == 'episode':
             title = item['content']['series']['episodeTitle']
             is_folder = False
             is_playable = 'true'
@@ -266,16 +264,16 @@ def list_products(url, *display):
             listitem.setArt(art(item))
             listing.append((recursive_url, listitem, is_folder))
 
-        if type == 'sport':
+        if content == 'sport':
             startdate = vp.parse_time(item['epg']['start'])
-            status = vp.get_sports_status(item)
-            if status == 'archive':
+            event_status = vp.get_sports_status(item)
+            if event_status == 'archive':
                 title = 'Archive: %s' % item['content']['title'].encode('utf-8')
                 is_playable = 'true'
             else:
                 title = '%s (%s)' % (item['content']['title'].encode('utf-8'), startdate.strftime("%H:%M"))
                 is_playable = 'true'
-            if status == 'upcoming':
+            if event_status == 'upcoming':
                 parameters = {'action': 'showmessage',
                               'message': '%s %s.' % (language(30016), startdate.strftime("%Y-%m-%d %H:%M"))}
                 recursive_url = _url + '?' + urllib.urlencode(parameters)
@@ -285,19 +283,20 @@ def list_products(url, *display):
             listitem.setProperty('IsPlayable', is_playable)
             listitem.setInfo('video', item_information(item))
             listitem.setArt(art(item))
-            if 'live' in display:
-                if status == 'live':
+            
+            if filter_sports_event == 'live':
+                if event_status == 'live':
                     listing.append((recursive_url, listitem, is_folder))
-            elif 'upcoming' in display:
-                if status == 'upcoming':
+            elif filter_sports_event == 'upcoming':
+                if event_status == 'upcoming':
                     listing.append((recursive_url, listitem, is_folder))
-            elif 'archive' in display:
-                if status == 'archive':
+            elif filter_sports_event == 'archive':
+                if event_status == 'archive':
                     listing.append((recursive_url, listitem, is_folder))
             else:
                 listing.append((recursive_url, listitem, is_folder))
 
-        elif type == 'movie':
+        elif content == 'movie':
             title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
             if item['system']['availability']['planInfo']['isRental'] is True:
                 title = title + ' *'  # mark rental products with an asterisk
@@ -309,7 +308,7 @@ def list_products(url, *display):
             listitem.setArt(art(item))
             listing.append((recursive_url, listitem, is_folder))
 
-        elif type == 'series':
+        elif content == 'series':
             title = item['content']['series']['title'].encode('utf-8')
             self_url = item['_links']['viaplay:page']['href']
             parameters = {'action': 'list_seasons', 'url': self_url}
@@ -406,6 +405,7 @@ def item_information(item):
         episode = int(item['content']['series']['episodeNumber'])
         plot = item['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
+        
     elif type == 'series':
         mediatype = 'tvshow'
         title = item['content']['series']['title'].encode('utf-8')
@@ -415,6 +415,7 @@ def item_information(item):
         except KeyError:
             plot = item['content']['synopsis'].encode('utf-8')  # needed for alphabetical listing
         xbmcplugin.setContent(_handle, 'tvshows')
+        
     elif type == 'movie':
         mediatype = 'movie'
         title = item['content']['title'].encode('utf-8')
@@ -432,11 +433,13 @@ def item_information(item):
         except KeyError:
             pass
         xbmcplugin.setContent(_handle, 'movies')
+        
     elif type == 'sport':
         mediatype = 'video'
         title = item['content']['title'].encode('utf-8')
         plot = item['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
+        
     info = {
         'mediatype': mediatype,
         'title': title,
@@ -570,21 +573,23 @@ def play_video(input, streamtype, content):
 
 def sports_menu(url):
     listing = []
-    categories = vp.get_categories(url)
-    now = datetime.now()
-
-    for category in categories:
-        date_object = datetime(
-            *(time.strptime(category['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
-        title = category['date']
+    event_date = ['today', 'upcoming', 'archive']
+    
+    for date in event_date:
+        if date == 'today':
+            title = language(30027)
+        elif date == 'upcoming':
+            title = language(30028)
+        else:
+            title = language(30029)
         listitem = xbmcgui.ListItem(label=title)
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        if date_object.date() == now.date():
-            parameters = {'action': 'sports_today_menu', 'url': category['href']}
+        if date == 'today':
+            parameters = {'action': 'sports_today_menu', 'url': url}
         else:
-            parameters = {'action': 'list_products', 'url': category['href']}
+            parameters = {'action': 'sports_dates_menu', 'url': url, 'event_date': date}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -593,14 +598,36 @@ def sports_menu(url):
 
 
 def sports_today_menu(url):
-    types = ['live', 'upcoming', 'archive']
+    event_status = ['live', 'upcoming', 'archive']
     listing = []
-    for type in types:
-        listitem = xbmcgui.ListItem(label=type.title())
+    for status in event_status:
+        if status == 'live':
+            title = status.title()
+        elif status == 'upcoming':
+            title = language(30030)
+        else:
+            title = language(30031)
+        listitem = xbmcgui.ListItem(label=title)
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'list_products_sports_today', 'url': url, 'display': type}
+        parameters = {'action': 'list_products_sports_today', 'url': url, 'filter_sports_event': status}
+        recursive_url = _url + '?' + urllib.urlencode(parameters)
+        is_folder = True
+        listing.append((recursive_url, listitem, is_folder))
+    xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
+    xbmcplugin.endOfDirectory(_handle)
+    
+    
+def sports_dates_menu(url, event_date):
+    listing = []
+    dates = vp.get_sports_dates(url, event_date)
+    for date in dates:
+        listitem = xbmcgui.ListItem(label=date['date'])
+        listitem.setProperty('IsPlayable', 'false')
+        listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
+        parameters = {'action': 'list_products', 'url': date['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -654,7 +681,7 @@ def router(paramstring):
         elif params['action'] == 'sports_today_menu':
             sports_today_menu(params['url'])
         elif params['action'] == 'list_products_sports_today':
-            list_products(params['url'], params['display'])
+            list_products(params['url'], params['filter_sports_event'])
         elif params['action'] == 'play_video':
             play_video(params['playid'], params['streamtype'], params['content'])
         elif params['action'] == 'sortings_menu':
@@ -663,6 +690,8 @@ def router(paramstring):
             alphabetical_letters_menu(params['url'])
         elif params['action'] == 'search':
             search(params['url'])
+        elif params['action'] == 'sports_dates_menu':
+            sports_dates_menu(params['url'], params['event_date'])
         elif params['action'] == 'showmessage':
             dialog = xbmcgui.Dialog()
             dialog.ok(language(30017),
