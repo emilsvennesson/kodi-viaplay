@@ -75,9 +75,9 @@ def display_auth_message(error):
 
 
 def root_menu():
+    listing = []
     data = vp.make_request(url=vp.base_url, method='get')
     categories = vp.get_categories(input=data, method='data')
-    listing = []
 
     for category in categories:
         categorytype = category['type']
@@ -108,8 +108,8 @@ def root_menu():
 
 
 def movies_menu(url):
-    categories = vp.get_categories(url)
     listing = []
+    categories = vp.get_categories(url)
 
     for category in categories:
         title = category['title']
@@ -126,8 +126,8 @@ def movies_menu(url):
 
 
 def series_menu(url):
-    categories = vp.get_categories(url)
     listing = []
+    categories = vp.get_categories(url)
 
     for category in categories:
         title = category['title']
@@ -144,8 +144,8 @@ def series_menu(url):
 
 
 def kids_menu(url):
-    categories = vp.get_categories(url)
     listing = []
+    categories = vp.get_categories(url)
 
     for category in categories:
         title = '%s: %s' % (category['group']['title'].title(), category['title'])
@@ -199,8 +199,8 @@ def list_products_alphabetical(url):
 
 
 def alphabetical_letters_menu(url):
-    letters = vp.get_letters(url)
     listing = []
+    letters = vp.get_letters(url)
 
     for letter in letters:
         title = letter.encode('utf-8')
@@ -233,44 +233,44 @@ def list_next_page(data):
 
 
 def list_products(url, filter_sports_event=None):
+    listing = []
     data = vp.make_request(url=url, method='get')
     products = vp.get_products(input=data, method='data')
-    listing = []
     sort = None
 
-    for item in products:
-        content = item['type']
+    for product in products:
+        content = product['type']
         try:
-            playid = item['system']['guid']
+            playid = product['system']['guid']
             streamtype = 'guid'
         except KeyError:
             """The guid is not always available from the category listing.
             Send the self URL and let play_video grab the guid from there instead
             as it always provides more detailed data about each product."""
-            playid = item['_links']['self']['href']
+            playid = product['_links']['self']['href']
             streamtype = 'url'
         parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype,
                       'content': content}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
 
         if content == 'episode':
-            title = item['content']['series']['episodeTitle']
+            title = product['content']['series']['episodeTitle']
             is_folder = False
             is_playable = 'true'
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item, content))
-            listitem.setArt(art(item, content))
+            listitem.setInfo('video', product_information(product, content))
+            listitem.setArt(art(product, content))
             listing.append((recursive_url, listitem, is_folder))
 
         if content == 'sport':
-            startdate = vp.parse_time(item['epg']['start'], localize=True)
-            event_status = vp.get_sports_status(item)
+            startdate = vp.parse_time(product['epg']['start'], localize=True)
+            event_status = vp.get_sports_status(product)
             if event_status == 'archive':
-                title = 'Archive: %s' % item['content']['title'].encode('utf-8')
+                title = 'Archive: %s' % product['content']['title'].encode('utf-8')
                 is_playable = 'true'
             else:
-                title = '%s (%s)' % (item['content']['title'].encode('utf-8'), startdate.strftime("%H:%M"))
+                title = '%s (%s)' % (product['content']['title'].encode('utf-8'), startdate.strftime("%H:%M"))
                 is_playable = 'true'
             if event_status == 'upcoming':
                 parameters = {'action': 'showmessage',
@@ -280,8 +280,8 @@ def list_products(url, filter_sports_event=None):
             is_folder = False
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item, content))
-            listitem.setArt(art(item, content))
+            listitem.setInfo('video', product_information(product, content))
+            listitem.setArt(art(product, content))
 
             if filter_sports_event == 'live':
                 if event_status == 'live':
@@ -296,28 +296,28 @@ def list_products(url, filter_sports_event=None):
                 listing.append((recursive_url, listitem, is_folder))
 
         elif content == 'movie':
-            title = '%s (%s)' % (item['content']['title'].encode('utf-8'), str(item['content']['production']['year']))
-            if item['system']['availability']['planInfo']['isRental'] is True:
+            title = '%s (%s)' % (product['content']['title'].encode('utf-8'), str(product['content']['production']['year']))
+            if product['system']['availability']['planInfo']['isRental'] is True:
                 title = title + ' *'  # mark rental products with an asterisk
             is_folder = False
             is_playable = 'true'
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item, content))
-            listitem.setArt(art(item, content))
+            listitem.setInfo('video', product_information(product, content))
+            listitem.setArt(art(product, content))
             listing.append((recursive_url, listitem, is_folder))
 
         elif content == 'series':
-            title = item['content']['series']['title'].encode('utf-8')
-            self_url = item['_links']['viaplay:page']['href']
+            title = product['content']['series']['title'].encode('utf-8')
+            self_url = product['_links']['viaplay:page']['href']
             parameters = {'action': 'list_seasons', 'url': self_url}
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             is_playable = 'false'
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item, content))
-            listitem.setArt(art(item, content))
+            listitem.setInfo('video', product_information(product, content))
+            listitem.setArt(art(product, content))
             listing.append((recursive_url, listitem, is_folder))
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -352,9 +352,10 @@ def list_seasons(url):
         xbmcplugin.endOfDirectory(_handle)
 
 
-def item_information(item, content):
+def product_information(product, content):
     """Return the product information in a xbmcgui.setInfo friendly dict.
     Supported content types: episode, series, movie, sport"""
+    cast = []
     mediatype = None
     title = None
     tvshowtitle = None
@@ -362,70 +363,69 @@ def item_information(item, content):
     episode = None
     plot = None
     director = None
-    cast = []
     try:
-        duration = int(item['content']['duration']['milliseconds']) / 1000
+        duration = int(product['content']['duration']['milliseconds']) / 1000
     except KeyError:
         duration = None
     try:
-        imdb_code = item['content']['imdb']['id']
+        imdb_code = product['content']['imdb']['id']
     except KeyError:
         imdb_code = None
     try:
-        rating = float(item['content']['imdb']['rating'])
+        rating = float(product['content']['imdb']['rating'])
     except KeyError:
         rating = None
     try:
-        votes = str(item['content']['imdb']['votes'])
+        votes = str(product['content']['imdb']['votes'])
     except KeyError:
         votes = None
     try:
-        year = int(item['content']['production']['year'])
+        year = int(product['content']['production']['year'])
     except KeyError:
         year = None
     try:
         genres = []
-        for genre in item['_links']['viaplay:genres']:
+        for genre in product['_links']['viaplay:genres']:
             genres.append(genre['title'])
         genre = ', '.join(genres)
     except KeyError:
         genre = None
     try:
-        mpaa = item['content']['parentalRating']
+        mpaa = product['content']['parentalRating']
     except KeyError:
         mpaa = None
 
     if content == 'episode':
         mediatype = 'episode'
-        title = item['content']['series']['episodeTitle'].encode('utf-8')
-        tvshowtitle = item['content']['series']['title'].encode('utf-8')
-        season = int(item['content']['series']['season']['seasonNumber'])
-        episode = int(item['content']['series']['episodeNumber'])
-        plot = item['content']['synopsis'].encode('utf-8')
+        title = product['content']['series']['episodeTitle'].encode('utf-8')
+        tvshowtitle = product['content']['series']['title'].encode('utf-8')
+        season = int(product['content']['series']['season']['seasonNumber'])
+        episode = int(product['content']['series']['episodeNumber'])
+        plot = product['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
 
     elif content == 'series':
         mediatype = 'tvshow'
-        title = item['content']['series']['title'].encode('utf-8')
-        tvshowtitle = item['content']['series']['title'].encode('utf-8')
+        title = product['content']['series']['title'].encode('utf-8')
+        tvshowtitle = product['content']['series']['title'].encode('utf-8')
         try:
-            plot = item['content']['series']['synopsis'].encode('utf-8')
+            plot = product['content']['series']['synopsis'].encode('utf-8')
         except KeyError:
-            plot = item['content']['synopsis'].encode('utf-8')  # needed for alphabetical listing
+            plot = product['content']['synopsis'].encode('utf-8')  # needed for alphabetical listing
         xbmcplugin.setContent(_handle, 'tvshows')
 
     elif content == 'movie':
         mediatype = 'movie'
-        title = item['content']['title'].encode('utf-8')
-        plot = item['content']['synopsis'].encode('utf-8')
+        title = product['content']['title'].encode('utf-8')
+        plot = product['content']['synopsis'].encode('utf-8')
         try:
-            for actor in item['content']['people']['actors']:
+            for actor in product['content']['people']['actors']:
                 cast.append(actor)
         except KeyError:
             pass
         try:
             directors = []
-            for director in item['content']['people']['directors']:
+            for director in product['content']['people']['directors']:
                 directors.append(director)
             director = ', '.join(directors)
         except KeyError:
@@ -434,8 +434,8 @@ def item_information(item, content):
 
     elif content == 'sport':
         mediatype = 'video'
-        title = item['content']['title'].encode('utf-8')
-        plot = item['content']['synopsis'].encode('utf-8')
+        title = product['content']['title'].encode('utf-8')
+        plot = product['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
 
     info = {
@@ -459,26 +459,26 @@ def item_information(item, content):
     return info
 
 
-def art(item, content):
+def art(product, content):
     """Return the available art in a xbmcgui.setArt friendly dict."""
     try:
-        boxart = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
+        boxart = product['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
     except KeyError:
         boxart = None
     try:
-        hero169 = item['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
+        hero169 = product['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
         hero169 = None
     try:
-        coverart23 = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
+        coverart23 = product['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
         coverart23 = None
     try:
-        coverart169 = item['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
+        coverart169 = product['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
     except KeyError:
         coverart169 = None
     try:
-        landscape = item['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
+        landscape = product['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
     except KeyError:
         landscape = None
 
@@ -595,8 +595,8 @@ def sports_menu(url):
 
 
 def sports_today_menu(url):
-    event_status = ['live', 'upcoming', 'archive']
     listing = []
+    event_status = ['live', 'upcoming', 'archive']
     for status in event_status:
         if status == 'live':
             title = status.title()

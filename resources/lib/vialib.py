@@ -222,8 +222,8 @@ class vialib(object):
 
     def get_seasons(self, url):
         """Return all available series seasons as a list."""
-        data = self.make_request(url=url, method='get')
         seasons = []
+        data = self.make_request(url=url, method='get')
 
         items = data['_embedded']['viaplay:blocks']
         for item in items:
@@ -300,13 +300,13 @@ class vialib(object):
         now = datetime.now()
 
         for date in dates_data:
-            date_object = datetime(
+            date_obj = datetime(
                 *(time.strptime(date['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
             if event_date == 'upcoming':
-                if date_object.date() > now.date():
+                if date_obj.date() > now.date():
                     dates.append(date)
             elif event_date == 'archive':
-                if date_object.date() < now.date():
+                if date_obj.date() < now.date():
                     dates.append(date)
             else:
                 dates.append(date)
