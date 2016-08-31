@@ -281,6 +281,7 @@ class vialib(object):
         """Return whether the event is live/upcoming/archive."""
         now = datetime.utcnow()
         producttime_start = self.parse_time(data['epg']['start'])
+        producttime_start = producttime_start.replace(tzinfo=None)
         if 'isLive' in data['system']['flags']:
             status = 'live'
         elif producttime_start >= now:
@@ -373,8 +374,9 @@ class vialib(object):
         assert utc_dt.resolution >= timedelta(microseconds=1)
         return local_dt.replace(microsecond=utc_dt.microsecond)
 
-    def parse_time(self, string):
-        """Parse ISO8601 string to datetime object & localize it."""
-        datetime_utc = iso8601.parse_date(string)
-        datetime_local = self.utc_to_local(datetime_utc)
-        return datetime_local
+    def parse_time(self, iso8601_string, localize=False):
+        """Parse ISO8601 string to datetime object."""
+        datetime_obj = iso8601.parse_date(iso8601_string)
+        if localize:
+            datetime_obj = self.utc_to_local(datetime_obj)
+        return datetime_obj
