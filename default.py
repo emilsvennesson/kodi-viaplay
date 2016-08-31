@@ -264,17 +264,17 @@ def list_products(url, filter_sports_event=None):
             listing.append((recursive_url, listitem, is_folder))
 
         if content == 'sport':
-            startdate = vp.parse_time(product['epg']['start'], localize=True)
+            event_date = vp.parse_time(product['epg']['start'], localize=True)
             event_status = vp.get_sports_status(product)
             if event_status == 'archive':
                 title = 'Archive: %s' % product['content']['title'].encode('utf-8')
                 is_playable = 'true'
             else:
-                title = '%s (%s)' % (product['content']['title'].encode('utf-8'), startdate.strftime("%H:%M"))
+                title = '%s (%s)' % (product['content']['title'].encode('utf-8'), event_date.strftime("%H:%M"))
                 is_playable = 'true'
             if event_status == 'upcoming':
                 parameters = {'action': 'showmessage',
-                              'message': '%s %s.' % (language(30016), startdate.strftime("%Y-%m-%d %H:%M"))}
+                              'message': '%s %s.' % (language(30016), event_date.strftime("%Y-%m-%d %H:%M"))}
                 recursive_url = _url + '?' + urllib.urlencode(parameters)
                 is_playable = 'false'
             is_folder = False
