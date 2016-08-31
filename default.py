@@ -279,6 +279,7 @@ def list_products(url, filter_sports_event=None):
                 is_playable = 'false'
             is_folder = False
             listitem = xbmcgui.ListItem(label=title)
+            listitem.addStreamInfo('video', {'duration': 0})  # don't set watched status on sports
             listitem.setProperty('IsPlayable', is_playable)
             listitem.setInfo('video', product_information(product, content))
             listitem.setArt(art(product, content))
