@@ -8,7 +8,6 @@ import urllib
 import urlparse
 
 from resources.lib.vialib import vialib
-
 import xbmc
 import xbmcaddon
 import xbmcvfs
@@ -283,7 +282,7 @@ def list_products(url, filter_sports_event=None):
             listitem.setProperty('IsPlayable', is_playable)
             listitem.setInfo('video', item_information(item))
             listitem.setArt(art(item))
-            
+
             if filter_sports_event == 'live':
                 if event_status == 'live':
                     listing.append((recursive_url, listitem, is_folder))
@@ -405,7 +404,7 @@ def item_information(item):
         episode = int(item['content']['series']['episodeNumber'])
         plot = item['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
-        
+
     elif type == 'series':
         mediatype = 'tvshow'
         title = item['content']['series']['title'].encode('utf-8')
@@ -415,7 +414,7 @@ def item_information(item):
         except KeyError:
             plot = item['content']['synopsis'].encode('utf-8')  # needed for alphabetical listing
         xbmcplugin.setContent(_handle, 'tvshows')
-        
+
     elif type == 'movie':
         mediatype = 'movie'
         title = item['content']['title'].encode('utf-8')
@@ -433,13 +432,13 @@ def item_information(item):
         except KeyError:
             pass
         xbmcplugin.setContent(_handle, 'movies')
-        
+
     elif type == 'sport':
         mediatype = 'video'
         title = item['content']['title'].encode('utf-8')
         plot = item['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
-        
+
     info = {
         'mediatype': mediatype,
         'title': title,
@@ -574,7 +573,7 @@ def play_video(input, streamtype, content):
 def sports_menu(url):
     listing = []
     event_date = ['today', 'upcoming', 'archive']
-    
+
     for date in event_date:
         if date == 'today':
             title = language(30027)
@@ -617,8 +616,8 @@ def sports_today_menu(url):
         listing.append((recursive_url, listitem, is_folder))
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
     xbmcplugin.endOfDirectory(_handle)
-    
-    
+
+
 def sports_dates_menu(url, event_date):
     listing = []
     dates = vp.get_sports_dates(url, event_date)

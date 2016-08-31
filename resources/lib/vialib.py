@@ -170,7 +170,7 @@ class vialib(object):
             data = input
         else:
             data = self.make_request(url=input, method='get')
-            
+
         if data['pageType'] == 'root':
             categories = data['_links']['viaplay:sections']
         elif data['pageType'] == 'section':
@@ -253,13 +253,13 @@ class vialib(object):
             htmlparser = HTMLParser.HTMLParser()
             subtitle = htmlparser.unescape(sami).encode('utf-8')
             subtitle = subtitle.replace('  ', ' ')  # replace two spaces with one
-            
+
             sublang = re.search(r'[_]([a-z]+)', suburl).group(1)
             if not sublang:
                 sublang = 'unknown'
                 self.log('Unable to identify subtitle language.')
-                
-            path = os.path.join(self.tempdir, '%s.sami') % sublang      
+
+            path = os.path.join(self.tempdir, '%s.sami') % sublang
             with open(path, 'w') as subfile:
                 subfile.write(subtitle)
             subtitle_paths.append(path)
@@ -289,7 +289,7 @@ class vialib(object):
             status = 'archive'
 
         return status
-        
+
     def get_sports_dates(self, url, event_date=None):
         """Return the available sports dates.
         Filter upcoming/previous dates with the event_date parameter."""
@@ -299,7 +299,8 @@ class vialib(object):
         now = datetime.now()
 
         for date in dates_data:
-            date_object = datetime(*(time.strptime(date['date'], '%Y-%m-%d')[0:6])) # http://forum.kodi.tv/showthread.php?tid=112916
+            date_object = datetime(
+                *(time.strptime(date['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
             if event_date == 'upcoming':
                 if date_object.date() > now.date():
                     dates.append(date)
@@ -308,9 +309,8 @@ class vialib(object):
                     dates.append(date)
             else:
                 dates.append(date)
-                    
+
         return dates
-                
 
     def parse_m3u8_manifest(self, manifest_url):
         """Return the stream URL along with its bitrate."""
@@ -363,7 +363,7 @@ class vialib(object):
             # example: https://content.viaplay.se/pc-se/sport
             if 'viaplay:products' in block['_embedded'].keys():
                 blocks.append(block)
-                
+
         return blocks
 
     def utc_to_local(self, utc_dt):
