@@ -8,7 +8,7 @@ This plugin was written based on Viaplay's JSON API.
 
 ## Dependencies: ##
 This plugin is available in the official Kodi repository and all dependencies will be installed automatically when installed from there. However, if you're installing straight from git, please make sure you've got the following modules installed:
- * Requests (http://mirrors.kodi.tv/addons/jarvis/script.module.requests)
+ * Requests >= 2.9.1 (http://mirrors.kodi.tv/addons/jarvis/script.module.requests)
  * iso8601 (http://mirrors.kodi.tv/addons/jarvis/script.module.iso8601)
  * m3u8 >= 0.2.10 (http://mirrors.kodi.tv/addons/jarvis/script.module.m3u8)
 
