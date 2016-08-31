@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.viaplay"
-       version="1.0.3"
+       version="1.0.4"
        name="Viaplay"
        provider-name="emilsvennesson">
   <requires>

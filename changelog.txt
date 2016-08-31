@@ -1,4 +1,10 @@
-﻿2016.08.28 v1.0.3
+﻿2016.08.31 v1.0.4
++ Remove dateutil dependency; add iso8601
++ Improve the sports section
++ Get better at catching exceptions
++ Use 'with' statement to open files
+
+2016.08.28 v1.0.3
 + New dependency: m3u8
 + The sports section is getting listed again
 + Add poster artwork
