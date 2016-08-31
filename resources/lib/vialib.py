@@ -210,14 +210,8 @@ class vialib(object):
         elif data['type'] == 'product':
             products = data['_embedded']['viaplay:product']
         else:
-            products = []
-            blocks = self.get_products_block(data)
-            for block in blocks:
-                viaplay_products = block['_embedded']['viaplay:products']
-                for product in viaplay_products:
-                    if product not in products:
-                        products.append(product)
-
+            products = self.get_products_block(data)['_embedded']['viaplay:products']
+            
         return products
 
     def get_seasons(self, url):
@@ -288,7 +282,6 @@ class vialib(object):
             status = 'upcoming'
         else:
             status = 'archive'
-
         return status
 
     def get_sports_dates(self, url, event_date=None):
@@ -351,7 +344,7 @@ class vialib(object):
         """Return the URL to the next page if the current page count is less than the total page count."""
         # first page is always (?) from viaplay:blocks
         if data['type'] == 'page':
-            data = self.get_products_block(data)[0]
+            data = self.get_products_block(data)
         if int(data['pageCount']) > int(data['currentPage']):
             next_page_url = data['_links']['next']['href']
             return next_page_url
@@ -364,8 +357,7 @@ class vialib(object):
             # example: https://content.viaplay.se/pc-se/sport
             if 'viaplay:products' in block['_embedded'].keys():
                 blocks.append(block)
-
-        return blocks
+        return blocks[-1]  # the last block is always (?) the right one
 
     def utc_to_local(self, utc_dt):
         # get integer timestamp to avoid precision lost
