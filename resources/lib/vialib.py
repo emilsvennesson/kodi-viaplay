@@ -262,9 +262,8 @@ class vialib(object):
                 path = os.path.join(self.tempdir, 'dan.smi')
             elif '_fi' in suburl:
                 path = os.path.join(self.tempdir, 'fin.smi')
-            f = open(path, 'w')
-            f.write(subtitle)
-            f.close()
+            with open(path, 'w') as file:
+                file.write(subtitle)
             subtitle_paths.append(path)
 
         return subtitle_paths
@@ -272,13 +271,12 @@ class vialib(object):
     def get_deviceid(self):
         """"Read/write deviceId (generated UUID4) from/to file and return it."""
         try:
-            deviceid = open(self.deviceid_file, 'r').read()
-            return deviceid
+            with open(self.deviceid_file, 'r') as deviceid:
+                return deviceid.read()
         except IOError:
             deviceid = str(uuid.uuid4())
-            fhandle = open(self.deviceid_file, 'w')
-            fhandle.write(deviceid)
-            fhandle.close()
+            with open(self.deviceid_file, 'w') as file:
+                file.write(deviceid)
             return deviceid
 
     def get_sports_status(self, data):
