@@ -259,8 +259,8 @@ def list_products(url, filter_sports_event=None):
             is_playable = 'true'
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item))
-            listitem.setArt(art(item))
+            listitem.setInfo('video', item_information(item, content))
+            listitem.setArt(art(item, content))
             listing.append((recursive_url, listitem, is_folder))
 
         if content == 'sport':
@@ -280,8 +280,8 @@ def list_products(url, filter_sports_event=None):
             is_folder = False
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item))
-            listitem.setArt(art(item))
+            listitem.setInfo('video', item_information(item, content))
+            listitem.setArt(art(item, content))
 
             if filter_sports_event == 'live':
                 if event_status == 'live':
@@ -303,8 +303,8 @@ def list_products(url, filter_sports_event=None):
             is_playable = 'true'
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item))
-            listitem.setArt(art(item))
+            listitem.setInfo('video', item_information(item, content))
+            listitem.setArt(art(item, content))
             listing.append((recursive_url, listitem, is_folder))
 
         elif content == 'series':
@@ -316,8 +316,8 @@ def list_products(url, filter_sports_event=None):
             is_playable = 'false'
             listitem = xbmcgui.ListItem(label=title)
             listitem.setProperty('IsPlayable', is_playable)
-            listitem.setInfo('video', item_information(item))
-            listitem.setArt(art(item))
+            listitem.setInfo('video', item_information(item, content))
+            listitem.setArt(art(item, content))
             listing.append((recursive_url, listitem, is_folder))
 
     xbmcplugin.addDirectoryItems(_handle, listing, len(listing))
@@ -352,10 +352,9 @@ def list_seasons(url):
         xbmcplugin.endOfDirectory(_handle)
 
 
-def item_information(item):
+def item_information(item, content):
     """Return the product information in a xbmcgui.setInfo friendly dict.
     Supported content types: episode, series, movie, sport"""
-    type = item['type']
     mediatype = None
     title = None
     tvshowtitle = None
@@ -396,7 +395,7 @@ def item_information(item):
     except KeyError:
         mpaa = None
 
-    if type == 'episode':
+    if content == 'episode':
         mediatype = 'episode'
         title = item['content']['series']['episodeTitle'].encode('utf-8')
         tvshowtitle = item['content']['series']['title'].encode('utf-8')
@@ -405,7 +404,7 @@ def item_information(item):
         plot = item['content']['synopsis'].encode('utf-8')
         xbmcplugin.setContent(_handle, 'episodes')
 
-    elif type == 'series':
+    elif content == 'series':
         mediatype = 'tvshow'
         title = item['content']['series']['title'].encode('utf-8')
         tvshowtitle = item['content']['series']['title'].encode('utf-8')
@@ -415,7 +414,7 @@ def item_information(item):
             plot = item['content']['synopsis'].encode('utf-8')  # needed for alphabetical listing
         xbmcplugin.setContent(_handle, 'tvshows')
 
-    elif type == 'movie':
+    elif content == 'movie':
         mediatype = 'movie'
         title = item['content']['title'].encode('utf-8')
         plot = item['content']['synopsis'].encode('utf-8')
@@ -433,7 +432,7 @@ def item_information(item):
             pass
         xbmcplugin.setContent(_handle, 'movies')
 
-    elif type == 'sport':
+    elif content == 'sport':
         mediatype = 'video'
         title = item['content']['title'].encode('utf-8')
         plot = item['content']['synopsis'].encode('utf-8')
@@ -460,9 +459,8 @@ def item_information(item):
     return info
 
 
-def art(item):
+def art(item, content):
     """Return the available art in a xbmcgui.setArt friendly dict."""
-    type = item['type']
     try:
         boxart = item['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
     except KeyError:
@@ -484,7 +482,7 @@ def art(item):
     except KeyError:
         landscape = None
 
-    if type == 'episode' or type == 'sport':
+    if content == 'episode' or content == 'sport':
         thumbnail = landscape
     else:
         thumbnail = boxart
