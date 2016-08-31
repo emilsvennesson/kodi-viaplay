@@ -273,8 +273,8 @@ class vialib(object):
                 return deviceid.read()
         except IOError:
             deviceid = str(uuid.uuid4())
-            with open(self.deviceid_file, 'w') as file:
-                file.write(deviceid)
+            with open(self.deviceid_file, 'w') as idfile:
+                idfile.write(deviceid)
             return deviceid
 
     def get_sports_status(self, data):
