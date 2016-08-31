@@ -436,7 +436,7 @@ def product_information(product, content):
         mediatype = 'video'
         title = product['content']['title'].encode('utf-8')
         plot = product['content']['synopsis'].encode('utf-8')
-        xbmcplugin.setContent(_handle, 'episodes')
+        xbmcplugin.setContent(_handle, 'movies')
 
     info = {
         'mediatype': mediatype,
