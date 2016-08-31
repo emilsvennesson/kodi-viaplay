@@ -248,8 +248,10 @@ class vialib(object):
             subtitle = htmlparser.unescape(sami).encode('utf-8')
             subtitle = subtitle.replace('  ', ' ')  # replace two spaces with one
 
-            sublang = re.search(r'[_]([a-z]+)', suburl).group(1)
-            if not sublang:
+            subpattern = re.search(r'[_]([a-z]+)', suburl)
+            if subpattern:
+                sublang = subpattern.group(1)
+            else:
                 sublang = 'unknown'
                 self.log('Unable to identify subtitle language.')
 
