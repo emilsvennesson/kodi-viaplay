@@ -253,17 +253,15 @@ class vialib(object):
             htmlparser = HTMLParser.HTMLParser()
             subtitle = htmlparser.unescape(sami).encode('utf-8')
             subtitle = subtitle.replace('  ', ' ')  # replace two spaces with one
-
-            if '_sv' in suburl:
-                path = os.path.join(self.tempdir, 'swe.smi')
-            elif '_no' in suburl:
-                path = os.path.join(self.tempdir, 'nor.smi')
-            elif '_da' in suburl:
-                path = os.path.join(self.tempdir, 'dan.smi')
-            elif '_fi' in suburl:
-                path = os.path.join(self.tempdir, 'fin.smi')
-            with open(path, 'w') as file:
-                file.write(subtitle)
+            
+            sublang = re.search(r'[_]([a-z]+)', suburl).group(1)
+            if not sublang:
+                sublang = 'unknown'
+                self.log('Unable to identify subtitle language.')
+                
+            path = os.path.join(self.tempdir, '%s.sami') % sublang      
+            with open(path, 'w') as subfile:
+                subfile.write(subtitle)
             subtitle_paths.append(path)
 
         return subtitle_paths
