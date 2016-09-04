@@ -232,7 +232,7 @@ def list_next_page(data):
         xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
-def list_products(url, filter_sports_event=None):
+def list_products(url, filter_sports_event=False):
     listing = []
     data = vp.make_request(url=url, method='get')
     products = vp.get_products(input=data, method='data')
@@ -284,14 +284,8 @@ def list_products(url, filter_sports_event=None):
             listitem.setInfo('video', product_information(product, content))
             listitem.setArt(art(product, content))
 
-            if filter_sports_event == 'live':
-                if event_status == 'live':
-                    listing.append((recursive_url, listitem, is_folder))
-            elif filter_sports_event == 'upcoming':
-                if event_status == 'upcoming':
-                    listing.append((recursive_url, listitem, is_folder))
-            elif filter_sports_event == 'archive':
-                if event_status == 'archive':
+            if filter_sports_event:
+                if filter_sports_event == event_status:
                     listing.append((recursive_url, listitem, is_folder))
             else:
                 listing.append((recursive_url, listitem, is_folder))
