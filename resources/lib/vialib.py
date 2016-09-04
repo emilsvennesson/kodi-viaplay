@@ -192,7 +192,7 @@ class vialib(object):
         letters = []
         products = self.get_products(input=url, method='url')
         for item in products:
-            letter = item['group']
+            letter = item['group'].encode('utf-8')
             if letter not in letters:
                 letters.append(letter)
 

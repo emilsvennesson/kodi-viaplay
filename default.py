@@ -117,7 +117,7 @@ def movies_menu(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'sortings_menu', 'url': category['href']}
+        parameters = {'action': 'list_sortings', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -135,7 +135,7 @@ def series_menu(url):
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'sortings_menu', 'url': category['href']}
+        parameters = {'action': 'list_sortings', 'url': category['href']}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -161,7 +161,7 @@ def kids_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def sortings_menu(url):
+def list_sortings(url):
     listing = []
     sortings = vp.get_sortings(url)
     if sortings:
@@ -173,7 +173,7 @@ def sortings_menu(url):
             listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
             try:
                 if sorting['id'] == 'alphabetical':
-                    parameters = {'action': 'alphabetical_letters_menu', 'url': sorting['href']}
+                    parameters = {'action': 'list_alphabetical_letters', 'url': sorting['href']}
                 else:
                     parameters = {'action': 'list_products', 'url': sorting['href']}
             except TypeError:
@@ -198,22 +198,20 @@ def list_products_alphabetical(url):
     xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
 
 
-def alphabetical_letters_menu(url):
+def list_alphabetical_letters(url):
     listing = []
     letters = vp.get_letters(url)
 
     for letter in letters:
-        title = letter.encode('utf-8')
         if letter == '0-9':
-            # 0-9 needs to be sent as a pound-sign
-            letter = '#'
+            query = '#'  # 0-9 needs to be sent as a number sign
         else:
-            letter = title.lower()
-        listitem = xbmcgui.ListItem(label=title)
+            query = letter.lower()
+        listitem = xbmcgui.ListItem(label=letter)
         listitem.setProperty('IsPlayable', 'false')
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-        parameters = {'action': 'list_products', 'url': url + '&letter=' + urllib.quote(letter)}
+        parameters = {'action': 'list_products', 'url': url + '&letter=' + urllib.quote(query)}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -579,9 +577,9 @@ def sports_menu(url):
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
         if date == 'today':
-            parameters = {'action': 'sports_today_menu', 'url': url}
+            parameters = {'action': 'list_sports_today', 'url': url}
         else:
-            parameters = {'action': 'sports_dates_menu', 'url': url, 'event_date': date}
+            parameters = {'action': 'list_sports_dates', 'url': url, 'event_date': date}
         recursive_url = _url + '?' + urllib.urlencode(parameters)
         is_folder = True
         listing.append((recursive_url, listitem, is_folder))
@@ -589,7 +587,7 @@ def sports_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def sports_today_menu(url):
+def list_sports_today(url):
     listing = []
     event_status = ['live', 'upcoming', 'archive']
     for status in event_status:
@@ -611,7 +609,7 @@ def sports_today_menu(url):
     xbmcplugin.endOfDirectory(_handle)
 
 
-def sports_dates_menu(url, event_date):
+def list_sports_dates(url, event_date):
     listing = []
     dates = vp.get_sports_dates(url, event_date)
     for date in dates:
@@ -670,20 +668,20 @@ def router(paramstring):
             list_seasons(params['url'])
         elif params['action'] == 'list_products':
             list_products(params['url'])
-        elif params['action'] == 'sports_today_menu':
-            sports_today_menu(params['url'])
+        elif params['action'] == 'list_sports_today':
+            list_sports_today(params['url'])
         elif params['action'] == 'list_products_sports_today':
             list_products(params['url'], params['filter_sports_event'])
         elif params['action'] == 'play_video':
             play_video(params['playid'], params['streamtype'], params['content'])
-        elif params['action'] == 'sortings_menu':
-            sortings_menu(params['url'])
-        elif params['action'] == 'alphabetical_letters_menu':
-            alphabetical_letters_menu(params['url'])
+        elif params['action'] == 'list_sortings':
+            list_sortings(params['url'])
+        elif params['action'] == 'list_alphabetical_letters':
+            list_alphabetical_letters(params['url'])
         elif params['action'] == 'search':
             search(params['url'])
-        elif params['action'] == 'sports_dates_menu':
-            sports_dates_menu(params['url'], params['event_date'])
+        elif params['action'] == 'list_sports_dates':
+            list_sports_dates(params['url'], params['event_date'])
         elif params['action'] == 'showmessage':
             dialog = xbmcgui.Dialog()
             dialog.ok(language(30017),
