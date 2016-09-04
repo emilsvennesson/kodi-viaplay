@@ -261,7 +261,7 @@ def list_products(url, filter_sports_event=False):
             listitem.setArt(art(product, content))
             listing.append((recursive_url, listitem, is_folder))
 
-        if content == 'sport':
+        elif content == 'sport':
             event_date = vp.parse_time(product['epg']['start'], localize=True)
             event_status = vp.get_sports_status(product)
             if event_status == 'archive':
