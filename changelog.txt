@@ -31,3 +31,4 @@
 
 2016.07.18 v1.0.0
 + Initial release
++ Thanks to eriksoderblom for icon and fanart!
