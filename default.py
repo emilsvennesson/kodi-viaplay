@@ -217,8 +217,8 @@ def list_products(url, filter_sports_event=False):
 
         if content == 'episode':
             title = product['content']['series']['episodeTitle']
-            items = add_item(title, parameters, items=items, playable=True, watched=True,
-                             setInfo=return_info(product, content), setArt=return_art(product, content))
+            items = add_item(title, parameters, items=items, playable=True, watched=True, set_content='episodes',
+                             set_info=return_info(product, content), set_art=return_art(product, content))
 
         elif content == 'sport':
             event_date = vp.parse_time(product['epg']['start'], localize=True)
@@ -237,26 +237,28 @@ def list_products(url, filter_sports_event=False):
             if filter_sports_event:
                 if filter_sports_event == event_status:
                     items = add_item(title, parameters, items=items, playable=playable, folder=False,
-                                     setInfo=return_info(product, content),
-                                     setArt=return_art(product, content))
+                                     set_content='movies',
+                                     set_info=return_info(product, content),
+                                     set_art=return_art(product, content))
             else:
                 items = add_item(title, parameters, items=items, playable=playable, folder=False,
-                                 setInfo=return_info(product, content),
-                                 setArt=return_art(product, content))
+                                 set_info=return_info(product, content),
+                                 set_art=return_art(product, content))
 
         elif content == 'movie':
             title = '%s (%s)' % (product['content']['title'].encode('utf-8'), str(product['content']['production']['year']))
             if product['system']['availability']['planInfo']['isRental'] is True:
                 title = title + ' *'  # mark rental products with an asterisk
             items = add_item(title, parameters, items=items, playable=True, watched=True, folder=False,
-                             setInfo=return_info(product, content), setArt=return_art(product, content))
+                             set_content='movies',
+                             set_info=return_info(product, content), set_art=return_art(product, content))
 
         elif content == 'series':
             title = product['content']['series']['title'].encode('utf-8')
             self_url = product['_links']['viaplay:page']['href']
             parameters = {'action': 'list_seasons', 'url': self_url}
-            items = add_item(title, parameters, items=items, watched=True,
-                             setInfo=return_info(product, content), setArt=return_art(product, content))
+            items = add_item(title, parameters, items=items, watched=True, set_content='tvshows',
+                             set_info=return_info(product, content), set_art=return_art(product, content))
 
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     if sort is True:
@@ -334,7 +336,6 @@ def return_info(product, content):
         season = int(product['content']['series']['season']['seasonNumber'])
         episode = int(product['content']['series']['episodeNumber'])
         plot = product['content']['synopsis'].encode('utf-8')
-        xbmcplugin.setContent(_handle, 'episodes')
 
     elif content == 'series':
         mediatype = 'tvshow'
@@ -344,7 +345,6 @@ def return_info(product, content):
             plot = product['content']['series']['synopsis'].encode('utf-8')
         except KeyError:
             plot = product['content']['synopsis'].encode('utf-8')  # needed for alphabetical listing
-        xbmcplugin.setContent(_handle, 'tvshows')
 
     elif content == 'movie':
         mediatype = 'movie'
@@ -362,13 +362,11 @@ def return_info(product, content):
             director = ', '.join(directors)
         except KeyError:
             pass
-        xbmcplugin.setContent(_handle, 'movies')
 
     elif content == 'sport':
         mediatype = 'video'
         title = product['content']['title'].encode('utf-8')
         plot = product['content']['synopsis'].encode('utf-8')
-        xbmcplugin.setContent(_handle, 'movies')
 
     info = {
         'mediatype': mediatype,
@@ -577,21 +575,23 @@ def show_dialog(dialog_type, heading, message):
         dialog.ok(heading, message)
 
 
-def add_item(title, parameters, items=False, folder=True, playable=False, setInfo=False, setArt=False,
-             watched=False):
+def add_item(title, parameters, items=False, folder=True, playable=False, set_info=False, set_art=False,
+             watched=False, set_content=False):
     listitem = xbmcgui.ListItem(label=title)
     if playable:
         listitem.setProperty('IsPlayable', 'true')
         folder = False
-    if setArt:
-        listitem.setArt(setArt)
+    if set_art:
+        listitem.setArt(set_art)
     else:
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
         listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
-    if setInfo:
-        listitem.setInfo('video', setInfo)
+    if set_info:
+        listitem.setInfo('video', set_info)
     if not watched:
         listitem.addStreamInfo('video', {'duration': 0})
+    if set_content:
+        xbmcplugin.setContent(_handle, set_content)
 
     recursive_url = _url + '?' + urllib.urlencode(parameters)
 
