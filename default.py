@@ -97,8 +97,8 @@ def root_menu():
                 addon_log('Unsupported videotype found: %s' % videotype)
                 parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
                               'message': 'This type (%s) is not yet supported.' % videotype}
-                              
-            items = add_item(title, parameters, items=items)        
+
+            items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     list_search(data)
     xbmcplugin.endOfDirectory(_handle)
@@ -111,8 +111,7 @@ def movies_menu(url):
     for category in categories:
         title = category['title']
         parameters = {'action': 'list_sortings', 'url': category['href']}
-        recursive_url = _url + '?' + urllib.urlencode(parameters)
-        
+
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -125,7 +124,7 @@ def series_menu(url):
     for category in categories:
         title = category['title']
         parameters = {'action': 'list_sortings', 'url': category['href']}
-        
+
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -139,7 +138,7 @@ def kids_menu(url):
         title = '%s: %s' % (category['group']['title'].title(), category['title'])
         category_url = category['href']
         parameters = {'action': 'list_products', 'url': category_url}
-        
+
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -159,7 +158,7 @@ def list_sortings(url):
                     parameters = {'action': 'list_products', 'url': sorting_url}
             except TypeError:
                 parameters = {'action': 'list_products', 'url': sorting_url}
-                
+
             items = add_item(title, parameters, items=items)
         list_products_alphabetical(url)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -218,39 +217,46 @@ def list_products(url, filter_sports_event=False):
 
         if content == 'episode':
             title = product['content']['series']['episodeTitle']
-            items = add_item(title, parameters, items=items, isPlayable=True, watched=True, setInfo=product_information(product, content), setArt=art_information(product, content))
+            items = add_item(title, parameters, items=items, playable=True, watched=True,
+                             setInfo=return_info(product, content), setArt=return_art(product, content))
 
         elif content == 'sport':
             event_date = vp.parse_time(product['epg']['start'], localize=True)
             event_status = vp.get_sports_status(product)
             if event_status == 'archive':
                 title = 'Archive: %s' % product['content']['title'].encode('utf-8')
-                is_playable = True
+                playable = True
             else:
                 title = '%s (%s)' % (product['content']['title'].encode('utf-8'), event_date.strftime("%H:%M"))
-                is_playable = True
+                playable = True
             if event_status == 'upcoming':
                 parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
                               'message': '%s %s.' % (language(30016), event_date.strftime("%Y-%m-%d %H:%M"))}
-                is_playable = False
+                playable = False
 
             if filter_sports_event:
                 if filter_sports_event == event_status:
-                    items = add_item(title, parameters, items=items, isPlayable=is_playable, is_folder=False, setInfo=product_information(product, content), setArt=art_information(product, content))
+                    items = add_item(title, parameters, items=items, playable=playable, folder=False,
+                                     setInfo=return_info(product, content),
+                                     setArt=return_art(product, content))
             else:
-                items = add_item(title, parameters, items=items, isPlayable=is_playable, is_folder=False, setInfo=product_information(product, content), setArt=art_information(product, content))
+                items = add_item(title, parameters, items=items, playable=playable, folder=False,
+                                 setInfo=return_info(product, content),
+                                 setArt=return_art(product, content))
 
         elif content == 'movie':
             title = '%s (%s)' % (product['content']['title'].encode('utf-8'), str(product['content']['production']['year']))
             if product['system']['availability']['planInfo']['isRental'] is True:
                 title = title + ' *'  # mark rental products with an asterisk
-            items = add_item(title, parameters, items=items, isPlayable=True, watched=True, is_folder=False, setInfo=product_information(product, content), setArt=art_information(product, content))
-                
+            items = add_item(title, parameters, items=items, playable=True, watched=True, folder=False,
+                             setInfo=return_info(product, content), setArt=return_art(product, content))
+
         elif content == 'series':
             title = product['content']['series']['title'].encode('utf-8')
             self_url = product['_links']['viaplay:page']['href']
             parameters = {'action': 'list_seasons', 'url': self_url}
-            items = add_item(title, parameters, items=items, watched=True, setInfo=product_information(product, content), setArt=art_information(product, content))
+            items = add_item(title, parameters, items=items, watched=True,
+                             setInfo=return_info(product, content), setArt=return_art(product, content))
 
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     if sort is True:
@@ -272,13 +278,13 @@ def list_seasons(url):
             season_url = season['_links']['self']['href']
             title = '%s %s' % (language(30014), season['title'])
             parameters = {'action': 'list_products', 'url': season_url}
-            
+
             items = add_item(title, parameters, items=items)
         xbmcplugin.addDirectoryItems(_handle, items, len(items))
         xbmcplugin.endOfDirectory(_handle)
 
 
-def product_information(product, content):
+def return_info(product, content):
     """Return the product information in a xbmcgui.setInfo friendly dict.
     Supported content types: episode, series, movie, sport"""
     cast = []
@@ -385,7 +391,7 @@ def product_information(product, content):
     return info
 
 
-def art_information(product, content):
+def return_art(product, content):
     """Return the available art in a xbmcgui.setArt friendly dict."""
     try:
         boxart = product['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
@@ -503,7 +509,7 @@ def sports_menu(url):
             parameters = {'action': 'list_sports_today', 'url': url}
         else:
             parameters = {'action': 'list_sports_dates', 'url': url, 'event_date': date}
-            
+
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -520,7 +526,7 @@ def list_sports_today(url):
         else:
             title = language(30031)
         parameters = {'action': 'list_products_sports_today', 'url': url, 'filter_sports_event': status}
-    
+
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -532,7 +538,7 @@ def list_sports_dates(url, event_date):
     for date in dates:
         title = date['date']
         parameters = {'action': 'list_products', 'url': date['href']}
-        
+
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -569,30 +575,32 @@ def show_dialog(dialog_type, heading, message):
     dialog = xbmcgui.Dialog()
     if dialog_type == 'ok':
         dialog.ok(heading, message)
-        
-        
-def add_item(title, parameters, items=False, is_folder=True, isPlayable=False, setInfo=False, setArt=False, watched=False):   
+
+
+def add_item(title, parameters, items=False, folder=True, playable=False, setInfo=False, setArt=False,
+             watched=False):
     listitem = xbmcgui.ListItem(label=title)
-    if isPlayable:
-        listitem.setProperty('IsPlayable', 'true')  
-        is_folder = False
+    if playable:
+        listitem.setProperty('IsPlayable', 'true')
+        folder = False
     if setArt:
         listitem.setArt(setArt)
     else:
         listitem.setArt({'icon': os.path.join(addon_path, 'icon.png')})
-        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})  
+        listitem.setArt({'fanart': os.path.join(addon_path, 'fanart.jpg')})
     if setInfo:
         listitem.setInfo('video', setInfo)
     if not watched:
-        listitem.addStreamInfo('video', {'duration': 0})  
-        
+        listitem.addStreamInfo('video', {'duration': 0})
+
     recursive_url = _url + '?' + urllib.urlencode(parameters)
-    
+
     if items is False:
-        xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, is_folder)
+        xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, folder)
     else:
-        items.append((recursive_url, listitem, is_folder))
+        items.append((recursive_url, listitem, folder))
         return items
+
 
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
