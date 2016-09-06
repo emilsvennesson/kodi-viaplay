@@ -8,6 +8,7 @@ import urllib
 import urlparse
 
 from resources.lib.vialib import vialib
+
 import xbmc
 import xbmcaddon
 import xbmcvfs
@@ -61,17 +62,17 @@ def addon_log(string):
         xbmc.log("%s: %s" % (logging_prefix, string))
 
 
-def display_auth_message(error):
-    if error.value == 'UserNotAuthorizedForContentError':
+def show_auth_error(error):
+    if error == 'UserNotAuthorizedForContentError':
         message = language(30020)
-    elif error.value == 'PurchaseConfirmationRequiredError':
+    elif error == 'PurchaseConfirmationRequiredError':
         message = language(30021)
-    elif error.value == 'UserNotAuthorizedRegionBlockedError':
+    elif error == 'UserNotAuthorizedRegionBlockedError':
         message = language(30022)
     else:
-        message = error.value
-    dialog = xbmcgui.Dialog()
-    dialog.ok(language(30017), message)
+        message = error
+
+    show_dialog(dialog_type='ok', heading=language(30017), message=message)
 
 
 def root_menu():
@@ -98,7 +99,8 @@ def root_menu():
                 parameters = {'action': 'kids_menu', 'url': category['href']}
             else:
                 addon_log('Unsupported videotype found: %s' % videotype)
-                parameters = {'action': 'showmessage', 'message': 'This type (%s) is not yet supported.' % videotype}
+                parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
+                              'message': 'This type (%s) is not yet supported.' % videotype}
             recursive_url = _url + '?' + urllib.urlencode(parameters)
             is_folder = True
             listing.append((recursive_url, listitem, is_folder))
@@ -271,7 +273,7 @@ def list_products(url, filter_sports_event=False):
                 title = '%s (%s)' % (product['content']['title'].encode('utf-8'), event_date.strftime("%H:%M"))
                 is_playable = 'true'
             if event_status == 'upcoming':
-                parameters = {'action': 'showmessage',
+                parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
                               'message': '%s %s.' % (language(30016), event_date.strftime("%Y-%m-%d %H:%M"))}
                 recursive_url = _url + '?' + urllib.urlencode(parameters)
                 is_playable = 'false'
@@ -536,12 +538,10 @@ def play_video(input, streamtype, content):
         video_urls = vp.get_video_urls(guid)
     except vp.AuthFailure as error:
         video_urls = False
-        display_auth_message(error)
+        show_auth_error(error.value)
     except vp.LoginFailure:
         video_urls = False
-        dialog = xbmcgui.Dialog()
-        dialog.ok(language(30005),
-                  language(30006))
+        show_dialog(dialog_type='ok', heading=language(30005), message=language(30006))
 
     if video_urls:
         if content == 'sport':
@@ -652,6 +652,12 @@ def select_bitrate(manifest_bitrates=None):
         return ask_bitrate(manifest_bitrates)
 
 
+def show_dialog(dialog_type, heading, message):
+    dialog = xbmcgui.Dialog()
+    if dialog_type == 'ok':
+        dialog.ok(heading, message)
+
+
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
@@ -682,10 +688,8 @@ def router(paramstring):
             search(params['url'])
         elif params['action'] == 'list_sports_dates':
             list_sports_dates(params['url'], params['event_date'])
-        elif params['action'] == 'showmessage':
-            dialog = xbmcgui.Dialog()
-            dialog.ok(language(30017),
-                      params['message'])
+        elif params['action'] == 'show_dialog':
+            show_dialog(params['dialog_type'], params['heading'], params['message'])
     else:
         root_menu()
 
