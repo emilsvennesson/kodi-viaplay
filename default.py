@@ -59,7 +59,7 @@ vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, ss
 
 def addon_log(string):
     if debug:
-        xbmc.log("%s: %s" % (logging_prefix, string))
+        xbmc.log('%s: %s' % (logging_prefix, string))
 
 
 def show_auth_error(error):
@@ -195,11 +195,10 @@ def list_next_page(data):
         add_item(title, parameters)
 
 
-def list_products(url, filter_sports_event=False):
+def list_products(url, filter_event=False):
     items = []
     data = vp.make_request(url=url, method='get')
-    products = vp.get_products(input=data, method='data')
-    sort = None
+    products = vp.get_products(input=data, method='data', filter_event=filter_event)
 
     for product in products:
         content = product['type']
@@ -217,52 +216,52 @@ def list_products(url, filter_sports_event=False):
 
         if content == 'episode':
             title = product['content']['series']['episodeTitle']
-            items = add_item(title, parameters, items=items, playable=True, watched=True, set_content='episodes',
-                             set_info=return_info(product, content), set_art=return_art(product, content))
+            playable = True
+            watched = True
+            set_content = 'episodes'
 
         elif content == 'sport':
-            event_date = vp.parse_time(product['epg']['start'], localize=True)
-            event_status = vp.get_sports_status(product)
-            if event_status == 'archive':
-                title = 'Archive: %s' % product['content']['title'].encode('utf-8')
-                playable = True
-            else:
-                title = '%s (%s)' % (product['content']['title'].encode('utf-8'), event_date.strftime("%H:%M"))
-                playable = True
-            if event_status == 'upcoming':
-                parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
-                              'message': '%s %s.' % (language(30016), event_date.strftime("%Y-%m-%d %H:%M"))}
-                playable = False
+            product_name = product['content']['title'].encode('utf-8')
 
-            if filter_sports_event:
-                if filter_sports_event == event_status:
-                    items = add_item(title, parameters, items=items, playable=playable, folder=False,
-                                     set_content='movies',
-                                     set_info=return_info(product, content),
-                                     set_art=return_art(product, content))
+            if product['event_status'] == 'archive':
+                title = 'Archive: %s' % product_name
             else:
-                items = add_item(title, parameters, items=items, playable=playable, folder=False,
-                                 set_info=return_info(product, content),
-                                 set_art=return_art(product, content))
+                title = '%s (%s)' % (product_name, product['event_date'].strftime('%H:%M'))
+
+            if product['event_status'] == 'upcoming':
+                parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
+                              'message': '%s %s.' % (language(30016), product['event_date'].strftime('%Y-%m-%d %H:%M'))}
+                playable = False
+            else:
+                playable = True
+
+            watched = False
+            set_content = 'movies'
 
         elif content == 'movie':
-            title = '%s (%s)' % (product['content']['title'].encode('utf-8'), str(product['content']['production']['year']))
+            movie_name = product['content']['title'].encode('utf-8')
+            movie_year = str(product['content']['production']['year'])
+            title = '%s (%s)' % (movie_name, movie_year)
+
             if product['system']['availability']['planInfo']['isRental'] is True:
                 title = title + ' *'  # mark rental products with an asterisk
-            items = add_item(title, parameters, items=items, playable=True, watched=True, folder=False,
-                             set_content='movies',
-                             set_info=return_info(product, content), set_art=return_art(product, content))
+
+            playable = True
+            watched = True
+            set_content = 'movies'
 
         elif content == 'series':
             title = product['content']['series']['title'].encode('utf-8')
-            self_url = product['_links']['viaplay:page']['href']
-            parameters = {'action': 'list_seasons', 'url': self_url}
-            items = add_item(title, parameters, items=items, watched=True, set_content='tvshows',
-                             set_info=return_info(product, content), set_art=return_art(product, content))
+            season_url = product['_links']['viaplay:page']['href']
+            parameters = {'action': 'list_seasons', 'url': season_url}
 
+            playable = False
+            watched = True
+            set_content = 'tvshows'
+
+        items = add_item(title, parameters, items=items, playable=playable, watched=watched, set_content=set_content,
+                         set_info=return_info(product, content), set_art=return_art(product, content))
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    if sort is True:
-        xbmcplugin.addSortMethod(_handle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     list_next_page(data)
     xbmcplugin.endOfDirectory(_handle)
 

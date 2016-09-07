@@ -198,20 +198,39 @@ class vialib(object):
 
         return letters
 
-    def get_products(self, input, method=None):
+    def get_products(self, input, method=None, filter_event=False):
         """Return a list of all available products."""
+        products = []
+
         if method == 'data':
             data = input
         else:
             data = self.make_request(url=input, method='get')
 
         if 'list' in data['type']:
-            products = data['_embedded']['viaplay:products']
+            products_dict = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':
-            products = data['_embedded']['viaplay:product']
+            products_dict = data['_embedded']['viaplay:product']
         else:
-            products = self.get_products_block(data)['_embedded']['viaplay:products']
-            
+            products_dict = self.get_products_block(data)['_embedded']['viaplay:products']
+
+        try:
+            # try adding additional info to sports dict
+            for product in products_dict:
+                if product['type'] == 'sport':
+                    product['event_date'] = self.parse_time(product['epg']['start'], localize=True)
+                    product['event_status'] = self.get_event_status(product)
+                products.append(product)
+        except TypeError:
+            products = products_dict
+
+        if filter_event:
+            fproducts = []
+            for product in products:
+                if filter_event == product['event_status']:
+                    fproducts.append(product)
+            products = fproducts
+
         return products
 
     def get_seasons(self, url):
@@ -273,7 +292,7 @@ class vialib(object):
                 idfile.write(deviceid)
             return deviceid
 
-    def get_sports_status(self, data):
+    def get_event_status(self, data):
         """Return whether the event is live/upcoming/archive."""
         now = datetime.utcnow()
         producttime_start = self.parse_time(data['epg']['start'])
