@@ -467,28 +467,29 @@ def play_video(input, streamtype, content):
     try:
         video_urls = vp.get_video_urls(guid)
     except vp.AuthFailure as error:
-        video_urls = False
         show_auth_error(error.value)
-    except vp.LoginFailure:
         video_urls = False
+    except vp.LoginFailure:
         show_dialog(dialog_type='ok', heading=language(30005), message=language(30006))
+        video_urls = False
 
     if video_urls:
         if content == 'sport':
             # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
             stream_url = video_urls['manifest_url']
-            playitem = xbmcgui.ListItem(path=stream_url)
-            playitem.setProperty('IsPlayable', 'true')
-            xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
         else:
             bitrate = select_bitrate(video_urls['bitrates'].keys())
             if bitrate:
                 stream_url = video_urls['bitrates'][bitrate]
-                playitem = xbmcgui.ListItem(path=stream_url)
-                playitem.setProperty('IsPlayable', 'true')
-                if addon.getSetting('subtitles') == 'true':
-                    playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-                xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+            else:
+                stream_url = False
+                
+        if stream_url:
+            playitem = xbmcgui.ListItem(path=stream_url)
+            playitem.setProperty('IsPlayable', 'true')
+            if addon.getSetting('subtitles') == 'true':
+                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+            xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
 
 
 def sports_menu(url):
