@@ -136,3 +136,15 @@ msgstr "Kommande evenemang"
 msgctxt "#30031"
 msgid "Archived events"
 msgstr "Arkiverade evenemang"
+
+msgctxt "#30032"
+msgid "Enter your PIN code"
+msgstr "Skriv din PIN-kod"
+
+msgctxt "#30033"
+msgid "Parental control"
+msgstr "Barnlås"
+
+msgctxt "#30034"
+msgid "The PIN code you have entered is incorrect."
+msgstr "PIN-koden du angav är felaktig."

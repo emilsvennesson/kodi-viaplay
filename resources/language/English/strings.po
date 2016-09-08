@@ -136,3 +136,15 @@ msgstr ""
 msgctxt "#30031"
 msgid "Archived events"
 msgstr ""
+
+msgctxt "#30032"
+msgid "Enter your PIN code"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Parental control"
+msgstr ""
+
+msgctxt "#30034"
+msgid "The PIN code you have entered is incorrect."
+msgstr ""

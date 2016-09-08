@@ -446,6 +446,15 @@ def get_userinput(title):
         addon_log('User input string: %s' % query)
     return query
 
+    
+def get_numeric_input(heading):
+    dialog = xbmcgui.Dialog()
+    numeric_input = dialog.numeric(0, heading)
+    if len(numeric_input) > 0:
+        return str(numeric_input)
+    else:
+        return None
+
 
 def search(url):
     try:
@@ -457,7 +466,7 @@ def search(url):
         pass
 
 
-def play_video(input, streamtype, content):
+def play_video(input, streamtype, content, pincode=None):
     if streamtype == 'url':
         url = input
         guid = vp.get_products(input=url, method='url')['system']['guid']
@@ -465,15 +474,8 @@ def play_video(input, streamtype, content):
         guid = input
 
     try:
-        video_urls = vp.get_video_urls(guid)
-    except vp.AuthFailure as error:
-        show_auth_error(error.value)
-        video_urls = False
-    except vp.LoginFailure:
-        show_dialog(dialog_type='ok', heading=language(30005), message=language(30006))
-        video_urls = False
-
-    if video_urls:
+        video_urls = vp.get_video_urls(guid, pincode=pincode)
+        
         if content == 'sport':
             # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
             stream_url = video_urls['manifest_url']
@@ -490,6 +492,20 @@ def play_video(input, streamtype, content):
             if addon.getSetting('subtitles') == 'true':
                 playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
             xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+            
+    except vp.AuthFailure as error:
+        if error.value == 'ParentalGuidancePinChallengeNeededError':
+            if pincode:
+                show_dialog(dialog_type='ok', heading=language(30033), message=language(30034))
+            else:
+                pincode = get_numeric_input(language(30032))
+                if pincode:
+                    play_video(input, streamtype, content, pincode)
+        else:
+            show_auth_error(error.value)
+            
+    except vp.LoginFailure:
+        show_dialog(dialog_type='ok', heading=language(30005), message=language(30006))
 
 
 def sports_menu(url):

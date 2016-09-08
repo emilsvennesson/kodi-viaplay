@@ -128,7 +128,7 @@ class vialib(object):
 
         return True
 
-    def get_video_urls(self, guid):
+    def get_video_urls(self, guid, pincode=None):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         video_urls = {}
         url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
@@ -138,7 +138,8 @@ class vialib(object):
             'deviceType': 'pc',
             'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
             'deviceKey': 'pchls-%s' % self.country,
-            'guid': guid
+            'guid': guid,
+            'pgPin': pincode
         }
 
         data = self.make_request(url=url, method='get', payload=payload)

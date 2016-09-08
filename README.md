@@ -26,13 +26,13 @@ This plugin supports Kodi Jarvis or later. While it may work fine on older versi
  * Subtitles
  * Search
  * A-Ö alphabetical listing
+ * Parental control
  
 Currently unsupported features:
 
  * Viasat TV To Go
  * Starred
  * Activity list
- * Parental control
  * ... And quite possibly more that I'm forgetting about!
  
 ## Known issues: ##
