@@ -1,4 +1,12 @@
-﻿2016.08.31 v1.0.4
+﻿2016.09.08 v1.0.5
++ Bug fix: possible UTC bug when determining game status
++ Bump required requests version to 2.9.1
++ Don't set watched status on sports content
++ Implement parental control
++ Add option to limit the max allowed bitrate
++ Code cleanup & refactoring
+
+2016.08.31 v1.0.4
 + Remove dateutil dependency; add iso8601
 + Improve the sports section
 + Get better at catching exceptions
