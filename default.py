@@ -568,6 +568,8 @@ def ask_bitrate(bitrates):
     ret = dialog.select(language(30026), options)
     if ret > -1:
         return bitrates[ret]
+    else:
+        return None
 
 
 def select_bitrate(manifest_bitrates=None):
@@ -575,12 +577,22 @@ def select_bitrate(manifest_bitrates=None):
     bitrate_setting = int(addon.getSetting('preferred_bitrate'))
     if bitrate_setting == 0:
         preferred_bitrate = 'highest'
+    elif bitrate_setting == 1:
+        preferred_bitrate = 'limit'
     else:
         preferred_bitrate = 'ask'
 
     manifest_bitrates.sort(key=int, reverse=True)
     if preferred_bitrate == 'highest':
         return manifest_bitrates[0]
+    elif preferred_bitrate == 'limit':
+        allowed_bitrates = []
+        max_bitrate_allowed = int(addon.getSetting('max_bitrate_allowed'))
+        for bitrate in manifest_bitrates:
+            if max_bitrate_allowed >= int(bitrate):
+                allowed_bitrates.append(str(bitrate))
+        if allowed_bitrates:
+            return allowed_bitrates[0]
     else:
         return ask_bitrate(manifest_bitrates)
 

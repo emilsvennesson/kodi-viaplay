@@ -148,3 +148,11 @@ msgstr ""
 msgctxt "#30034"
 msgid "The PIN code you have entered is incorrect."
 msgstr ""
+
+msgctxt "#30035"
+msgid "Limit bitrate"
+msgstr ""
+
+msgctxt "#30036"
+msgid "Max bitrate allowed (Kbps)"
+msgstr ""

@@ -148,3 +148,11 @@ msgstr "Barnlås"
 msgctxt "#30034"
 msgid "The PIN code you have entered is incorrect."
 msgstr "PIN-koden du angav är felaktig."
+
+msgctxt "#30035"
+msgid "Limit bitrate"
+msgstr "Begränsa bitrate"
+
+msgctxt "#30036"
+msgid "Max bitrate allowed (Kbps)"
+msgstr "Max tillåtna bitrate (Kbps)"
