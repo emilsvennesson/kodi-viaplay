@@ -23,7 +23,6 @@
 + Performance improvements
 + Significant code refactoring
 
-
 2016.08.05 v1.0.2
 + Store support
 + Bug fix: some categories failed to load due to unavailable artwork
