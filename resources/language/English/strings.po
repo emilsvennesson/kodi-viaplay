@@ -58,7 +58,7 @@ msgid "Finland"
 msgstr ""
 
 msgctxt "#30012"
-msgid "Download subtitles if available"
+msgid "Download available subtitles"
 msgstr ""
 
 msgctxt "#30013"
