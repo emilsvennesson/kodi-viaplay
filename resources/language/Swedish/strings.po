@@ -102,7 +102,7 @@ msgid "You're not allowed to watch content from this region."
 msgstr "Det går inte att spela upp innehåll från regionen du befinner dig i."
 
 msgctxt "#30023"
-msgid "Preferred stream quality"
+msgid "Preferred stream quality (movies & TV)"
 msgstr "Föredragen strömkvalitet (filmer & TV)"
 
 msgctxt "#30024"
@@ -126,7 +126,7 @@ msgid "Upcoming days"
 msgstr "Kommande dagar"
 
 msgctxt "#30029"
-msgid "Archived days"
+msgid "Previous days"
 msgstr "Föregående dagar"
 
 msgctxt "#30030"
