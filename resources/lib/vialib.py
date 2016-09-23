@@ -201,29 +201,29 @@ class vialib(object):
 
     def get_products(self, input, method=None, filter_event=False):
         """Return a list of all available products."""
-        products = []
-
         if method == 'data':
             data = input
         else:
             data = self.make_request(url=input, method='get')
 
         if 'list' in data['type']:
-            products_dict = data['_embedded']['viaplay:products']
+            products = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':
-            products_dict = data['_embedded']['viaplay:product']
+            products = data['_embedded']['viaplay:product']
         else:
-            products_dict = self.get_products_block(data)['_embedded']['viaplay:products']
+            products = self.get_products_block(data)['_embedded']['viaplay:products']
 
         try:
             # try adding additional info to sports dict
-            for product in products_dict:
+            aproducts = []
+            for product in products:
                 if product['type'] == 'sport':
                     product['event_date'] = self.parse_time(product['epg']['start'], localize=True)
                     product['event_status'] = self.get_event_status(product)
-                products.append(product)
+                aproducts.append(product)
+            products = aproducts
         except TypeError:
-            products = products_dict
+            pass
 
         if filter_event:
             fproducts = []
@@ -331,6 +331,7 @@ class vialib(object):
     def parse_m3u8_manifest(self, manifest_url):
         """Return the stream URL along with its bitrate."""
         streams = {}
+        auth_cookie = None
         req = requests.get(manifest_url)
         m3u8_manifest = req.content
         self.log('HLS manifest: \n %s' % m3u8_manifest)
@@ -341,14 +342,16 @@ class vialib(object):
                 hdntl_cookie = req.cookies['hdntl']
                 hdnts_cookie = req.cookies['hdnts']
                 auth_cookie = 'hdntl=%s; hdnts=%s' % (hdntl_cookie, hdnts_cookie)
+            elif 'hdntl' in req.cookies.keys():
+                hdntl_cookie = req.cookies['hdntl']
+                auth_cookie = 'hdntl=%s' % hdntl_cookie
             elif 'lvlt_tk' in req.cookies.keys():
                 lvlt_tk_cookie = req.cookies['lvlt_tk']
                 auth_cookie = 'lvlt_tk=%s' % lvlt_tk_cookie
             else:
-                hdntl_cookie = req.cookies['hdntl']
-                auth_cookie = 'hdntl=%s' % hdntl_cookie
+                self.log('No auth cookie found.')
         else:
-            auth_cookie = None
+            self.log('Stream request didn\'t contain any cookies.')
 
         m3u8_header = {'Cookie': auth_cookie}
         m3u8_obj = m3u8.loads(m3u8_manifest)
