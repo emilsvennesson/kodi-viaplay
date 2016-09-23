@@ -126,8 +126,6 @@ class vialib(object):
                 if not self.login(self.username, self.password):
                     raise self.LoginFailure('login failed')
 
-        return True
-
     def get_video_urls(self, guid, pincode=None):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         video_urls = {}
@@ -164,7 +162,7 @@ class vialib(object):
                 raise self.AuthFailure(subscription_error)
         except KeyError:
             # 'success' won't be in response if it's successful
-            return True
+            pass
 
     def get_categories(self, input, method=None):
         if method == 'data':
