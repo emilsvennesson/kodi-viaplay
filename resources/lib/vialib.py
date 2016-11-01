@@ -184,6 +184,7 @@ class vialib(object):
         except KeyError:
             self.log('No sortings available for this category.')
             sorttypes = None
+
         return sorttypes
 
     def get_letters(self, url):
@@ -216,7 +217,7 @@ class vialib(object):
             aproducts = []
             for product in products:
                 if product['type'] == 'sport':
-                    product['event_date'] = self.parse_time(product['epg']['start'], localize=True)
+                    product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
                     product['event_status'] = self.get_event_status(product)
                 aproducts.append(product)
             products = aproducts
@@ -295,7 +296,7 @@ class vialib(object):
     def get_event_status(self, data):
         """Return whether the event is live/upcoming/archive."""
         now = datetime.utcnow()
-        producttime_start = self.parse_time(data['epg']['start'])
+        producttime_start = self.parse_datetime(data['epg']['start'])
         producttime_start = producttime_start.replace(tzinfo=None)
         if 'isLive' in data['system']['flags']:
             status = 'live'
@@ -390,9 +391,10 @@ class vialib(object):
         assert utc_dt.resolution >= timedelta(microseconds=1)
         return local_dt.replace(microsecond=utc_dt.microsecond)
 
-    def parse_time(self, iso8601_string, localize=False):
+    def parse_datetime(self, iso8601_string, localize=False):
         """Parse ISO8601 string to datetime object."""
         datetime_obj = iso8601.parse_date(iso8601_string)
         if localize:
-            datetime_obj = self.utc_to_local(datetime_obj)
-        return datetime_obj
+            return self.utc_to_local(datetime_obj)
+        else:
+            return datetime_obj
