@@ -86,17 +86,33 @@ def root_menu():
         title = category['title']
         if categorytype != 'editorial':
             if videotype == 'series':
-                parameters = {'action': 'series_menu', 'url': category['href']}
+                parameters = {
+                    'action': 'series_menu',
+                    'url': category['href']
+                }
             elif videotype == 'movie' or videotype == 'rental':
-                parameters = {'action': 'movies_menu', 'url': category['href']}
+                parameters = {
+                    'action': 'movies_menu',
+                    'url': category['href']
+                }
             elif videotype == 'sport':
-                parameters = {'action': 'sports_menu', 'url': category['href']}
+                parameters = {
+                    'action': 'sports_menu',
+                    'url': category['href']
+                }
             elif videotype == 'kids':
-                parameters = {'action': 'kids_menu', 'url': category['href']}
+                parameters = {
+                    'action': 'kids_menu',
+                    'url': category['href']
+                }
             else:
                 addon_log('Unsupported videotype found: %s' % videotype)
-                parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
-                              'message': 'This type (%s) is not yet supported.' % videotype}
+                parameters = {
+                    'action': 'show_dialog',
+                    'dialog_type': 'ok',
+                    'heading': language(30017),
+                    'message': 'This type (%s) is not yet supported.' % videotype
+                }
 
             items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -110,7 +126,10 @@ def movies_menu(url):
 
     for category in categories:
         title = category['title']
-        parameters = {'action': 'list_sortings', 'url': category['href']}
+        parameters = {
+            'action': 'list_sortings',
+            'url': category['href']
+        }
 
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -123,7 +142,10 @@ def series_menu(url):
 
     for category in categories:
         title = category['title']
-        parameters = {'action': 'list_sortings', 'url': category['href']}
+        parameters = {
+            'action': 'list_sortings',
+            'url': category['href']
+        }
 
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -137,7 +159,10 @@ def kids_menu(url):
     for category in categories:
         title = '%s: %s' % (category['group']['title'].title(), category['title'])
         category_url = category['href']
-        parameters = {'action': 'list_products', 'url': category_url}
+        parameters = {
+            'action': 'list_products',
+            'url': category_url
+        }
 
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -153,11 +178,20 @@ def list_sortings(url):
             sorting_url = sorting['href']
             try:
                 if sorting['id'] == 'alphabetical':
-                    parameters = {'action': 'list_alphabetical_letters', 'url': sorting_url}
+                    parameters = {
+                        'action': 'list_alphabetical_letters',
+                        'url': sorting_url
+                    }
                 else:
-                    parameters = {'action': 'list_products', 'url': sorting_url}
+                    parameters = {
+                        'action': 'list_products',
+                        'url': sorting_url
+                    }
             except TypeError:
-                parameters = {'action': 'list_products', 'url': sorting_url}
+                parameters = {
+                    'action': 'list_products',
+                    'url': sorting_url
+                }
 
             items = add_item(title, parameters, items=items)
         list_products_alphabetical(url)
@@ -168,7 +202,11 @@ def list_sortings(url):
 def list_products_alphabetical(url):
     """List all products in alphabetical order."""
     title = language(30013)
-    parameters = {'action': 'list_products', 'url': url + '?sort=alphabetical'}
+    parameters = {
+        'action': 'list_products',
+        'url': url + '?sort=alphabetical'
+    }
+
     add_item(title, parameters)
 
 
@@ -181,7 +219,11 @@ def list_alphabetical_letters(url):
             query = '#'  # 0-9 needs to be sent as a number sign
         else:
             query = letter.lower()
-        parameters = {'action': 'list_products', 'url': url + '&letter=' + urllib.quote(query)}
+
+        parameters = {
+            'action': 'list_products',
+            'url': url + '&letter=' + urllib.quote(query)
+        }
 
         items = add_item(letter, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -191,7 +233,11 @@ def list_alphabetical_letters(url):
 def list_next_page(data):
     if vp.get_next_page(data):
         title = language(30018)
-        parameters = {'action': 'list_products', 'url': vp.get_next_page(data)}
+        parameters = {
+            'action': 'list_products',
+            'url': vp.get_next_page(data)
+        }
+
         add_item(title, parameters)
 
 
@@ -211,8 +257,13 @@ def list_products(url, filter_event=False):
             as it always provides more detailed data about each product."""
             playid = product['_links']['self']['href']
             streamtype = 'url'
-        parameters = {'action': 'play_video', 'playid': playid.encode('utf-8'), 'streamtype': streamtype,
-                      'content': content}
+
+        parameters = {
+            'action': 'play_video',
+            'playid': playid.encode('utf-8'),
+            'streamtype': streamtype,
+            'content': content
+        }
 
         if content == 'episode':
             title = product['content']['series']['episodeTitle']
@@ -229,8 +280,12 @@ def list_products(url, filter_event=False):
                 title = '%s (%s)' % (product_name, product['event_date'].strftime('%H:%M'))
 
             if product['event_status'] == 'upcoming':
-                parameters = {'action': 'show_dialog', 'dialog_type': 'ok', 'heading': language(30017),
-                              'message': '%s %s.' % (language(30016), product['event_date'].strftime('%Y-%m-%d %H:%M'))}
+                parameters = {
+                    'action': 'show_dialog',
+                    'dialog_type': 'ok',
+                    'heading': language(30017),
+                    'message': '%s %s.' % (language(30016), product['event_date'].strftime('%Y-%m-%d %H:%M'))
+                }
                 playable = False
             else:
                 playable = True
@@ -253,8 +308,10 @@ def list_products(url, filter_event=False):
         elif content == 'series':
             title = product['content']['series']['title'].encode('utf-8')
             season_url = product['_links']['viaplay:page']['href']
-            parameters = {'action': 'list_seasons', 'url': season_url}
-
+            parameters = {
+                'action': 'list_seasons',
+                'url': season_url
+            }
             playable = False
             watched = True
             set_content = 'tvshows'
@@ -278,7 +335,10 @@ def list_seasons(url):
         for season in seasons:
             season_url = season['_links']['self']['href']
             title = '%s %s' % (language(30014), season['title'])
-            parameters = {'action': 'list_products', 'url': season_url}
+            parameters = {
+                'action': 'list_products',
+                'url': season_url
+            }
 
             items = add_item(title, parameters, items=items)
         xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -433,7 +493,11 @@ def return_art(product, content):
 
 def list_search(data):
     title = data['_links']['viaplay:search']['title']
-    parameters = {'action': 'search', 'url': data['_links']['viaplay:search']['href']}
+    parameters = {
+        'action': 'search',
+        'url': data['_links']['viaplay:search']['href']
+    }
+
     add_item(title, parameters)
 
 
@@ -446,7 +510,7 @@ def get_userinput(title):
         addon_log('User input string: %s' % query)
     return query
 
-    
+
 def get_numeric_input(heading):
     dialog = xbmcgui.Dialog()
     numeric_input = dialog.numeric(0, heading)
@@ -475,7 +539,7 @@ def play_video(input, streamtype, content, pincode=None):
 
     try:
         video_urls = vp.get_video_urls(guid, pincode=pincode)
-        
+
         if content == 'sport':
             # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
             stream_url = video_urls['manifest_url']
@@ -485,14 +549,14 @@ def play_video(input, streamtype, content, pincode=None):
                 stream_url = video_urls['bitrates'][bitrate]
             else:
                 stream_url = False
-                
+
         if stream_url:
             playitem = xbmcgui.ListItem(path=stream_url)
             playitem.setProperty('IsPlayable', 'true')
             if addon.getSetting('subtitles') == 'true':
                 playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
             xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
-            
+
     except vp.AuthFailure as error:
         if error.value == 'ParentalGuidancePinChallengeNeededError':
             if pincode:
@@ -503,7 +567,7 @@ def play_video(input, streamtype, content, pincode=None):
                     play_video(input, streamtype, content, pincode)
         else:
             show_auth_error(error.value)
-            
+
     except vp.LoginFailure:
         show_dialog(dialog_type='ok', heading=language(30005), message=language(30006))
 
@@ -520,9 +584,16 @@ def sports_menu(url):
         else:
             title = language(30029)
         if date == 'today':
-            parameters = {'action': 'list_sports_today', 'url': url}
+            parameters = {
+                'action': 'list_sports_today',
+                'url': url
+            }
         else:
-            parameters = {'action': 'list_sports_dates', 'url': url, 'event_date': date}
+            parameters = {
+                'action': 'list_sports_dates',
+                'url': url,
+                'event_date': date
+            }
 
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -539,7 +610,11 @@ def list_sports_today(url):
             title = language(30030)
         else:
             title = language(30031)
-        parameters = {'action': 'list_products_sports_today', 'url': url, 'filter_sports_event': status}
+        parameters = {
+            'action': 'list_products_sports_today',
+            'url': url,
+            'filter_sports_event': status
+        }
 
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
@@ -551,7 +626,10 @@ def list_sports_dates(url, event_date):
     dates = vp.get_sports_dates(url, event_date)
     for date in dates:
         title = date['date']
-        parameters = {'action': 'list_products', 'url': date['href']}
+        parameters = {
+            'action': 'list_products',
+            'url': date['href']
+        }
 
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
