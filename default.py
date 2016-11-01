@@ -59,7 +59,8 @@ vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, ss
 
 def addon_log(string):
     if debug:
-        xbmc.log('%s: %s' % (logging_prefix, string))
+        msg = '%s: %s' % (logging_prefix, string)
+        xbmc.log(msg=msg, level=xbmc.LOGDEBUG)
 
 
 def show_auth_error(error):
