@@ -74,7 +74,7 @@ msgid "Search"
 msgstr "Sök"
 
 msgctxt "#30016"
-msgid "This event starts at"
+msgid "This event starts"
 msgstr "Detta event startar"
 
 msgctxt "#30017"

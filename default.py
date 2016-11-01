@@ -6,6 +6,7 @@ import sys
 import os
 import urllib
 import urlparse
+from datetime import datetime
 
 from resources.lib.vialib import vialib
 
@@ -273,19 +274,23 @@ def list_products(url, filter_event=False):
             set_content = 'episodes'
 
         elif content == 'sport':
-            product_name = product['content']['title'].encode('utf-8')
+            now = datetime.now()
+            date_today = now.date()
+            product_name = unicode(product['content']['title'])
 
-            if product['event_status'] == 'archive':
-                title = 'Archive: %s' % product_name
+            if date_today == product['event_date'].date():
+                start_time = '%s %s' % (language(30027), product['event_date'].strftime('%H:%M'))
             else:
-                title = '%s (%s)' % (product_name, product['event_date'].strftime('%H:%M'))
+                start_time = product['event_date'].strftime('%Y-%m-%d %H:%M')
+
+            title = '[B]%s%s[/B] %s' % (coloring(start_time, product['event_status']), coloring(':', product['event_status']), product_name)
 
             if product['event_status'] == 'upcoming':
                 parameters = {
                     'action': 'dialog',
                     'dialog_type': 'ok',
                     'heading': language(30017),
-                    'message': '%s %s.' % (language(30016), product['event_date'].strftime('%Y-%m-%d %H:%M'))
+                    'message': '%s [B]%s[/B].' % (language(30016), start_time)
                 }
                 playable = False
             else:
@@ -720,6 +725,17 @@ def add_item(title, parameters, items=False, folder=True, playable=False, set_in
     else:
         items.append((recursive_url, listitem, folder))
         return items
+
+def coloring(text, meaning):
+    """Return the text wrapped in appropriate color markup."""
+    if meaning == 'live':
+        color = 'FF03F12F'
+    elif meaning == 'upcoming':
+        color = 'FFF16C00'
+    elif meaning == 'archive':
+        color = 'FFFF0EE0'
+    colored_text = '[COLOR=%s]%s[/COLOR]' % (color, text)
+    return colored_text
 
 
 def router(paramstring):
