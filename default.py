@@ -246,7 +246,12 @@ def list_next_page(data):
 def list_products(url, filter_event=False):
     items = []
     data = vp.make_request(url=url, method='get')
-    products = vp.get_products(input=data, method='data', filter_event=filter_event)
+    if filter_event:
+        filter = filter_event.split(', ')
+    else:
+        filter = None
+
+    products = vp.get_products(input=data, method='data', filter=filter)
 
     for product in products:
         content = product['type']
@@ -611,21 +616,19 @@ def sports_menu(url):
 
 def list_sports_today(url):
     items = []
-    event_status = ['live', 'upcoming', 'archive']
+    event_status = [language(30037), language(30031)]
     for status in event_status:
-        if status == 'live':
-            title = status.title()
-        elif status == 'upcoming':
-            title = language(30030)
+        if status == language(30037):
+            filter = 'live, upcoming'
         else:
-            title = language(30031)
+            filter = 'archive'
         parameters = {
             'action': 'list_products_sports_today',
             'url': url,
-            'filter_sports_event': status
+            'filter_sports_event': filter
         }
 
-        items = add_item(title, parameters, items=items)
+        items = add_item(status, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
 

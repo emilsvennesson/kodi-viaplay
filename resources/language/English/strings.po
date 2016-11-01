@@ -129,10 +129,6 @@ msgctxt "#30029"
 msgid "Previous days"
 msgstr ""
 
-msgctxt "#30030"
-msgid "Upcoming events"
-msgstr ""
-
 msgctxt "#30031"
 msgid "Archived events"
 msgstr ""
@@ -155,4 +151,8 @@ msgstr ""
 
 msgctxt "#30036"
 msgid "Max bitrate allowed (Kbps)"
+msgstr ""
+
+msgctxt "#30037"
+msgid "Live & upcoming events"
 msgstr ""

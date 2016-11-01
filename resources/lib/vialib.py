@@ -154,7 +154,7 @@ class vialib(object):
         return video_urls
 
     def check_for_subscription(self, data):
-        """Check if the user is authorized to watch the requested stream. 
+        """Check if the user is authorized to watch the requested stream.
         Raise errors as AuthFailure."""
         try:
             if data['success'] is False:
@@ -197,7 +197,7 @@ class vialib(object):
 
         return letters
 
-    def get_products(self, input, method=None, filter_event=False):
+    def get_products(self, input, method=None, filter=[]):
         """Return a list of all available products."""
         if method == 'data':
             data = input
@@ -223,11 +223,12 @@ class vialib(object):
         except TypeError:
             pass
 
-        if filter_event:
+        if filter:
             fproducts = []
             for product in products:
-                if filter_event == product['event_status']:
-                    fproducts.append(product)
+                for f in filter:
+                    if f == product['event_status']:
+                        fproducts.append(product)
             products = fproducts
 
         return products
