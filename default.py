@@ -73,7 +73,7 @@ def show_auth_error(error):
     else:
         message = error
 
-    show_dialog(dialog_type='ok', heading=language(30017), message=message)
+    dialog(dialog_type='ok', heading=language(30017), message=message)
 
 
 def root_menu():
@@ -109,7 +109,7 @@ def root_menu():
             else:
                 addon_log('Unsupported videotype found: %s' % videotype)
                 parameters = {
-                    'action': 'show_dialog',
+                    'action': 'dialog',
                     'dialog_type': 'ok',
                     'heading': language(30017),
                     'message': 'This type (%s) is not yet supported.' % videotype
@@ -282,7 +282,7 @@ def list_products(url, filter_event=False):
 
             if product['event_status'] == 'upcoming':
                 parameters = {
-                    'action': 'show_dialog',
+                    'action': 'dialog',
                     'dialog_type': 'ok',
                     'heading': language(30017),
                     'message': '%s %s.' % (language(30016), product['event_date'].strftime('%Y-%m-%d %H:%M'))
@@ -502,19 +502,25 @@ def list_search(data):
     add_item(title, parameters)
 
 
-def get_userinput(title):
-    query = None
-    keyboard = xbmc.Keyboard('', title)
+def get_user_input(heading):
+    keyboard = xbmc.Keyboard('', heading)
     keyboard.doModal()
     if keyboard.isConfirmed():
-        query = keyboard.getText()
-        addon_log('User input string: %s' % query)
-    return query
+        user_input = keyboard.getText()
+        addon_log('User input string: %s' % user_input)
+    else:
+        user_input = None
+
+    if user_input and len(user_input) > 0:
+        return user_input
+    else:
+        return None
 
 
 def get_numeric_input(heading):
     dialog = xbmcgui.Dialog()
     numeric_input = dialog.numeric(0, heading)
+
     if len(numeric_input) > 0:
         return str(numeric_input)
     else:
@@ -522,13 +528,10 @@ def get_numeric_input(heading):
 
 
 def search(url):
-    try:
-        query = get_userinput(language(30015))
-        if len(query) > 0:
-            url = '%s?query=%s' % (url, urllib.quote(query))
-            list_products(url)
-    except TypeError:
-        pass
+    query = get_user_input(language(30015))
+    if query:
+        url = '%s?query=%s' % (url, urllib.quote(query))
+        list_products(url)
 
 
 def play_video(input, streamtype, content, pincode=None):
@@ -561,7 +564,7 @@ def play_video(input, streamtype, content, pincode=None):
     except vp.AuthFailure as error:
         if error.value == 'ParentalGuidancePinChallengeNeededError':
             if pincode:
-                show_dialog(dialog_type='ok', heading=language(30033), message=language(30034))
+                dialog(dialog_type='ok', heading=language(30033), message=language(30034))
             else:
                 pincode = get_numeric_input(language(30032))
                 if pincode:
@@ -570,7 +573,7 @@ def play_video(input, streamtype, content, pincode=None):
             show_auth_error(error.value)
 
     except vp.LoginFailure:
-        show_dialog(dialog_type='ok', heading=language(30005), message=language(30006))
+        dialog(dialog_type='ok', heading=language(30005), message=language(30006))
 
 
 def sports_menu(url):
@@ -643,10 +646,9 @@ def ask_bitrate(bitrates):
     options = []
     for bitrate in bitrates:
         options.append(bitrate + ' Kbps')
-    dialog = xbmcgui.Dialog()
-    ret = dialog.select(language(30026), options)
-    if ret > -1:
-        return bitrates[ret]
+    selected_bitrate = dialog('select', language(30026), options=options)
+    if selected_bitrate is not None:
+        return bitrates[selected_bitrate]
     else:
         return None
 
@@ -672,14 +674,25 @@ def select_bitrate(manifest_bitrates=None):
                 allowed_bitrates.append(str(bitrate))
         if allowed_bitrates:
             return allowed_bitrates[0]
+        else:
+            addon_log('No bitrate in stream matched the maximum bitrate allowed.')
+            return None
     else:
         return ask_bitrate(manifest_bitrates)
 
 
-def show_dialog(dialog_type, heading, message):
+def dialog(dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
     dialog = xbmcgui.Dialog()
     if dialog_type == 'ok':
         dialog.ok(heading, message)
+    elif dialog_type == 'yesno':
+        return dialog.yesno(heading, message, nolabel=nolabel, yeslabel=yeslabel)
+    elif dialog_type == 'select':
+        ret = dialog.select(heading, options)
+        if ret > -1:
+            return ret
+        else:
+            return None
 
 
 def add_item(title, parameters, items=False, folder=True, playable=False, set_info=False, set_art=False,
@@ -739,8 +752,8 @@ def router(paramstring):
             search(params['url'])
         elif params['action'] == 'list_sports_dates':
             list_sports_dates(params['url'], params['event_date'])
-        elif params['action'] == 'show_dialog':
-            show_dialog(params['dialog_type'], params['heading'], params['message'])
+        elif params['action'] == 'dialog':
+            dialog(params['dialog_type'], params['heading'], params['message'])
     else:
         root_menu()
 
