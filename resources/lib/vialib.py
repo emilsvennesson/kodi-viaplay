@@ -198,7 +198,7 @@ class vialib(object):
 
         return letters
 
-    def get_products(self, input, method=None, filter=[]):
+    def get_products(self, input, method=None, filter_event=False):
         """Return a list of all available products."""
         if method == 'data':
             data = input
@@ -224,11 +224,11 @@ class vialib(object):
         except TypeError:
             pass
 
-        if filter:
+        if filter_event:
             fproducts = []
             for product in products:
-                for f in filter:
-                    if f == product['event_status']:
+                for event in filter_event:
+                    if event == product['event_status']:
                         fproducts.append(product)
             products = fproducts
 

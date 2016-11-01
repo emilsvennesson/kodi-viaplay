@@ -247,11 +247,9 @@ def list_products(url, filter_event=False):
     items = []
     data = vp.make_request(url=url, method='get')
     if filter_event:
-        filter = filter_event.split(', ')
-    else:
-        filter = None
+        filter_event = filter_event.split(', ')
 
-    products = vp.get_products(input=data, method='data', filter=filter)
+    products = vp.get_products(input=data, method='data', filter_event=filter_event)
 
     for product in products:
         content = product['type']
