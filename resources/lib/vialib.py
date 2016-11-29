@@ -146,6 +146,9 @@ class vialib(object):
         if 'MissingSessionCookieError' in data.values():
             data = self.make_request(url=url, method='get', payload=payload)
         self.check_for_subscription(data)
+        if 'viaplay:encryptedPlaylist' in data['_links'].keys():
+            payload['deviceKey'] = 'iphone-%s' % self.country
+            data = self.make_request(url=url, method='get', payload=payload)
         manifest_url = data['_links']['viaplay:playlist']['href']
         video_urls['manifest_url'] = manifest_url
         video_urls['bitrates'] = self.parse_m3u8_manifest(manifest_url)
