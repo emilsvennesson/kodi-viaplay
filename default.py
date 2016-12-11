@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 """
-A Kodi plugin for Viaplay
+A Kodi add-on for Viaplay
 """
 import sys
 import os
