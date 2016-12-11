@@ -1,4 +1,10 @@
-﻿2016.09.08 v1.0.5
+﻿2016.12.11 v1.0.6
++ Improve sports section
++ Fix broken playback for new content
++ Remove add-on debugging setting and automatically detect it instead
++ Code cleanup
+
+2016.09.08 v1.0.5
 + Bug fix: possible UTC bug when determining game status
 + Bump required requests version to 2.9.1
 + Don't set watched status on sports content
