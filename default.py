@@ -56,9 +56,12 @@ debug_cmd = {  # determine if debug logging is activated in kodi
     'method': 'Settings.GetSettingValue',
     'params': {'setting': 'debug.showloginfo'},
     'id': '1'
-    }
+}
 debug_dict = json.loads(xbmc.executeJSONRPC(json.dumps(debug_cmd)))
-debug = debug_dict['result']['value']
+try:
+    debug = debug_dict['result']['value']
+except:
+    debug = True
 
 vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, ssl, debug)
 
