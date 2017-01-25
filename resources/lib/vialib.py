@@ -135,7 +135,7 @@ class vialib(object):
             'deviceName': 'web',
             'deviceType': 'pc',
             'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
-            'deviceKey': 'pchls-%s' % self.country,
+            'deviceKey': 'atv-%s' % self.country,
             'guid': guid,
             'pgPin': pincode
         }
@@ -146,13 +146,13 @@ class vialib(object):
         if 'MissingSessionCookieError' in data.values():
             data = self.make_request(url=url, method='get', payload=payload)
         self.check_for_subscription(data)
-        if 'viaplay:encryptedPlaylist' in data['_links'].keys():
-            payload['deviceKey'] = 'atv-%s' % self.country
-            data = self.make_request(url=url, method='get', payload=payload)
-        if 'viaplay:playlist' in data['_links'].keys():
-            manifest_url = data['_links']['viaplay:playlist']['href']
-        elif 'viaplay:media' in data['_links'].keys():
+
+        if 'viaplay:media' in data['_links'].keys():
             manifest_url = data['_links']['viaplay:media']['href']
+        elif 'viaplay:fallbackMedia' in data['_links'].keys():
+            manifest_url = data['_links']['viaplay:fallbackMedia'][0]['href']
+        elif 'viaplay:playlist' in data['_links'].keys():
+            manifest_url = data['_links']['viaplay:playlist']['href']
         else:
             self.log('Unable to retrieve stream URL.')
             return False
