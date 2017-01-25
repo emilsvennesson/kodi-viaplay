@@ -101,10 +101,8 @@ class vialib(object):
             'persistent': 'true'
         }
         data = self.make_request(url=url, method='get', payload=payload)
-        if data['success']:
-            return True
-        else:
-            return False
+
+        return data['success']
 
     def validate_session(self):
         """Check if our session cookies are still valid."""
@@ -113,10 +111,8 @@ class vialib(object):
             'deviceKey': 'pc-%s' % self.country
         }
         data = self.make_request(url=url, method='get', payload=payload)
-        if data['success']:
-            return True
-        else:
-            return False
+
+        return data['success']
 
     def verify_login_status(self, data):
         """Check if we're logged in. If we're not, try to.
