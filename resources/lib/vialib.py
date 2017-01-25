@@ -20,15 +20,18 @@ import m3u8
 
 
 class vialib(object):
-    def __init__(self, username, password, cookie_file, deviceid_file, tempdir, country, debug=False):
+    def __init__(self, username, password, settings_folder, country, debug=False):
         self.debug = debug
         self.username = username
         self.password = password
         self.country = country
-        self.deviceid_file = deviceid_file
-        self.tempdir = tempdir
+        self.settings_folder = settings_folder
+        self.cookie_jar = cookielib.LWPCookieJar(os.path.join(self.settings_folder, 'cookie_file'))
+        self.tempdir = os.path.join(settings_folder, 'tmp')
+        if not os.path.exists(self.tempdir):
+            os.makedirs(self.tempdir)
+        self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
-        self.cookie_jar = cookielib.LWPCookieJar(cookie_file)
         self.base_url = 'https://content.viaplay.%s/pc-%s' % (self.country, self.country)
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)

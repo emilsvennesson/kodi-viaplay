@@ -19,22 +19,17 @@ import xbmcplugin
 addon = xbmcaddon.Addon()
 addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
 addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
-tempdir = os.path.join(addon_profile, 'tmp')
 language = addon.getLocalizedString
 logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
 
 if not xbmcvfs.exists(addon_profile):
     xbmcvfs.mkdir(addon_profile)
-if not xbmcvfs.exists(tempdir):
-    xbmcvfs.mkdir(tempdir)
 
 _url = sys.argv[0]  # get the plugin url in plugin:// notation
 _handle = int(sys.argv[1])  # get the plugin handle as an integer number
 
 username = addon.getSetting('email')
 password = addon.getSetting('password')
-cookie_file = os.path.join(addon_profile, 'cookie_file')
-deviceid_file = os.path.join(addon_profile, 'deviceId')
 
 if addon.getSetting('country') == '0':
     country = 'se'
@@ -45,7 +40,7 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
 
-vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, debug=True)
+vp = vialib(username, password, addon_profile, country, debug=True)
 
 def addon_log(string):
     msg = '%s: %s' % (logging_prefix, string)
