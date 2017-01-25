@@ -156,3 +156,7 @@ msgstr "Högsta tillåtna bitrate (Kbps)"
 msgctxt "#30037"
 msgid "Live & upcoming events"
 msgstr "Live & kommande evenemang"
+
+msgctxt "#30038"
+msgid "No valid stream URL was found."
+msgstr "Ingen giltig stream URL hittades."

@@ -156,3 +156,7 @@ msgstr ""
 msgctxt "#30037"
 msgid "Live & upcoming events"
 msgstr ""
+
+msgctxt "#30038"
+msgid "No valid stream URL was found."
+msgstr ""

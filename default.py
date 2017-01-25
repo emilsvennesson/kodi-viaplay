@@ -559,23 +559,25 @@ def play_video(input, streamtype, content, pincode=None):
 
     try:
         video_urls = vp.get_video_urls(guid, pincode=pincode)
-
-        if content == 'sport':
-            # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
-            stream_url = video_urls['manifest_url']
-        else:
-            bitrate = select_bitrate(video_urls['bitrates'].keys())
-            if bitrate:
-                stream_url = video_urls['bitrates'][bitrate]
+        if video_urls:
+            if content == 'sport':
+                # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
+                stream_url = video_urls['manifest_url']
             else:
-                stream_url = False
+                bitrate = select_bitrate(video_urls['bitrates'].keys())
+                if bitrate:
+                    stream_url = video_urls['bitrates'][bitrate]
+                else:
+                    stream_url = False
 
-        if stream_url:
-            playitem = xbmcgui.ListItem(path=stream_url)
-            playitem.setProperty('IsPlayable', 'true')
-            if addon.getSetting('subtitles') == 'true':
-                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-            xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+            if stream_url:
+                playitem = xbmcgui.ListItem(path=stream_url)
+                playitem.setProperty('IsPlayable', 'true')
+                if addon.getSetting('subtitles') == 'true':
+                    playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+                xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+        else:
+            dialog(dialog_type='ok', heading=language(30005), message=language(30038))
 
     except vp.AuthFailure as error:
         if error.value == 'ParentalGuidancePinChallengeNeededError':
@@ -587,7 +589,6 @@ def play_video(input, streamtype, content, pincode=None):
                     play_video(input, streamtype, content, pincode)
         else:
             show_auth_error(error.value)
-
     except vp.LoginFailure:
         dialog(dialog_type='ok', heading=language(30005), message=language(30006))
 

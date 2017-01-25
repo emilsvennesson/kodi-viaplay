@@ -147,9 +147,16 @@ class vialib(object):
             data = self.make_request(url=url, method='get', payload=payload)
         self.check_for_subscription(data)
         if 'viaplay:encryptedPlaylist' in data['_links'].keys():
-            payload['deviceKey'] = 'iphone-%s' % self.country
+            payload['deviceKey'] = 'atv-%s' % self.country
             data = self.make_request(url=url, method='get', payload=payload)
-        manifest_url = data['_links']['viaplay:playlist']['href']
+        if 'viaplay:playlist' in data['_links'].keys():
+            manifest_url = data['_links']['viaplay:playlist']['href']
+        elif 'viaplay:media' in data['_links'].keys():
+            manifest_url = data['_links']['viaplay:media']['href']
+        else:
+            self.log('Unable to retrieve stream URL.')
+            return False
+
         video_urls['manifest_url'] = manifest_url
         video_urls['bitrates'] = self.parse_m3u8_manifest(manifest_url)
         video_urls['subtitle_urls'] = self.get_subtitle_urls(data)
