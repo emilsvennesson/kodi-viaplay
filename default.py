@@ -42,22 +42,10 @@ else:
 
 vp = vialib(username, password, addon_profile, country, debug=True)
 
+
 def addon_log(string):
     msg = '%s: %s' % (logging_prefix, string)
     xbmc.log(msg=msg, level=xbmc.LOGDEBUG)
-
-
-def show_auth_error(error):
-    if error == 'UserNotAuthorizedForContentError':
-        message = language(30020)
-    elif error == 'PurchaseConfirmationRequiredError':
-        message = language(30021)
-    elif error == 'UserNotAuthorizedRegionBlockedError':
-        message = language(30022)
-    else:
-        message = error
-
-    dialog(dialog_type='ok', heading=language(30017), message=message)
 
 
 def main_menu():
@@ -242,7 +230,7 @@ def list_products(url, filter_event=False):
             movie_year = str(product['content']['production']['year'])
             title = '%s (%s)' % (movie_name, movie_year)
 
-            if product['system']['availability']['planInfo']['isRental'] is True:
+            if product['system']['availability']['planInfo']['isRental']:
                 title = title + ' *'  # mark rental products with an asterisk
 
             playable = True
@@ -663,6 +651,7 @@ def add_item(title, parameters, items=False, folder=True, playable=False, set_in
         items.append((recursive_url, listitem, folder))
         return items
 
+
 def coloring(text, meaning):
     """Return the text wrapped in appropriate color markup."""
     if meaning == 'live':
@@ -673,6 +662,19 @@ def coloring(text, meaning):
         color = 'FFFF0EE0'
     colored_text = '[COLOR=%s]%s[/COLOR]' % (color, text)
     return colored_text
+
+
+def show_auth_error(error):
+    if error == 'UserNotAuthorizedForContentError':
+        message = language(30020)
+    elif error == 'PurchaseConfirmationRequiredError':
+        message = language(30021)
+    elif error == 'UserNotAuthorizedRegionBlockedError':
+        message = language(30022)
+    else:
+        message = error
+
+    dialog(dialog_type='ok', heading=language(30017), message=message)
 
 
 def router(paramstring):

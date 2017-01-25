@@ -6,13 +6,13 @@ import codecs
 import os
 import cookielib
 import calendar
-from datetime import datetime, timedelta
 import time
-from urllib import urlencode
 import re
 import json
 import uuid
 import HTMLParser
+from urllib import urlencode
+from datetime import datetime, timedelta
 
 import iso8601
 import requests
