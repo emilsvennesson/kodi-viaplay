@@ -60,43 +60,25 @@ def show_auth_error(error):
     dialog(dialog_type='ok', heading=language(30017), message=message)
 
 
-def root_menu():
+def main_menu():
     items = []
     data = vp.make_request(url=vp.base_url, method='get')
     categories = vp.get_categories(input=data, method='data')
 
     for category in categories:
-        categorytype = category['type']
-        videotype = category['name']
+        category_name = category['name']
         title = category['title']
-        if categorytype != 'editorial':
-            if videotype == 'series':
-                parameters = {
-                    'action': 'series_menu',
-                    'url': category['href']
-                }
-            elif videotype == 'movie' or videotype == 'rental':
-                parameters = {
-                    'action': 'movies_menu',
-                    'url': category['href']
-                }
-            elif videotype == 'sport':
+        if category['type'] != 'editorial':
+            if category_name == 'sport':
                 parameters = {
                     'action': 'sports_menu',
                     'url': category['href']
                 }
-            elif videotype == 'kids':
-                parameters = {
-                    'action': 'kids_menu',
-                    'url': category['href']
-                }
             else:
-                addon_log('Unsupported videotype found: %s' % videotype)
                 parameters = {
-                    'action': 'dialog',
-                    'dialog_type': 'ok',
-                    'heading': language(30017),
-                    'message': 'This type (%s) is not yet supported.' % videotype
+                    'action': 'list_categories',
+                    'url': category['href'],
+                    'category_name': category_name
                 }
 
             items = add_item(title, parameters, items=items)
@@ -105,50 +87,20 @@ def root_menu():
     xbmcplugin.endOfDirectory(_handle)
 
 
-def movies_menu(url):
+def list_categories(url, category_name):
     items = []
     categories = vp.get_categories(url)
 
     for category in categories:
-        title = category['title']
+        if category_name == 'kids':
+            title = '%s: %s' % (category['group']['title'].title(), category['title'])
+        else:
+            title = category['title']
+
         parameters = {
             'action': 'list_sortings',
             'url': category['href']
         }
-
-        items = add_item(title, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
-
-
-def series_menu(url):
-    items = []
-    categories = vp.get_categories(url)
-
-    for category in categories:
-        title = category['title']
-        parameters = {
-            'action': 'list_sortings',
-            'url': category['href']
-        }
-
-        items = add_item(title, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
-
-
-def kids_menu(url):
-    items = []
-    categories = vp.get_categories(url)
-
-    for category in categories:
-        title = '%s: %s' % (category['group']['title'].title(), category['title'])
-        category_url = category['href']
-        parameters = {
-            'action': 'list_products',
-            'url': category_url
-        }
-
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
@@ -269,7 +221,7 @@ def list_products(url, filter_event=False):
             else:
                 start_time = product['event_date'].strftime('%Y-%m-%d %H:%M')
 
-            title = '[B]%s%s[/B] %s' % (coloring(start_time, product['event_status']), coloring(':', product['event_status']), product_name)
+            title = '[B]%s:[/B] %s' % (coloring(start_time, product['event_status']), product_name)
 
             if product['event_status'] == 'upcoming':
                 parameters = {
@@ -727,12 +679,8 @@ def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
     if params:
-        if params['action'] == 'movies_menu':
-            movies_menu(params['url'])
-        elif params['action'] == 'kids_menu':
-            kids_menu(params['url'])
-        elif params['action'] == 'series_menu':
-            series_menu(params['url'])
+        if params['action'] == 'list_categories':
+            list_categories(params['url'], params['category_name'])
         elif params['action'] == 'sports_menu':
             sports_menu(params['url'])
         elif params['action'] == 'list_seasons':
@@ -756,7 +704,7 @@ def router(paramstring):
         elif params['action'] == 'dialog':
             dialog(params['dialog_type'], params['heading'], params['message'])
     else:
-        root_menu()
+        main_menu()
 
 
 if __name__ == '__main__':

@@ -101,10 +101,10 @@ class vialib(object):
             'persistent': 'true'
         }
         data = self.make_request(url=url, method='get', payload=payload)
-        if data['success'] is False:
-            return False
-        else:
+        if data['success']:
             return True
+        else:
+            return False
 
     def validate_session(self):
         """Check if our session cookies are still valid."""
@@ -113,10 +113,10 @@ class vialib(object):
             'deviceKey': 'pc-%s' % self.country
         }
         data = self.make_request(url=url, method='get', payload=payload)
-        if data['success'] is False:
-            return False
-        else:
+        if data['success']:
             return True
+        else:
+            return False
 
     def verify_login_status(self, data):
         """Check if we're logged in. If we're not, try to.
@@ -193,7 +193,7 @@ class vialib(object):
             sorttypes = data['_links']['viaplay:sortings']
         except KeyError:
             self.log('No sortings available for this category.')
-            sorttypes = None
+            return None
 
         return sorttypes
 
@@ -314,6 +314,7 @@ class vialib(object):
             status = 'upcoming'
         else:
             status = 'archive'
+
         return status
 
     def get_sports_dates(self, url, event_date=None):
@@ -325,8 +326,7 @@ class vialib(object):
         now = datetime.now()
 
         for date in dates_data:
-            date_obj = datetime(
-                *(time.strptime(date['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
+            date_obj = datetime(*(time.strptime(date['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
             if event_date == 'upcoming':
                 if date_obj.date() > now.date():
                     dates.append(date)
