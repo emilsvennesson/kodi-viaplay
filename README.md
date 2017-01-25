@@ -11,9 +11,9 @@ This add-on is available in the official Kodi repository and all dependencies wi
  * iso8601 (http://mirrors.kodi.tv/addons/jarvis/script.module.iso8601)
  * m3u8 >= 0.2.10 (http://mirrors.kodi.tv/addons/jarvis/script.module.m3u8)
 
-This add-on supports Kodi Jarvis or later. While it may work fine on older versions as well, it is unsupported and you're encouraged to upgrade.
+This add-on supports Kodi Krypton or later. While it may work fine on older versions as well, it is unsupported and you're encouraged to upgrade.
 
-# Features: #
+## Features: ##
  * Support for Sweden, Denmark, Norway and Finland
  * Internal video playback
  * Categories
@@ -34,6 +34,8 @@ Currently unsupported features:
  * Activity list
  * ... And quite possibly more that I'm forgetting about!
  
-## Known issues: ##
-#### No audio on live sports ####
-This is due to a bug in Kodi/ffmpeg (http://trac.kodi.tv/ticket/16670). Viaplay uses HLS v4 for live sports and supplies the audio as an external track. Unfortunately, this is currently not working in Kodi. However, with Krypton and its new input stream add-ons, a fix/workaround is hopefully just around the corner.
+## Roadmap ##
+
+ * Continue work towards feature completeness
+ * MPEG-DASH support using inputstream.adaptive
+ * Code cleanup
