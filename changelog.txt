@@ -1,4 +1,8 @@
-﻿2016.12.11 v1.0.6
+﻿2017.01.25 v1.0.7
++ Update for Krypton
++ Fix stream URL retrieval
+
+2016.12.11 v1.0.6
 + Improve sports section
 + Fix broken playback for new content
 + Remove add-on debugging setting and automatically detect it instead
