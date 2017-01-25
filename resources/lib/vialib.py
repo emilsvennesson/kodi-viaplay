@@ -20,12 +20,11 @@ import m3u8
 
 
 class vialib(object):
-    def __init__(self, username, password, cookie_file, deviceid_file, tempdir, country, ssl, debug=False):
+    def __init__(self, username, password, cookie_file, deviceid_file, tempdir, country, debug=False):
         self.debug = debug
         self.username = username
         self.password = password
         self.country = country
-        self.ssl = ssl
         self.deviceid_file = deviceid_file
         self.tempdir = tempdir
         self.http_session = requests.Session()
@@ -66,8 +65,6 @@ class vialib(object):
     def url_parser(self, url):
         """Sometimes, Viaplay adds some weird templated stuff to the URL
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-        if not self.ssl:
-            url = url.replace('https', 'http')  # http://forum.kodi.tv/showthread.php?tid=270336
         template = re.search(r'\{.+?\}', url)
         if template:
             url = url.replace(template.group(), '')

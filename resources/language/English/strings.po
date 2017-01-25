@@ -85,10 +85,6 @@ msgctxt "#30018"
 msgid "Next Page"
 msgstr ""
 
-msgctxt "#30019"
-msgid "Disable SSL (not recommended)"
-msgstr ""
-
 msgctxt "#30020"
 msgid "Your account is not authorized to watch this content. You find information on how to upgrade your package on the Viaplay website."
 msgstr ""
