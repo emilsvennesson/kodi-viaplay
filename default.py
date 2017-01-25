@@ -6,7 +6,6 @@ import sys
 import os
 import urllib
 import urlparse
-import json
 from datetime import datetime
 
 from resources.lib.vialib import vialib
@@ -51,20 +50,7 @@ elif addon.getSetting('country') == '2':
 else:
     country = 'fi'
 
-debug_cmd = {  # determine if debug logging is activated in kodi
-    'jsonrpc': '2.0',
-    'method': 'Settings.GetSettingValue',
-    'params': {'setting': 'debug.showloginfo'},
-    'id': '1'
-}
-debug_dict = json.loads(xbmc.executeJSONRPC(json.dumps(debug_cmd)))
-try:
-    debug = debug_dict['result']['value']
-except:
-    debug = True
-
-vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, ssl, debug)
-
+vp = vialib(username, password, cookie_file, deviceid_file, tempdir, country, ssl, debug=True)
 
 def addon_log(string):
     if debug:
