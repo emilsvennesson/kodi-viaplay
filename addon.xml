@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.viaplay"
-       version="1.0.7"
+       version="1.0.7.1"
        name="Viaplay"
        provider-name="emilsvennesson">
   <requires>
@@ -15,7 +15,7 @@
   <extension point="xbmc.addon.metadata">
     <description lang="en">Watch content from Viaplay.</description>
     <description lang="sv">Titta på innehåll från Viaplay.</description>
-    <news>2017.01.25 v1.0.7[CR]+ Update for Krypton[CR]+ Fix stream URL retrieval</news>
+    <news>2017.01.25 v1.0.7.1[CR]+ Update for Krypton[CR]+ Fix stream URL retrieval</news>
     <platform>all</platform>
     <language>sv dk no fi en</language>
     <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>

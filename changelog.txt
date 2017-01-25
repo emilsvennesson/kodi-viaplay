@@ -1,4 +1,7 @@
-﻿2017.01.25 v1.0.7
+﻿2017.01.25 v1.0.7.1
++ Additional stream URL fix
+
+2017.01.25 v1.0.7
 + Update for Krypton
 + Fix stream URL retrieval
 
