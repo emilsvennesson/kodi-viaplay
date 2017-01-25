@@ -143,6 +143,10 @@ class vialib(object):
             data = self.make_request(url=url, method='get', payload=payload)
         self.check_for_subscription(data)
 
+        for x in xrange(3):  # retry if we get an encrypted playlist
+            if not 'viaplay:encryptedPlaylist' in data['_links'].keys():
+                break
+            data = self.make_request(url=url, method='get', payload=payload)
         if 'viaplay:media' in data['_links'].keys():
             manifest_url = data['_links']['viaplay:media']['href']
         elif 'viaplay:fallbackMedia' in data['_links'].keys():
