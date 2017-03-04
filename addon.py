@@ -475,22 +475,11 @@ def play_video(input, streamtype, content, pincode=None):
     try:
         video_urls = vp.get_video_urls(guid, pincode=pincode)
         if video_urls:
-            if content == 'sport':
-                # sports uses HLS v4 so we can't parse the manifest as audio is supplied externally
-                stream_url = video_urls['manifest_url']
-            else:
-                bitrate = select_bitrate(video_urls['bitrates'].keys())
-                if bitrate:
-                    stream_url = video_urls['bitrates'][bitrate]
-                else:
-                    stream_url = False
-
-            if stream_url:
-                playitem = xbmcgui.ListItem(path=stream_url)
-                playitem.setProperty('IsPlayable', 'true')
-                if addon.getSetting('subtitles') == 'true':
-                    playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-                xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
+            playitem = xbmcgui.ListItem(path=video_urls['manifest_url'])
+            playitem.setProperty('IsPlayable', 'true')
+            if addon.getSetting('subtitles') == 'true':
+                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
+            xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
         else:
             dialog(dialog_type='ok', heading=language(30005), message=language(30038))
 
@@ -568,47 +557,6 @@ def list_sports_dates(url, event_date):
         items = add_item(title, parameters, items=items)
     xbmcplugin.addDirectoryItems(_handle, items, len(items))
     xbmcplugin.endOfDirectory(_handle)
-
-
-def ask_bitrate(bitrates):
-    """Presents a dialog for user to select from a list of bitrates.
-    Returns the value of the selected bitrate."""
-    options = []
-    for bitrate in bitrates:
-        options.append(bitrate + ' Kbps')
-    selected_bitrate = dialog('select', language(30026), options=options)
-    if selected_bitrate is not None:
-        return bitrates[selected_bitrate]
-    else:
-        return None
-
-
-def select_bitrate(manifest_bitrates=None):
-    """Returns a bitrate while honoring the user's preference."""
-    bitrate_setting = int(addon.getSetting('preferred_bitrate'))
-    if bitrate_setting == 0:
-        preferred_bitrate = 'highest'
-    elif bitrate_setting == 1:
-        preferred_bitrate = 'limit'
-    else:
-        preferred_bitrate = 'ask'
-
-    manifest_bitrates.sort(key=int, reverse=True)
-    if preferred_bitrate == 'highest':
-        return manifest_bitrates[0]
-    elif preferred_bitrate == 'limit':
-        allowed_bitrates = []
-        max_bitrate_allowed = int(addon.getSetting('max_bitrate_allowed'))
-        for bitrate in manifest_bitrates:
-            if max_bitrate_allowed >= int(bitrate):
-                allowed_bitrates.append(str(bitrate))
-        if allowed_bitrates:
-            return allowed_bitrates[0]
-        else:
-            addon_log('No bitrate in stream matched the maximum bitrate allowed.')
-            return None
-    else:
-        return ask_bitrate(manifest_bitrates)
 
 
 def dialog(dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
