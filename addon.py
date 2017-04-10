@@ -582,8 +582,8 @@ def add_item(title, parameters, items=False, folder=True, playable=False, set_in
     if set_art:
         listitem.setArt(set_art)
     else:
-        listitem.setArt({'icon': os.path.join(addon_path, 'resources', 'art', 'icon.png')})
-        listitem.setArt({'fanart': os.path.join(addon_path, 'resources', 'art', 'fanart.jpg')})
+        listitem.setArt({'icon': addon.getAddonInfo('icon')})
+        listitem.setArt({'fanart': addon.getAddonInfo('fanart')})
     if set_info:
         listitem.setInfo('video', set_info)
     if not watched:
