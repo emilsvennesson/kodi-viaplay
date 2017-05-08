@@ -18,11 +18,9 @@ import iso8601
 import requests
 
 
-class vialib(object):
-    def __init__(self, username, password, settings_folder, country, debug=False):
+class Viaplay(object):
+    def __init__(self, settings_folder, country, debug=False):
         self.debug = debug
-        self.username = username
-        self.password = password
         self.country = country
         self.settings_folder = settings_folder
         self.cookie_jar = cookielib.LWPCookieJar(os.path.join(self.settings_folder, 'cookie_file'))
@@ -38,14 +36,7 @@ class vialib(object):
             pass
         self.http_session.cookies = self.cookie_jar
 
-    class LoginFailure(Exception):
-        def __init__(self, value):
-            self.value = value
-
-        def __str__(self):
-            return repr(self.value)
-
-    class AuthFailure(Exception):
+    class ViaplayError(Exception):
         def __init__(self, value):
             self.value = value
 
@@ -88,7 +79,17 @@ class vialib(object):
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
 
-        return json.loads(req.content)
+        return self.validate_response(req.content)
+
+    def validate_response(self, response):
+        response_dict = json.loads(response)
+        try:
+            if not response_dict['success']:
+                raise self.ViaplayError(response_dict['name'])
+        except KeyError:
+            pass
+
+        return response_dict
 
     def login(self, username, password):
         """Login to Viaplay. Return True/False based on the result."""
@@ -99,9 +100,8 @@ class vialib(object):
             'password': password,
             'persistent': 'true'
         }
-        data = self.make_request(url=url, method='get', payload=payload)
 
-        return data['success']
+        self.make_request(url=url, method='get', payload=payload)
 
     def validate_session(self):
         """Check if our session cookies are still valid."""
@@ -109,17 +109,7 @@ class vialib(object):
         payload = {
             'deviceKey': 'pc-%s' % self.country
         }
-        data = self.make_request(url=url, method='get', payload=payload)
-
-        return data['success']
-
-    def verify_login_status(self, data):
-        """Check if we're logged in. If we're not, try to.
-        Raise errors as LoginFailure."""
-        if 'MissingSessionCookieError' in data.values():
-            if not self.validate_session():
-                if not self.login(self.username, self.password):
-                    raise self.LoginFailure('login failed')
+        self.make_request(url=url, method='get', payload=payload)
 
     def get_video_urls(self, guid, pincode=None):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
@@ -136,12 +126,6 @@ class vialib(object):
         }
 
         data = self.make_request(url=url, method='get', payload=payload)
-        self.verify_login_status(data)
-        # we might have to request the stream again after logging in
-        if 'MissingSessionCookieError' in data.values():
-            data = self.make_request(url=url, method='get', payload=payload)
-        self.check_for_subscription(data)
-
         for x in xrange(3):  # retry if we get an encrypted playlist
             if not 'viaplay:encryptedPlaylist' in data['_links'].keys():
                 break
@@ -160,17 +144,6 @@ class vialib(object):
         video_urls['subtitle_urls'] = self.get_subtitle_urls(data)
 
         return video_urls
-
-    def check_for_subscription(self, data):
-        """Check if the user is authorized to watch the requested stream.
-        Raise errors as AuthFailure."""
-        try:
-            if data['success'] is False:
-                subscription_error = data['name']
-                raise self.AuthFailure(subscription_error)
-        except KeyError:
-            # 'success' won't be in response if it's successful
-            pass
 
     def get_categories(self, input, method=None):
         if method == 'data':

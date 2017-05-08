@@ -8,50 +8,23 @@ import urllib
 import urlparse
 from datetime import datetime
 
-from resources.lib.vialib import vialib
+from resources.lib.kodihelper import KodiHelper
 
-import xbmc
-import xbmcaddon
-import xbmcvfs
-import xbmcgui
-import xbmcplugin
-
-addon = xbmcaddon.Addon()
-addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
-addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
-language = addon.getLocalizedString
-logging_prefix = '[%s-%s]' % (addon.getAddonInfo('id'), addon.getAddonInfo('version'))
-
-if not xbmcvfs.exists(addon_profile):
-    xbmcvfs.mkdir(addon_profile)
-
-_url = sys.argv[0]  # get the plugin url in plugin:// notation
-_handle = int(sys.argv[1])  # get the plugin handle as an integer number
-
-username = addon.getSetting('email')
-password = addon.getSetting('password')
-
-if addon.getSetting('country') == '0':
-    country = 'se'
-elif addon.getSetting('country') == '1':
-    country = 'dk'
-elif addon.getSetting('country') == '2':
-    country = 'no'
-else:
-    country = 'fi'
-
-vp = vialib(username, password, addon_profile, country, debug=True)
+base_url = sys.argv[0]
+handle = int(sys.argv[1])
+helper = KodiHelper(base_url, handle)
 
 
-def addon_log(string):
-    msg = '%s: %s' % (logging_prefix, string)
-    xbmc.log(msg=msg, level=xbmc.LOGDEBUG)
+def run():
+    try:
+        router(sys.argv[2][1:])  # trim the leading '?' from the plugin call paramstring
+    except helper.vp.ViaplayError as error:
+        helper.dialog('ok', helper.language(30005), error.value)
 
 
 def main_menu():
-    items = []
-    data = vp.make_request(url=vp.base_url, method='get')
-    categories = vp.get_categories(input=data, method='data')
+    data = helper.vp.make_request(url=helper.vp.base_url, method='get')
+    categories = helper.vp.get_categories(input=data, method='data')
 
     for category in categories:
         category_name = category['name']
@@ -69,15 +42,13 @@ def main_menu():
                     'category_name': category_name
                 }
 
-            items = add_item(title, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
+            helper.add_item(title, parameters)
     list_search(data)
-    xbmcplugin.endOfDirectory(_handle)
+    helper.eod()
 
 
 def list_categories(url, category_name):
-    items = []
-    categories = vp.get_categories(url)
+    categories = helper.vp.get_categories(url)
 
     for category in categories:
         if category_name == 'kids':
@@ -89,14 +60,12 @@ def list_categories(url, category_name):
             'action': 'list_sortings',
             'url': category['href']
         }
-        items = add_item(title, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
+        helper.add_item(title, parameters)
+    helper.eod()
 
 
 def list_sortings(url):
-    items = []
-    sortings = vp.get_sortings(url)
+    sortings = helper.vp.get_sortings(url)
     if sortings:
         for sorting in sortings:
             title = sorting['title']
@@ -118,26 +87,24 @@ def list_sortings(url):
                     'url': sorting_url
                 }
 
-            items = add_item(title, parameters, items=items)
+            helper.add_item(title, parameters)
         list_products_alphabetical(url)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
+    helper.eod()
 
 
 def list_products_alphabetical(url):
     """List all products in alphabetical order."""
-    title = language(30013)
+    title = helper.language(30013)
     parameters = {
         'action': 'list_products',
         'url': url + '?sort=alphabetical'
     }
 
-    add_item(title, parameters)
+    helper.add_item(title, parameters)
 
 
 def list_alphabetical_letters(url):
-    items = []
-    letters = vp.get_letters(url)
+    letters = helper.vp.get_letters(url)
 
     for letter in letters:
         if letter == '0-9':
@@ -150,29 +117,27 @@ def list_alphabetical_letters(url):
             'url': url + '&letter=' + urllib.quote(query)
         }
 
-        items = add_item(letter, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
+        helper.add_item(letter, parameters)
+    helper.eod()
 
 
 def list_next_page(data):
-    if vp.get_next_page(data):
-        title = language(30018)
+    if helper.vp.get_next_page(data):
+        title = helper.language(30018)
         parameters = {
             'action': 'list_products',
-            'url': vp.get_next_page(data)
+            'url': helper.vp.get_next_page(data)
         }
 
-        add_item(title, parameters)
+        helper.add_item(title, parameters)
 
 
 def list_products(url, filter_event=False):
-    items = []
-    data = vp.make_request(url=url, method='get')
+    data = helper.vp.make_request(url=url, method='get')
     if filter_event:
         filter_event = filter_event.split(', ')
 
-    products = vp.get_products(input=data, method='data', filter_event=filter_event)
+    products = helper.vp.get_products(input=data, method='data', filter_event=filter_event)
 
     for product in products:
         content = product['type']
@@ -196,7 +161,6 @@ def list_products(url, filter_event=False):
         if content == 'episode':
             title = product['content']['series']['episodeTitle']
             playable = True
-            watched = True
             set_content = 'episodes'
 
         elif content == 'sport':
@@ -205,7 +169,7 @@ def list_products(url, filter_event=False):
             product_name = unicode(product['content']['title'])
 
             if date_today == product['event_date'].date():
-                start_time = '%s %s' % (language(30027), product['event_date'].strftime('%H:%M'))
+                start_time = '%s %s' % (helper.language(30027), product['event_date'].strftime('%H:%M'))
             else:
                 start_time = product['event_date'].strftime('%Y-%m-%d %H:%M')
 
@@ -215,14 +179,13 @@ def list_products(url, filter_event=False):
                 parameters = {
                     'action': 'dialog',
                     'dialog_type': 'ok',
-                    'heading': language(30017),
-                    'message': '%s [B]%s[/B].' % (language(30016), start_time)
+                    'heading': helper.language(30017),
+                    'message': '%s [B]%s[/B].' % (helper.language(30016), start_time)
                 }
                 playable = False
             else:
                 playable = True
 
-            watched = False
             set_content = 'movies'
 
         elif content == 'movie':
@@ -234,7 +197,6 @@ def list_products(url, filter_event=False):
                 title = title + ' *'  # mark rental products with an asterisk
 
             playable = True
-            watched = True
             set_content = 'movies'
 
         elif content == 'series':
@@ -245,36 +207,31 @@ def list_products(url, filter_event=False):
                 'url': season_url
             }
             playable = False
-            watched = True
             set_content = 'tvshows'
 
-        items = add_item(title, parameters, items=items, playable=playable, watched=watched, set_content=set_content,
-                         set_info=return_info(product, content), set_art=return_art(product, content))
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
+        helper.add_item(title, parameters, playable=playable, content=set_content, info=return_info(product, content), art=return_art(product, content))
     list_next_page(data)
-    xbmcplugin.endOfDirectory(_handle)
+    helper.eod()
 
 
 def list_seasons(url):
     """List all series seasons."""
-    seasons = vp.get_seasons(url)
+    seasons = helper.vp.get_seasons(url)
     if len(seasons) == 1:
         # list products if there's only one season
         season_url = seasons[0]['_links']['self']['href']
         list_products(season_url)
     else:
-        items = []
         for season in seasons:
             season_url = season['_links']['self']['href']
-            title = '%s %s' % (language(30014), season['title'])
+            title = '%s %s' % (helper.language(30014), season['title'])
             parameters = {
                 'action': 'list_products',
                 'url': season_url
             }
 
-            items = add_item(title, parameters, items=items)
-        xbmcplugin.addDirectoryItems(_handle, items, len(items))
-        xbmcplugin.endOfDirectory(_handle)
+            helper.add_item(title, parameters)
+        helper.eod()
 
 
 def return_info(product, content):
@@ -430,84 +387,26 @@ def list_search(data):
         'url': data['_links']['viaplay:search']['href']
     }
 
-    add_item(title, parameters)
-
-
-def get_user_input(heading):
-    keyboard = xbmc.Keyboard('', heading)
-    keyboard.doModal()
-    if keyboard.isConfirmed():
-        user_input = keyboard.getText()
-        addon_log('User input string: %s' % user_input)
-    else:
-        user_input = None
-
-    if user_input and len(user_input) > 0:
-        return user_input
-    else:
-        return None
-
-
-def get_numeric_input(heading):
-    dialog = xbmcgui.Dialog()
-    numeric_input = dialog.numeric(0, heading)
-
-    if len(numeric_input) > 0:
-        return str(numeric_input)
-    else:
-        return None
+    helper.add_item(title, parameters)
 
 
 def search(url):
-    query = get_user_input(language(30015))
+    query = helper.get_user_input(helper.language(30015))
     if query:
         url = '%s?query=%s' % (url, urllib.quote(query))
         list_products(url)
 
 
-def play_video(input, streamtype, content, pincode=None):
-    if streamtype == 'url':
-        url = input
-        guid = vp.get_products(input=url, method='url')['system']['guid']
-    else:
-        guid = input
-
-    try:
-        video_urls = vp.get_video_urls(guid, pincode=pincode)
-        if video_urls:
-            playitem = xbmcgui.ListItem(path=video_urls['manifest_url'])
-            playitem.setProperty('IsPlayable', 'true')
-            if addon.getSetting('subtitles') == 'true':
-                playitem.setSubtitles(vp.download_subtitles(video_urls['subtitle_urls']))
-            xbmcplugin.setResolvedUrl(_handle, True, listitem=playitem)
-        else:
-            dialog(dialog_type='ok', heading=language(30005), message=language(30038))
-
-    except vp.AuthFailure as error:
-        if error.value == 'ParentalGuidancePinChallengeNeededError':
-            if pincode:
-                dialog(dialog_type='ok', heading=language(30033), message=language(30034))
-            else:
-                pincode = get_numeric_input(language(30032))
-                if pincode:
-                    play_video(input, streamtype, content, pincode)
-        else:
-            show_auth_error(error.value)
-    except vp.LoginFailure:
-        dialog(dialog_type='ok', heading=language(30005), message=language(30006))
-
-
 def sports_menu(url):
-    items = []
     event_date = ['today', 'upcoming', 'archive']
 
     for date in event_date:
         if date == 'today':
-            title = language(30027)
+            title = helper.language(30027)
         elif date == 'upcoming':
-            title = language(30028)
+            title = helper.language(30028)
         else:
-            title = language(30029)
+            title = helper.language(30029)
         if date == 'today':
             parameters = {
                 'action': 'list_sports_today',
@@ -520,16 +419,14 @@ def sports_menu(url):
                 'event_date': date
             }
 
-        items = add_item(title, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
+        helper.add_item(title, parameters)
+    helper.eod()
 
 
 def list_sports_today(url):
-    items = []
-    event_status = [language(30037), language(30031)]
+    event_status = [helper.language(30037), helper.language(30031)]
     for status in event_status:
-        if status == language(30037):
+        if status == helper.language(30037):
             filter = 'live, upcoming'
         else:
             filter = 'archive'
@@ -539,14 +436,12 @@ def list_sports_today(url):
             'filter_sports_event': filter
         }
 
-        items = add_item(status, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
+        helper.add_item(status, parameters)
+    helper.eod()
 
 
 def list_sports_dates(url, event_date):
-    items = []
-    dates = vp.get_sports_dates(url, event_date)
+    dates = helper.vp.get_sports_dates(url, event_date)
     for date in dates:
         title = date['date']
         parameters = {
@@ -554,50 +449,8 @@ def list_sports_dates(url, event_date):
             'url': date['href']
         }
 
-        items = add_item(title, parameters, items=items)
-    xbmcplugin.addDirectoryItems(_handle, items, len(items))
-    xbmcplugin.endOfDirectory(_handle)
-
-
-def dialog(dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
-    dialog = xbmcgui.Dialog()
-    if dialog_type == 'ok':
-        dialog.ok(heading, message)
-    elif dialog_type == 'yesno':
-        return dialog.yesno(heading, message, nolabel=nolabel, yeslabel=yeslabel)
-    elif dialog_type == 'select':
-        ret = dialog.select(heading, options)
-        if ret > -1:
-            return ret
-        else:
-            return None
-
-
-def add_item(title, parameters, items=False, folder=True, playable=False, set_info=False, set_art=False,
-             watched=False, set_content=False):
-    listitem = xbmcgui.ListItem(label=title)
-    if playable:
-        listitem.setProperty('IsPlayable', 'true')
-        folder = False
-    if set_art:
-        listitem.setArt(set_art)
-    else:
-        listitem.setArt({'icon': addon.getAddonInfo('icon')})
-        listitem.setArt({'fanart': addon.getAddonInfo('fanart')})
-    if set_info:
-        listitem.setInfo('video', set_info)
-    if not watched:
-        listitem.addStreamInfo('video', {'duration': 0})
-    if set_content:
-        xbmcplugin.setContent(_handle, set_content)
-
-    recursive_url = _url + '?' + urllib.urlencode(parameters)
-
-    if items is False:
-        xbmcplugin.addDirectoryItem(_handle, recursive_url, listitem, folder)
-    else:
-        items.append((recursive_url, listitem, folder))
-        return items
+        helper.add_item(title, parameters)
+    helper.eod()
 
 
 def coloring(text, meaning):
@@ -614,21 +467,21 @@ def coloring(text, meaning):
 
 def show_auth_error(error):
     if error == 'UserNotAuthorizedForContentError':
-        message = language(30020)
+        message = helper.language(30020)
     elif error == 'PurchaseConfirmationRequiredError':
-        message = language(30021)
+        message = helper.language(30021)
     elif error == 'UserNotAuthorizedRegionBlockedError':
-        message = language(30022)
+        message = helper.language(30022)
     else:
         message = error
 
-    dialog(dialog_type='ok', heading=language(30017), message=message)
+    helper.dialog(dialog_type='ok', heading=helper.language(30017), message=message)
 
 
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
-    if params:
+    if 'action' in params:
         if params['action'] == 'list_categories':
             list_categories(params['url'], params['category_name'])
         elif params['action'] == 'sports_menu':
@@ -642,7 +495,7 @@ def router(paramstring):
         elif params['action'] == 'list_products_sports_today':
             list_products(params['url'], params['filter_sports_event'])
         elif params['action'] == 'play_video':
-            play_video(params['playid'], params['streamtype'], params['content'])
+            helper.play_video(params['playid'], params['streamtype'], params['content'])
         elif params['action'] == 'list_sortings':
             list_sortings(params['url'])
         elif params['action'] == 'list_alphabetical_letters':
@@ -652,10 +505,6 @@ def router(paramstring):
         elif params['action'] == 'list_sports_dates':
             list_sports_dates(params['url'], params['event_date'])
         elif params['action'] == 'dialog':
-            dialog(params['dialog_type'], params['heading'], params['message'])
+            helper.dialog(params['dialog_type'], params['heading'], params['message'])
     else:
         main_menu()
-
-
-def run():
-    router(sys.argv[2][1:])  # trim the leading '?' from the plugin call paramstring
