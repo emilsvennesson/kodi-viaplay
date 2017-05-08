@@ -11,7 +11,6 @@ import re
 import json
 import uuid
 import HTMLParser
-import threading
 from urllib import urlencode
 from datetime import datetime, timedelta
 

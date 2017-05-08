@@ -1,5 +1,4 @@
 import urllib
-import threading
 
 from viaplay import Viaplay
 
