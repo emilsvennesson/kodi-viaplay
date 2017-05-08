@@ -1,4 +1,5 @@
 import urllib
+import threading
 
 from viaplay import Viaplay
 
@@ -73,6 +74,45 @@ class KodiHelper(object):
             else:
                 return None
 
+    def login_process(self):
+        try:
+            self.vp.validate_session()
+            return True
+        except self.vp.ViaplayError as error:
+            if not error.value == 'PersistentLoginError' or error.value == 'MissingSessionCookieError':
+                raise
+            else:
+                return self.device_registration()
+
+
+    def device_registration(self):
+        """Presents a dialog with information on how to activate the device.
+        Attempts to authorize the device using the interval returned by the activation data."""
+        activation_data = self.vp.get_activation_data()
+        message = self.language(30039).format(activation_data['verificationUrl'], activation_data['userCode'])
+        dialog = xbmcgui.DialogProgress()
+        dialog.create(self.language(30040), message)
+        secs = 0
+        expires = activation_data['expires']
+        increment = int(100 / expires)
+
+        while secs < expires:
+            try:
+                self.vp.authorize_device(activation_data)
+                return True
+            except self.vp.ViaplayError as error:
+                # raise all non-pending authorization errors
+                if not error.value == 'DeviceAuthorizationPendingError':
+                    raise
+            secs += activation_data['interval']
+            percent = increment * secs
+            dialog.update(percent, message)
+            xbmc.sleep(activation_data['interval'] * 1000)
+            if dialog.iscanceled():
+                return False
+
+        return False
+
     def get_user_input(self, heading, hidden=False):
         keyboard = xbmc.Keyboard('', heading, hidden)
         keyboard.doModal()
@@ -140,7 +180,7 @@ class KodiHelper(object):
             if video_urls:
                 playitem = xbmcgui.ListItem(path=video_urls['manifest_url'])
                 playitem.setProperty('IsPlayable', 'true')
-                if self.addon.getSetting('subtitles') == 'true':
+                if self.get_setting('subtitles'):
                     playitem.setSubtitles(self.vp.download_subtitles(video_urls['subtitle_urls']))
                 xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
             else:

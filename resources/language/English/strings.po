@@ -156,3 +156,11 @@ msgstr ""
 msgctxt "#30038"
 msgid "No valid stream URL was found."
 msgstr ""
+
+msgctxt "#30039"
+msgid "Go to [B]{0}[/B] and activate your device using the following registration code: [B]{1}[/B]"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Activate your device"
+msgstr ""

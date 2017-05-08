@@ -11,6 +11,7 @@ import re
 import json
 import uuid
 import HTMLParser
+import threading
 from urllib import urlencode
 from datetime import datetime, timedelta
 
@@ -46,12 +47,12 @@ class Viaplay(object):
     def log(self, string):
         if self.debug:
             try:
-                print '[vialib]: %s' % string
+                print '[Viaplay]: %s' % string
             except UnicodeEncodeError:
                 # we can't anticipate everything in unicode they might throw at
                 # us, but we can handle a simple BOM
                 bom = unicode(codecs.BOM_UTF8, 'utf8')
-                print '[vialib]: %s' % string.replace(bom, '')
+                print '[Viaplay]: %s' % string.replace(bom, '')
             except:
                 pass
 
@@ -85,26 +86,37 @@ class Viaplay(object):
         response_dict = json.loads(response)
         try:
             if not response_dict['success']:
-                raise self.ViaplayError(response_dict['name'])
+                raise self.ViaplayError(response_dict['name'].encode('utf-8'))
         except KeyError:
             pass
 
         return response_dict
 
-    def login(self, username, password):
-        """Login to Viaplay. Return True/False based on the result."""
-        url = 'https://login.viaplay.%s/api/login/v1' % self.country
+    def get_activation_data(self):
+        """Get activation data (reg code etc) needed to authorize the device."""
+        url = 'https://login.viaplay.%s/api/device/code' % self.country
         payload = {
             'deviceKey': 'pc-%s' % self.country,
-            'username': username,
-            'password': password,
-            'persistent': 'true'
+            'deviceId': self.get_deviceid()
+        }
+
+        return self.make_request(url=url, method='get', payload=payload)
+
+    def authorize_device(self, activation_data):
+        """Try to register the device. This will set the session cookies."""
+        url = 'https://login.viaplay.%s/api/device/authorized' % self.country
+        payload = {
+            'deviceId': self.get_deviceid(),
+            'deviceToken': activation_data['deviceToken'],
+            'userCode': activation_data['userCode']
         }
 
         self.make_request(url=url, method='get', payload=payload)
+        self.validate_session()  # we need this to validate the new cookies
+
 
     def validate_session(self):
-        """Check if our session cookies are still valid."""
+        """Check if the session is valid."""
         url = 'https://login.viaplay.%s/api/persistentLogin/v1' % self.country
         payload = {
             'deviceKey': 'pc-%s' % self.country
