@@ -73,7 +73,7 @@ class KodiHelper(object):
             else:
                 return None
 
-    def login_process(self):
+    def authorize(self):
         try:
             self.vp.validate_session()
             return True
@@ -82,7 +82,6 @@ class KodiHelper(object):
                 raise
             else:
                 return self.device_registration()
-
 
     def device_registration(self):
         """Presents a dialog with information on how to activate the device.
