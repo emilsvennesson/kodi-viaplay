@@ -122,39 +122,54 @@ class Viaplay(object):
         }
         self.make_request(url=url, method='get', payload=payload)
 
-    def get_video_urls(self, guid, pincode=None):
+    def get_stream(self, guid, pincode=None):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
-        video_urls = {}
+        stream = {}
         url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
         payload = {
             'deviceId': self.get_deviceid(),
             'deviceName': 'web',
             'deviceType': 'pc',
             'userAgent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
-            'deviceKey': 'atv-%s' % self.country,
-            'guid': guid,
-            'pgPin': pincode
+            'deviceKey': 'pcdash-%s' % self.country,
+            'guid': guid
         }
+        if pincode:
+            payload['pgPin'] = pincode
 
         data = self.make_request(url=url, method='get', payload=payload)
-        for x in xrange(3):  # retry if we get an encrypted playlist
-            if not 'viaplay:encryptedPlaylist' in data['_links'].keys():
-                break
-            data = self.make_request(url=url, method='get', payload=payload)
         if 'viaplay:media' in data['_links'].keys():
-            manifest_url = data['_links']['viaplay:media']['href']
+            mpd_url = data['_links']['viaplay:media']['href']
         elif 'viaplay:fallbackMedia' in data['_links'].keys():
-            manifest_url = data['_links']['viaplay:fallbackMedia'][0]['href']
+            mpd_url = data['_links']['viaplay:fallbackMedia'][0]['href']
         elif 'viaplay:playlist' in data['_links'].keys():
-            manifest_url = data['_links']['viaplay:playlist']['href']
+            mpd_url = data['_links']['viaplay:playlist']['href']
+        elif 'viaplay:encryptedPlaylist' in data['_links'].keys():
+            mpd_url = data['_links']['viaplay:encryptedPlaylist']['href']
         else:
             self.log('Unable to retrieve stream URL.')
             return False
 
-        video_urls['manifest_url'] = manifest_url
-        video_urls['subtitle_urls'] = self.get_subtitle_urls(data)
+        stream['mpd_url'] = mpd_url
+        # strip out template from license url
+        stream['license_url'] = data['_links']['viaplay:license']['href'].replace('&_widevineChallenge={widevineChallenge}', '')
+        stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
+        stream['subtitle_urls'] = self.get_subtitle_urls(data)
 
-        return video_urls
+        return stream
+
+    def format_license_post_data(self, release_pid, wv_challenge):
+        self.log('release_pid: {0}'.format(release_pid))
+        self.log('wv_challenge: {0}'.format(wv_challenge))
+
+        post_data = {
+            'getWidevineLicense': {
+                'releasePid': release_pid,
+                'widevineChallenge': wv_challenge
+            }
+        }
+
+        return json.dumps(post_data)
 
     def get_categories(self, input, method=None):
         if method == 'data':

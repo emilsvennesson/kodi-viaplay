@@ -173,27 +173,16 @@ class KodiHelper(object):
         else:
             guid = input
 
-        try:
-            video_urls = self.vp.get_video_urls(guid, pincode=pincode)
-            if video_urls:
-                playitem = xbmcgui.ListItem(path=video_urls['manifest_url'])
-                playitem.setProperty('IsPlayable', 'true')
-                if self.get_setting('subtitles'):
-                    playitem.setSubtitles(self.vp.download_subtitles(video_urls['subtitle_urls']))
-                xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
-            else:
-                self.dialog(dialog_type='ok', heading=self.language(30005), message=self.language(30038))
-
-        except self.vp.ViaplayError as error:
-            if error.value == 'ParentalGuidancePinChallengeNeededError':
-                if pincode:
-                    self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
-                else:
-                    pincode = self.get_numeric_input(self.language(30032))
-                    if pincode:
-                        self.play_video(input, streamtype, content, pincode)
-            else:
-                raise
+        stream = self.vp.get_stream(guid, pincode=pincode)
+        if stream:
+            playitem = xbmcgui.ListItem(path=stream['mpd_url'])
+            playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+            playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'] + '||' + self.vp.format_license_post_data(stream['release_pid'], 'B{SSM}') + '|JBlicense')
+            if self.get_setting('subtitles'):
+                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitle_urls']))
+            xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
+        else:
+            self.dialog(dialog_type='ok', heading=self.language(30005), message=self.language(30038))
 
     def get_as_bool(self, string):
         if string == 'true':
