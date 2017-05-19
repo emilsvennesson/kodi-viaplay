@@ -176,6 +176,8 @@ class KodiHelper(object):
         stream = self.vp.get_stream(guid, pincode=pincode)
         if stream:
             playitem = xbmcgui.ListItem(path=stream['mpd_url'])
+            playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+            playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
             playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
             playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'] + '||' + self.vp.format_license_post_data(stream['release_pid'], 'B{SSM}') + '|JBlicense')
             if self.get_setting('subtitles'):
