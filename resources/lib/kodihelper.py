@@ -56,8 +56,6 @@ class KodiHelper(object):
         else:
             country_code = 'fi'
 
-        self.log('viaplay.{0} selected.'.format(country_code))
-
         return country_code
 
     def dialog(self, dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
