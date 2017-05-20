@@ -157,19 +157,6 @@ class Viaplay(object):
 
         return stream
 
-    def format_license_post_data(self, release_pid, wv_challenge):
-        self.log('release_pid: {0}'.format(release_pid))
-        self.log('wv_challenge: {0}'.format(wv_challenge))
-
-        post_data = {
-            'getWidevineLicense': {
-                'releasePid': release_pid,
-                'widevineChallenge': wv_challenge
-            }
-        }
-
-        return json.dumps(post_data)
-
     def get_categories(self, input, method=None):
         if method == 'data':
             data = input
