@@ -179,7 +179,7 @@ class KodiHelper(object):
             playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
             playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
             playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
-            playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'] + '||' + self.vp.format_license_post_data(stream['release_pid'], 'B{SSM}') + '|JBlicense')
+            playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||' + 'JBlicense')
             if self.get_setting('subtitles'):
                 playitem.setSubtitles(self.vp.download_subtitles(stream['subtitle_urls']))
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
