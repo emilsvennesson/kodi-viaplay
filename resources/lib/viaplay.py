@@ -151,8 +151,7 @@ class Viaplay(object):
             return False
 
         stream['mpd_url'] = mpd_url
-        # strip out template from license url
-        stream['license_url'] = data['_links']['viaplay:license']['href'].replace('&_widevineChallenge={widevineChallenge}', '')
+        stream['license_url'] = data['_links']['viaplay:license']['href']
         stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
         stream['subtitle_urls'] = self.get_subtitle_urls(data)
 
