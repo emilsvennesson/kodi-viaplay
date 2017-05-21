@@ -19,10 +19,11 @@ def run():
     try:
         router(sys.argv[2][1:])  # trim the leading '?' from the plugin call paramstring
     except helper.vp.ViaplayError as error:
-        if error.value == 'MissingSessionCookieError':
-            if helper.authorize():
-                router(sys.argv[2][1:])
-        else:
+        try:
+            if error.value == 'MissingSessionCookieError':
+                if helper.authorize():
+                    router(sys.argv[2][1:])
+        except helper.vp.ViaplayError as error:
             helper.dialog('ok', helper.language(30005), error.value)
 
 
