@@ -11,6 +11,7 @@ import re
 import json
 import uuid
 import HTMLParser
+from collections import OrderedDict
 from urllib import urlencode
 from datetime import datetime, timedelta
 
@@ -82,7 +83,7 @@ class Viaplay(object):
         return self.validate_response(req.content)
 
     def validate_response(self, response):
-        response_dict = json.loads(response)
+        response_dict = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
         try:
             if not response_dict['success']:
                 raise self.ViaplayError(response_dict['name'].encode('utf-8'))
@@ -156,6 +157,27 @@ class Viaplay(object):
             stream['subtitles'] = [x['href'] for x in data['_links']['viaplay:sami']]
 
         return stream
+
+    def get_start_page(self):
+        """Dynamically builds a start page from the returned _links.
+        Uses the named dict as 'id' when no 'id' exists in the dict."""
+        pages = []
+        data = self.make_request(self.base_url, 'get')
+        if not 'user' in data.keys():
+            raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
+
+        for link in data['_links']:
+            if isinstance(data['_links'][link], dict):
+                # sort out _links that doesn't contain a title
+                if 'title' in data['_links'][link].keys() and not data['_links'][link]['title'].islower():
+                    data['_links'][link]['id'] = link  # add the dict name as the 'id' tag
+                    pages.append(data['_links'][link])
+            else:  # list (viaplay:sections for example)
+                for i in data['_links'][link]:
+                    if 'title' in i.keys() and not i['title'].islower():
+                        pages.append(i)
+
+        return pages
 
     def get_categories(self, input, method=None):
         if method == 'data':

@@ -26,28 +26,15 @@ def run():
             helper.dialog('ok', helper.language(30005), error.value)
 
 
-def main_menu():
-    data = helper.vp.make_request(url=helper.vp.base_url, method='get')
-    categories = helper.vp.get_categories(input=data, method='data')
+def start_page():
+    pages = helper.vp.get_start_page()
 
-    for category in categories:
-        category_name = category['name']
-        title = category['title']
-        if category['type'] != 'editorial':
-            if category_name == 'sport':
-                parameters = {
-                    'action': 'sports_menu',
-                    'url': category['href']
-                }
-            else:
-                parameters = {
-                    'action': 'list_categories',
-                    'url': category['href'],
-                    'category_name': category_name
-                }
-
-            helper.add_item(title, parameters)
-    list_search(data)
+    for page in pages:
+        params = {
+            'action': page['name'] if page.get('name') else page['id'],
+            'url': page['href']
+        }
+        helper.add_item(page['title'], params)
     helper.eod()
 
 
@@ -384,16 +371,6 @@ def return_art(product, content):
     return art
 
 
-def list_search(data):
-    title = data['_links']['viaplay:search']['title']
-    parameters = {
-        'action': 'search',
-        'url': data['_links']['viaplay:search']['href']
-    }
-
-    helper.add_item(title, parameters)
-
-
 def search(url):
     query = helper.get_user_input(helper.language(30015))
     if query:
@@ -511,4 +488,4 @@ def router(paramstring):
         elif params['action'] == 'dialog':
             helper.dialog(params['dialog_type'], params['heading'], params['message'])
     else:
-        main_menu()
+        start_page()
