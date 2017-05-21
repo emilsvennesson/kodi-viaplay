@@ -87,6 +87,7 @@ class KodiHelper(object):
         activation_data = self.vp.get_activation_data()
         message = self.language(30039).format(activation_data['verificationUrl'], activation_data['userCode'])
         dialog = xbmcgui.DialogProgress()
+        xbmc.sleep(200)  # small delay to prevent DialogProgress to hang
         dialog.create(self.language(30040), message)
         secs = 0
         expires = activation_data['expires']
