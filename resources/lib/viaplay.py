@@ -113,7 +113,6 @@ class Viaplay(object):
         self.make_request(url=url, method='get', payload=payload)
         self.validate_session()  # we need this to validate the new cookies
 
-
     def validate_session(self):
         """Check if the session is valid."""
         url = 'https://login.viaplay.%s/api/persistentLogin/v1' % self.country
@@ -147,13 +146,14 @@ class Viaplay(object):
         elif 'viaplay:encryptedPlaylist' in data['_links'].keys():
             mpd_url = data['_links']['viaplay:encryptedPlaylist']['href']
         else:
-            self.log('Unable to retrieve stream URL.')
+            self.log('Failed to retrieve stream URL.')
             return False
 
         stream['mpd_url'] = mpd_url
         stream['license_url'] = data['_links']['viaplay:license']['href']
         stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
-        stream['subtitle_urls'] = self.get_subtitle_urls(data)
+        if 'viaplay:sami' in data['_links'].keys():
+            stream['subtitles'] = [x['href'] for x in data['_links']['viaplay:sami']]
 
         return stream
 
@@ -238,17 +238,6 @@ class Viaplay(object):
                 seasons.append(item)
 
         return seasons
-
-    def get_subtitle_urls(self, data):
-        """Return all subtitle SAMI URL:s in a list."""
-        subtitle_urls = []
-        try:
-            for subtitle in data['_links']['viaplay:sami']:
-                subtitle_urls.append(subtitle['href'])
-        except KeyError:
-            self.log('No subtitles found for guid: %s' % data['socket2']['productGuid'])
-
-        return subtitle_urls
 
     def download_subtitles(self, suburls):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
