@@ -91,7 +91,6 @@ class KodiHelper(object):
         dialog.create(self.language(30040), message)
         secs = 0
         expires = activation_data['expires']
-        increment = int(100 / expires)
 
         while secs < expires:
             try:
@@ -102,7 +101,7 @@ class KodiHelper(object):
                 if not error.value == 'DeviceAuthorizationPendingError':
                     raise
             secs += activation_data['interval']
-            percent = increment * secs
+            percent = int(100 * float(secs) / float(expires))
             dialog.update(percent, message)
             xbmc.sleep(activation_data['interval'] * 1000)
             if dialog.iscanceled():
