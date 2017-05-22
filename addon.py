@@ -344,7 +344,7 @@ def search(url):
         list_products(url)
 
 
-def sports_menu(url):
+def list_sports_page(url):
     event_date = ['today', 'upcoming', 'archive']
 
     for date in event_date:
@@ -431,8 +431,8 @@ def router(paramstring):
     if 'action' in params:
         if params['action'] == 'viaplay:root':
             list_start_page(params['url'])
-        elif params['action'] == 'sports_menu':
-            sports_menu(params['url'])
+        elif params['action'] == 'sport':
+            list_sports_page(params['url'])
         elif params['action'] == 'list_seasons':
             list_seasons(params['url'])
         elif params['action'] == 'list_products':
