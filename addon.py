@@ -19,11 +19,10 @@ def run():
     try:
         router(sys.argv[2][1:])  # trim the leading '?' from the plugin call paramstring
     except helper.vp.ViaplayError as error:
-        try:
-            if error.value == 'MissingSessionCookieError':
-                if helper.authorize():
-                    router(sys.argv[2][1:])
-        except helper.vp.ViaplayError as error:
+        if error.value == 'MissingSessionCookieError':
+            if helper.authorize():
+                router(sys.argv[2][1:])
+        else:
             helper.dialog('ok', helper.language(30005), error.value)
 
 
@@ -39,7 +38,7 @@ def root_page():
     helper.eod()
 
 
-def list_start_page(url):
+def start_page(url):
     collections = helper.vp.get_collections(url)
 
     for i in collections:
@@ -51,33 +50,50 @@ def list_start_page(url):
     helper.eod()
 
 
-def list_products_alphabetical(url):
-    """List all products in alphabetical order."""
-    title = helper.language(30013)
-    parameters = {
-        'action': 'list_products',
-        'url': url + '?sort=alphabetical'
-    }
+def vod_page(url):
+    """List categories and collections from the VOD pages (movies, series, kids, store)."""
+    collections = helper.vp.get_collections(url)
 
-    helper.add_item(title, parameters)
-
-
-def list_alphabetical_letters(url):
-    letters = helper.vp.get_letters(url)
-
-    for letter in letters:
-        if letter == '0-9':
-            query = '#'  # 0-9 needs to be sent as a number sign
-        else:
-            query = letter.lower()
-
-        parameters = {
+    categories_item(url)
+    for i in collections:
+        params = {
             'action': 'list_products',
-            'url': url + '&letter=' + urllib.quote(query)
+            'url': i['_links']['self']['href']
         }
-
-        helper.add_item(letter, parameters)
+        helper.add_item(i['title'], params)
     helper.eod()
+
+
+def categories_page(url):
+    categories = helper.vp.make_request(url, 'get')['_links']['viaplay:categoryFilters']
+
+    for i in categories:
+        params = {
+            'action': 'sortings_page',
+            'url': i['href']
+        }
+        helper.add_item(i['title'], params)
+    helper.eod()
+
+def sortings_page(url):
+    sortings = helper.vp.make_request(url, 'get')['_links']['viaplay:sortings']
+
+    for i in sortings:
+        params = {
+            'action': 'list_products',
+            'url': i['href']
+        }
+        helper.add_item(i['title'], params)
+    helper.eod()
+
+
+def categories_item(url):
+    title = helper.language(30041)
+    params = {
+        'action': 'categories_page',
+        'url': url
+    }
+    helper.add_item(title, params)
 
 
 def list_next_page(url):
@@ -342,7 +358,7 @@ def search(url):
     if query:
         list_products(url, search_query=query)
 
-def list_sports_page(url):
+def sports_page(url):
     event_date = ['today', 'upcoming', 'archive']
 
     for date in event_date:
@@ -427,12 +443,18 @@ def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
     if 'action' in params:
+        if params['action'] in helper.vp.vod_pages:
+            vod_page(params['url'])
+        elif params['action'] == 'sport':
+            sports_page(params['url'])
+        elif params['action'] == 'categories_page':
+            categories_page(params['url'])
+        elif params['action'] == 'sortings_page':
+            sortings_page(params['url'])
         if params['action'] == 'viaplay:root':
-            list_start_page(params['url'])
+            start_page(params['url'])
         elif params['action'] == 'viaplay:search':
             search(params['url'])
-        elif params['action'] == 'sport':
-            list_sports_page(params['url'])
         elif params['action'] == 'list_seasons':
             list_seasons(params['url'])
         elif params['action'] == 'list_products':
@@ -443,8 +465,6 @@ def router(paramstring):
             list_products(params['url'], params['filter_sports_event'])
         elif params['action'] == 'play_video':
             helper.play_video(params['playid'], params['streamtype'], params['content'])
-        elif params['action'] == 'list_alphabetical_letters':
-            list_alphabetical_letters(params['url'])
         elif params['action'] == 'list_sports_dates':
             list_sports_dates(params['url'], params['event_date'])
         elif params['action'] == 'dialog':

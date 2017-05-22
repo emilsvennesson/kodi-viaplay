@@ -31,6 +31,7 @@ class Viaplay(object):
         self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
         self.base_url = 'https://content.viaplay.%s/pc-%s' % (self.country, self.country)
+        self.vod_pages = ['series', 'movie', 'kids', 'rental']
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
@@ -184,27 +185,6 @@ class Viaplay(object):
         # return all blocks (collections) with type == 'dynamicList'
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'dynamicList']
 
-    def get_sortings(self, url):
-        data = self.make_request(url=url, method='get')
-        try:
-            sorttypes = data['_links']['viaplay:sortings']
-        except KeyError:
-            self.log('No sortings available for this category.')
-            return None
-
-        return sorttypes
-
-    def get_letters(self, url):
-        """Return a list of available letters for sorting in alphabetical order."""
-        letters = []
-        products = self.get_products(input=url, method='url')
-        for item in products:
-            letter = item['group'].encode('utf-8')
-            if letter not in letters:
-                letters.append(letter)
-
-        return letters
-
     def get_products(self, url, filter_event=False, search_query=None):
         """Return a dict containing the products and next page if available."""
         if search_query:
@@ -315,6 +295,8 @@ class Viaplay(object):
 
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
+        if data['type'] == 'page':
+            data = self.get_products_block(data)  # sometimes, the info is only available in viaplay:blocks
         if data.get('pageCount'):
             if int(data['pageCount']) > int(data['currentPage']):
                 next_page_url = data['_links']['next']['href']
