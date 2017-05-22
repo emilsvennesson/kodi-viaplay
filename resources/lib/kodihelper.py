@@ -164,12 +164,13 @@ class KodiHelper(object):
         """Tell Kodi that the end of the directory listing is reached."""
         xbmcplugin.endOfDirectory(self.handle)
 
-    def play_video(self, input, streamtype, content, pincode=None):
-        if streamtype == 'url':
-            url = input
-            guid = self.vp.get_products(input=url, method='url')['system']['guid']
+    def play(self, guid=None, url=None, pincode=None):
+        if guid or url:
+            if not guid:
+                guid = self.vp.get_products(url)['products']['system']['guid']
         else:
-            guid = input
+            helper.log('No guid or URL supplied.')
+            return False
 
         stream = self.vp.get_stream(guid, pincode=pincode)
         if stream:

@@ -4,6 +4,7 @@ A Kodi add-on for Viaplay
 """
 import sys
 import os
+import json
 import urllib
 import urlparse
 from datetime import datetime
@@ -110,82 +111,147 @@ def list_products(url, filter_event=False, search_query=None):
         filter_event = filter_event.split(', ')
 
     products_dict = helper.vp.get_products(url, filter_event=filter_event, search_query=search_query)
-
     for product in products_dict['products']:
-        content = product['type']
-        try:
-            playid = product['system']['guid']
-            streamtype = 'guid'
-        except KeyError:
-            """The guid is not always available from the category listing.
-            Send the self URL and let play_video grab the guid from there instead
-            as it always provides more detailed data about each product."""
-            playid = product['_links']['self']['href']
-            streamtype = 'url'
 
-        parameters = {
-            'action': 'play_video',
-            'playid': playid.encode('utf-8'),
-            'streamtype': streamtype,
-            'content': content
-        }
+        if product['type'] == 'series':
+            add_series(product)
+        elif product['type'] == 'episode':
+            add_episode(product)
+        elif product['type'] == 'movie':
+            add_movie(product)
+        elif product['type'] == 'sport':
+            add_sports_event(product)
+        else:
+            helper.log('product type: {0} not (yet) supported.'.format(product['type']))
+            return False
 
-        if content == 'episode':
-            title = product['content']['series']['episodeTitle']
-            playable = True
-            set_content = 'episodes'
-
-        elif content == 'sport':
-            now = datetime.now()
-            date_today = now.date()
-            product_name = unicode(product['content']['title'])
-
-            if date_today == product['event_date'].date():
-                start_time = '%s %s' % (helper.language(30027), product['event_date'].strftime('%H:%M'))
-            else:
-                start_time = product['event_date'].strftime('%Y-%m-%d %H:%M')
-
-            title = '[B]%s:[/B] %s' % (coloring(start_time, product['event_status']), product_name)
-
-            if product['event_status'] == 'upcoming':
-                parameters = {
-                    'action': 'dialog',
-                    'dialog_type': 'ok',
-                    'heading': helper.language(30017),
-                    'message': '%s [B]%s[/B].' % (helper.language(30016), start_time)
-                }
-                playable = False
-            else:
-                playable = True
-
-            set_content = 'movies'
-
-        elif content == 'movie':
-            movie_name = product['content']['title'].encode('utf-8')
-            movie_year = str(product['content']['production']['year'])
-            title = '%s (%s)' % (movie_name, movie_year)
-
-            if product['system']['availability']['planInfo']['isRental']:
-                title = title + ' *'  # mark rental products with an asterisk
-
-            playable = True
-            set_content = 'movies'
-
-        elif content == 'series':
-            title = product['content']['series']['title'].encode('utf-8')
-            season_url = product['_links']['viaplay:page']['href']
-            parameters = {
-                'action': 'list_seasons',
-                'url': season_url
-            }
-            playable = False
-            set_content = 'tvshows'
-
-        helper.add_item(title, parameters, playable=playable, content=set_content, info=return_info(product, content), art=return_art(product, content))
     if products_dict['next_page']:
         list_next_page(products_dict['next_page'])
     helper.eod()
 
+
+def add_movie(movie):
+    params = {}
+    if movie['system'].get('guid'):
+        params['action'] = 'play_guid'
+        params['guid'] = movie['system']['guid']
+    else:
+        params['action'] = 'play_url'
+        params['url'] = movie['_links']['self']['href']
+
+    details = movie['content']
+
+    movie_info = {
+        'mediatype': 'movie',
+        'title': details['title'],
+        'plot': details.get('synopsis'),
+        'genre': ', '.join([x['title'] for x in movie['_links']['viaplay:genres']]),
+        'year': details['production'].get('year'),
+        'duration': int(details['duration'].get('milliseconds')) / 1000,
+        'cast': details['people'].get('actors', []),
+        'director': ', '.join(details['people'].get('directors', [])),
+        'mpaa': details.get('parentalRating'),
+        'rating': float(details['imdb'].get('rating')) if 'imdb' in details.keys() else None,
+        'votes': str(details['imdb'].get('votes')) if 'imdb' in details.keys() else None,
+        'code': details['imdb'].get('id') if 'imdb' in details.keys() else None
+    }
+
+    helper.add_item(movie_info['title'], params=params, info=movie_info, content='movies', playable=True)
+
+
+def add_series(show):
+    params = {
+        'action': 'list_seasons',
+        'url': show['_links']['viaplay:page']['href']
+    }
+
+    details = show['content']
+
+    series_info = {
+        'mediatype': 'tvshow',
+        'title': details['series']['title'],
+        'tvshowtitle': details['series']['title'],
+        'plot': details['synopsis'] if details.get('synopsis') else details['series'].get('synopsis'),
+        'genre': ', '.join([x['title'] for x in show['_links']['viaplay:genres']]),
+        'year': details['production'].get('year') if 'production' in details.keys() else None,
+        'cast': details['people'].get('actors', []) if 'people' in details.keys() else [],
+        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details.keys() else None,
+        'mpaa': details.get('parentalRating'),
+        'rating': float(details['imdb'].get('rating')) if 'imdb' in details.keys() else None,
+        'votes': str(details['imdb'].get('votes')) if 'imdb' in details.keys() else None,
+        'code': details['imdb'].get('id') if 'imdb' in details.keys() else None,
+        'season': int(details['series']['seasons']) if details['series'].get('seasons') else None
+    }
+
+    helper.add_item(series_info['title'], params=params, folder=True, info=series_info, content='tvshows')
+
+
+def add_episode(episode):
+    params = {
+        'action': 'play_guid',
+        'guid': episode['system']['guid']
+    }
+
+    details = episode['content']
+
+    episode_info = {
+        'mediatype': 'episode',
+        'title': details.get('title'),
+        'list_title': details['series']['episodeTitle'] if details['series'].get('episodeTitle') else details.get('title'),
+        'tvshowtitle': details['series'].get('title'),
+        'plot': details['synopsis'] if details.get('synopsis') else details['series'].get('synopsis'),
+        'duration' : details['duration']['milliseconds'] / 1000,
+        'genre': ', '.join([x['title'] for x in episode['_links']['viaplay:genres']]),
+        'year': details['production'].get('year') if 'production' in details.keys() else None,
+        'cast': details['people'].get('actors', []) if 'people' in details.keys() else [],
+        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details.keys() else None,
+        'mpaa': details.get('parentalRating'),
+        'rating': float(details['imdb'].get('rating')) if 'imdb' in details.keys() else None,
+        'votes': str(details['imdb'].get('votes')) if 'imdb' in details.keys() else None,
+        'code': details['imdb'].get('id') if 'imdb' in details.keys() else None,
+        'season': int(details['series']['season'].get('seasonNumber')),
+        'episode': int(details['series'].get('episodeNumber'))
+    }
+
+    helper.add_item(episode_info['list_title'], params=params, folder=True, info=episode_info, content='episodes')
+
+
+def add_sports_event(event):
+    now = datetime.now()
+    date_today = now.date()
+
+    if date_today == event['event_date'].date():
+        start_time = '{0} {1}'.format(helper.language(30027), event['event_date'].strftime('%H:%M'))
+    else:
+        start_time = event['event_date'].strftime('%Y-%m-%d %H:%M')
+
+    if event['event_status'] == 'upcoming':
+        params = {
+            'action': 'dialog',
+            'dialog_type': 'ok',
+            'heading': helper.language(30017),
+            'message': helper.language(30016).format(start_time)
+        }
+        playable = False
+    else:
+        params = {
+            'action': 'play_guid',
+            'guid': event['system']['guid']
+        }
+        playable = True
+
+    details = event['content']
+
+    event_info = {
+        'mediatype': 'video',
+        'title': details.get('title'),
+        'plot': details['synopsis'],
+        'year': int(details['production'].get('year')),
+        'genre': details['format'].get('title'),
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event['event_status']), details.get('title').encode('utf-8'))
+    }
+
+    helper.add_item(event_info['list_title'], params=params, playable=playable, info=event_info, content='movies')
 
 def list_seasons(url):
     """List all series seasons."""
@@ -455,6 +521,10 @@ def router(paramstring):
             start_page(params['url'])
         elif params['action'] == 'viaplay:search':
             search(params['url'])
+        elif params['action'] == 'play_guid':
+            helper.play(guid=params['guid'])
+        elif params['action'] == 'play_url':
+            helper.play(url=params['url'])
         elif params['action'] == 'list_seasons':
             list_seasons(params['url'])
         elif params['action'] == 'list_products':
@@ -463,8 +533,6 @@ def router(paramstring):
             list_sports_today(params['url'])
         elif params['action'] == 'list_products_sports_today':
             list_products(params['url'], params['filter_sports_event'])
-        elif params['action'] == 'play_video':
-            helper.play_video(params['playid'], params['streamtype'], params['content'])
         elif params['action'] == 'list_sports_dates':
             list_sports_dates(params['url'], params['event_date'])
         elif params['action'] == 'dialog':

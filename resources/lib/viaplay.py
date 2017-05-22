@@ -201,10 +201,11 @@ class Viaplay(object):
             products = self.get_products_block(data)['_embedded']['viaplay:products']
 
         # add additional info to sports products
-        for product in products:
-            if product.get('type') == 'sport':
-                product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
-                product['event_status'] = self.get_event_status(product)
+        if isinstance(products, list):  # viaplay:product is not a list
+            for product in products:
+                if product.get('type') == 'sport':
+                    product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
+                    product['event_status'] = self.get_event_status(product)
 
         if filter_event:
             # filter out and only return products with event_status in filter_event
