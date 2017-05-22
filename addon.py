@@ -3,9 +3,6 @@
 A Kodi add-on for Viaplay
 """
 import sys
-import os
-import json
-import urllib
 import urlparse
 from datetime import datetime
 
