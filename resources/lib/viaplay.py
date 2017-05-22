@@ -158,8 +158,8 @@ class Viaplay(object):
 
         return stream
 
-    def get_start_page(self):
-        """Dynamically builds a start page from the returned _links.
+    def get_root_page(self):
+        """Dynamically builds the root page from the returned _links.
         Uses the named dict as 'id' when no 'id' exists in the dict."""
         pages = []
         data = self.make_request(self.base_url, 'get')
@@ -179,18 +179,10 @@ class Viaplay(object):
 
         return pages
 
-    def get_categories(self, input, method=None):
-        if method == 'data':
-            data = input
-        else:
-            data = self.make_request(url=input, method='get')
-
-        if data['pageType'] == 'root':
-            categories = data['_links']['viaplay:sections']
-        elif data['pageType'] == 'section':
-            categories = data['_links']['viaplay:categoryFilters']
-
-        return categories
+    def get_collections(self, url):
+        data = self.make_request(url, 'get')
+        # return all blocks (collections) with type == 'dynamicList'
+        return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'dynamicList']
 
     def get_sortings(self, url):
         data = self.make_request(url=url, method='get')

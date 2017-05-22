@@ -27,8 +27,8 @@ def run():
             helper.dialog('ok', helper.language(30005), error.value)
 
 
-def start_page():
-    pages = helper.vp.get_start_page()
+def root_page():
+    pages = helper.vp.get_root_page()
 
     for page in pages:
         params = {
@@ -39,48 +39,15 @@ def start_page():
     helper.eod()
 
 
-def list_categories(url, category_name):
-    categories = helper.vp.get_categories(url)
+def list_start_page(url):
+    collections = helper.vp.get_collections(url)
 
-    for category in categories:
-        if category_name == 'kids':
-            title = '%s: %s' % (category['group']['title'].title(), category['title'])
-        else:
-            title = category['title']
-
-        parameters = {
-            'action': 'list_sortings',
-            'url': category['href']
+    for i in collections:
+        params = {
+            'action': 'list_products',
+            'url': i['_links']['self']['href']
         }
-        helper.add_item(title, parameters)
-    helper.eod()
-
-
-def list_sortings(url):
-    sortings = helper.vp.get_sortings(url)
-    if sortings:
-        for sorting in sortings:
-            title = sorting['title']
-            sorting_url = sorting['href']
-            try:
-                if sorting['id'] == 'alphabetical':
-                    parameters = {
-                        'action': 'list_alphabetical_letters',
-                        'url': sorting_url
-                    }
-                else:
-                    parameters = {
-                        'action': 'list_products',
-                        'url': sorting_url
-                    }
-            except TypeError:
-                parameters = {
-                    'action': 'list_products',
-                    'url': sorting_url
-                }
-
-            helper.add_item(title, parameters)
-        list_products_alphabetical(url)
+        helper.add_item(i['title'], params)
     helper.eod()
 
 
@@ -464,8 +431,8 @@ def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
     if 'action' in params:
-        if params['action'] == 'list_categories':
-            list_categories(params['url'], params['category_name'])
+        if params['action'] == 'viaplay:root':
+            list_start_page(params['url'])
         elif params['action'] == 'sports_menu':
             sports_menu(params['url'])
         elif params['action'] == 'list_seasons':
@@ -478,8 +445,6 @@ def router(paramstring):
             list_products(params['url'], params['filter_sports_event'])
         elif params['action'] == 'play_video':
             helper.play_video(params['playid'], params['streamtype'], params['content'])
-        elif params['action'] == 'list_sortings':
-            list_sortings(params['url'])
         elif params['action'] == 'list_alphabetical_letters':
             list_alphabetical_letters(params['url'])
         elif params['action'] == 'search':
@@ -489,4 +454,4 @@ def router(paramstring):
         elif params['action'] == 'dialog':
             helper.dialog(params['dialog_type'], params['heading'], params['message'])
     else:
-        start_page()
+        root_page()
