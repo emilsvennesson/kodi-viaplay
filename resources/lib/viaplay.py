@@ -205,14 +205,10 @@ class Viaplay(object):
 
         return letters
 
-    def get_products(self, input, method=None, filter_event=False):
-        """Return a list of all available products."""
-        if method == 'data':
-            data = input
-        else:
-            data = self.make_request(url=input, method='get')
-
-        if 'list' in data['type']:
+    def get_products(self, url, filter_event=False):
+        """Return a dict containing the products and next page if available."""
+        data = self.make_request(url, 'get')
+        if 'list' in data['type'].lower():
             products = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':
             products = data['_embedded']['viaplay:product']
@@ -239,7 +235,12 @@ class Viaplay(object):
                         fproducts.append(product)
             products = fproducts
 
-        return products
+        products_dict = {
+            'products': products,
+            'next_page': self.get_next_page(data)
+        }
+
+        return products_dict
 
     def get_seasons(self, url):
         """Return all available series seasons as a list."""
@@ -326,12 +327,11 @@ class Viaplay(object):
 
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
-        # first page is always (?) from viaplay:blocks
-        if data['type'] == 'page':
-            data = self.get_products_block(data)
         if int(data['pageCount']) > int(data['currentPage']):
             next_page_url = data['_links']['next']['href']
             return next_page_url
+        else:
+            return False
 
     def get_products_block(self, data):
         """Get the viaplay:blocks containing all product information."""

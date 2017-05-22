@@ -80,25 +80,22 @@ def list_alphabetical_letters(url):
     helper.eod()
 
 
-def list_next_page(data):
-    if helper.vp.get_next_page(data):
-        title = helper.language(30018)
-        parameters = {
-            'action': 'list_products',
-            'url': helper.vp.get_next_page(data)
-        }
-
-        helper.add_item(title, parameters)
+def list_next_page(url):
+    title = helper.language(30018)
+    params = {
+        'action': 'list_products',
+        'url': url
+    }
+    helper.add_item(title, params)
 
 
 def list_products(url, filter_event=False):
-    data = helper.vp.make_request(url=url, method='get')
     if filter_event:
         filter_event = filter_event.split(', ')
 
-    products = helper.vp.get_products(input=data, method='data', filter_event=filter_event)
+    products_dict = helper.vp.get_products(url, filter_event=filter_event)
 
-    for product in products:
+    for product in products_dict['products']:
         content = product['type']
         try:
             playid = product['system']['guid']
@@ -169,7 +166,8 @@ def list_products(url, filter_event=False):
             set_content = 'tvshows'
 
         helper.add_item(title, parameters, playable=playable, content=set_content, info=return_info(product, content), art=return_art(product, content))
-    list_next_page(data)
+    if products_dict['next_page']:
+        list_next_page(products_dict['next_page'])
     helper.eod()
 
 
