@@ -215,25 +215,15 @@ class Viaplay(object):
         else:
             products = self.get_products_block(data)['_embedded']['viaplay:products']
 
-        try:
-            # try adding additional info to sports dict
-            aproducts = []
-            for product in products:
-                if product['type'] == 'sport':
-                    product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
-                    product['event_status'] = self.get_event_status(product)
-                aproducts.append(product)
-            products = aproducts
-        except TypeError:
-            pass
+        # add additional info to sports products
+        for product in products:
+            if product.get('type') == 'sport':
+                product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
+                product['event_status'] = self.get_event_status(product)
 
         if filter_event:
-            fproducts = []
-            for product in products:
-                for event in filter_event:
-                    if event == product['event_status']:
-                        fproducts.append(product)
-            products = fproducts
+            # filter out and only return products with event_status in filter_event
+            products = [x for x in products if x['event_status'] in filter_event]
 
         products_dict = {
             'products': products,
@@ -320,10 +310,10 @@ class Viaplay(object):
 
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
-        if int(data['pageCount']) > int(data['currentPage']):
-            next_page_url = data['_links']['next']['href']
-            return next_page_url
-        else:
+        if data.get('pageCount'):
+            if int(data['pageCount']) > int(data['currentPage']):
+                next_page_url = data['_links']['next']['href']
+                return next_page_url
             return False
 
     def get_products_block(self, data):
