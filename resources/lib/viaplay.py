@@ -205,9 +205,14 @@ class Viaplay(object):
 
         return letters
 
-    def get_products(self, url, filter_event=False):
+    def get_products(self, url, filter_event=False, search_query=None):
         """Return a dict containing the products and next page if available."""
-        data = self.make_request(url, 'get')
+        if search_query:
+            params = {'query': search_query}
+        else:
+            params = None
+        data = self.make_request(url, method='get', payload=params)
+
         if 'list' in data['type'].lower():
             products = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':

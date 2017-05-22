@@ -89,11 +89,11 @@ def list_next_page(url):
     helper.add_item(title, params)
 
 
-def list_products(url, filter_event=False):
+def list_products(url, filter_event=False, search_query=None):
     if filter_event:
         filter_event = filter_event.split(', ')
 
-    products_dict = helper.vp.get_products(url, filter_event=filter_event)
+    products_dict = helper.vp.get_products(url, filter_event=filter_event, search_query=search_query)
 
     for product in products_dict['products']:
         content = product['type']
@@ -340,9 +340,7 @@ def return_art(product, content):
 def search(url):
     query = helper.get_user_input(helper.language(30015))
     if query:
-        url = '%s?query=%s' % (url, urllib.quote(query))
-        list_products(url)
-
+        list_products(url, search_query=query)
 
 def list_sports_page(url):
     event_date = ['today', 'upcoming', 'archive']
@@ -431,6 +429,8 @@ def router(paramstring):
     if 'action' in params:
         if params['action'] == 'viaplay:root':
             list_start_page(params['url'])
+        elif params['action'] == 'viaplay:search':
+            search(params['url'])
         elif params['action'] == 'sport':
             list_sports_page(params['url'])
         elif params['action'] == 'list_seasons':
@@ -445,8 +445,6 @@ def router(paramstring):
             helper.play_video(params['playid'], params['streamtype'], params['content'])
         elif params['action'] == 'list_alphabetical_letters':
             list_alphabetical_letters(params['url'])
-        elif params['action'] == 'search':
-            search(params['url'])
         elif params['action'] == 'list_sports_dates':
             list_sports_dates(params['url'], params['event_date'])
         elif params['action'] == 'dialog':
