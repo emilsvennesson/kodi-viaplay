@@ -243,16 +243,9 @@ class Viaplay(object):
         return products_dict
 
     def get_seasons(self, url):
-        """Return all available series seasons as a list."""
-        seasons = []
+        """Return all available series seasons."""
         data = self.make_request(url=url, method='get')
-
-        items = data['_embedded']['viaplay:blocks']
-        for item in items:
-            if item['type'] == 'season-list':
-                seasons.append(item)
-
-        return seasons
+        return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'season-list']
 
     def download_subtitles(self, suburls):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
