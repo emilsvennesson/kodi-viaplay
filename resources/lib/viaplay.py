@@ -156,7 +156,7 @@ class Viaplay(object):
             'guid': guid
         }
         if pincode:
-            payload['pgPin'] = pincode
+            params['pgPin'] = pincode
 
         data = self.make_request(url=url, method='get', params=params)
         if 'viaplay:media' in data['_links'].keys():
