@@ -296,27 +296,6 @@ class Viaplay(object):
 
         return status
 
-    def get_sports_dates(self, url, event_date=None):
-        """Return the available sports dates.
-        Filter upcoming/previous dates with the event_date parameter."""
-        dates = []
-        data = self.make_request(url=url, method='get')
-        dates_data = data['_links']['viaplay:days']
-        now = datetime.now()
-
-        for date in dates_data:
-            date_obj = datetime(*(time.strptime(date['date'], '%Y-%m-%d')[0:6]))  # http://forum.kodi.tv/showthread.php?tid=112916
-            if event_date == 'upcoming':
-                if date_obj.date() > now.date():
-                    dates.append(date)
-            elif event_date == 'archive':
-                if date_obj.date() < now.date():
-                    dates.append(date)
-            else:
-                dates.append(date)
-
-        return dates
-
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
         if data['type'] == 'page':
