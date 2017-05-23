@@ -31,6 +31,7 @@ class Viaplay(object):
         self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
         self.base_url = 'https://content.viaplay.%s/pc-%s' % (self.country, self.country)
+        self.login_api = 'https://login.viaplay.%s/api' % self.country
         self.vod_pages = ['series', 'movie', 'kids', 'rental']
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
@@ -102,7 +103,7 @@ class Viaplay(object):
 
     def get_activation_data(self):
         """Get activation data (reg code etc) needed to authorize the device."""
-        url = 'https://login.viaplay.%s/api/device/code' % self.country
+        url = self.login_api + '/device/code'
         params = {
             'deviceKey': 'pc-%s' % self.country,
             'deviceId': self.get_deviceid()
@@ -112,7 +113,7 @@ class Viaplay(object):
 
     def authorize_device(self, activation_data):
         """Try to register the device. This will set the session cookies."""
-        url = 'https://login.viaplay.%s/api/device/authorized' % self.country
+        url = self.login_api + '/device/authorized'
         params = {
             'deviceId': self.get_deviceid(),
             'deviceToken': activation_data['deviceToken'],
@@ -121,10 +122,19 @@ class Viaplay(object):
 
         self.make_request(url=url, method='get', params=params)
         self.validate_session()  # we need this to validate the new cookies
+        time.sleep(3)  # sleep to make sure session has been registred before next request
 
     def validate_session(self):
         """Check if the session is valid."""
-        url = 'https://login.viaplay.%s/api/persistentLogin/v1' % self.country
+        url = self.login_api + '/persistentLogin/v1'
+        params = {
+            'deviceKey': 'pc-%s' % self.country
+        }
+        self.make_request(url=url, method='get', params=params)
+
+    def log_out(self):
+        """Log out from Viaplay."""
+        url = self.login_api + '/logout/v1'
         params = {
             'deviceKey': 'pc-%s' % self.country
         }

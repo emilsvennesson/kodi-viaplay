@@ -81,6 +81,14 @@ class KodiHelper(object):
             else:
                 return self.device_registration()
 
+    def log_out(self):
+        confirm = self.dialog('yesno', self.language(30042), self.language(30043))
+        if confirm:
+            self.vp.log_out()
+            # send Kodi back to home screen
+            xbmc.executebuiltin('XBMC.Container.Update(path, replace)')
+            xbmc.executebuiltin('XBMC.ActivateWindow(Home)')
+
     def device_registration(self):
         """Presents a dialog with information on how to activate the device.
         Attempts to authorize the device using the interval returned by the activation data."""

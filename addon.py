@@ -394,6 +394,8 @@ def router(paramstring):
             start_page(params['url'])
         elif params['action'] == 'viaplay:search':
             search(params['url'])
+        elif params['action'] == 'viaplay:logout':
+            helper.log_out()
         elif params['action'] == 'play_guid':
             helper.play(guid=params['guid'])
         elif params['action'] == 'play_url':

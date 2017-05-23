@@ -168,3 +168,11 @@ msgstr ""
 msgctxt "#30041"
 msgid "Categories and themes"
 msgstr ""
+
+msgctxt "#30042"
+msgid "Log out"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Are you sure you want to log out?"
+msgstr ""
