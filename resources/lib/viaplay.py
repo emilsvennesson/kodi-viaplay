@@ -62,72 +62,79 @@ class Viaplay(object):
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
         template = re.search(r'\{.+?\}', url)
         if template:
-            url = url.replace(template.group(), '')
+            self.log('Unparsed URL: {0}'.format(url))
+            url = re.sub(template, '', url)
 
         return url
 
-    def make_request(self, url, method, payload=None, headers=None):
-        """Make an HTTP request. Return the JSON response in a dict."""
-        self.log('URL: %s' % url)
-        parsed_url = self.url_parser(url)
-        if parsed_url != url:
-            url = parsed_url
-            self.log('Parsed URL: %s' % url)
+    def make_request(self, url, method, params=None, payload=None, headers=None):
+        """Make an HTTP request. Return the response."""
+        self.log('Request URL: %s' % url)
+        self.log('Method: %s' % method)
+        if params:
+            self.log('Params: %s' % params)
+        if payload:
+            self.log('Payload: %s' % payload)
+        if headers:
+            self.log('Headers: %s' % headers)
+
         if method == 'get':
-            req = self.http_session.get(url, params=payload, headers=headers, allow_redirects=False, verify=False)
-        else:
-            req = self.http_session.post(url, data=payload, headers=headers, allow_redirects=False, verify=False)
+            req = self.http_session.get(self.url_parser(url), params=params, headers=headers)
+        elif method == 'put':
+            req = self.http_session.put(self.url_parser(url), params=params, data=payload, headers=headers)
+        else:  # post
+            req = self.http_session.post(self.url_parser(url), params=params, data=payload, headers=headers)
         self.log('Response code: %s' % req.status_code)
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
 
-        return self.validate_response(req.content)
+        return self.parse_response(req.content)
 
-    def validate_response(self, response):
-        response_dict = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
+    def parse_response(self, response):
         try:
-            if not response_dict['success']:
-                raise self.ViaplayError(response_dict['name'].encode('utf-8'))
-        except KeyError:
+            response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
+            if 'success' in response.keys() and not response['success']:  # raise ViaplayError when 'success' is False
+                raise self.ViaplayError(response['name'].encode('utf-8'))
+        except ValueError:  # if response is not json
             pass
 
-        return response_dict
+        return response
 
     def get_activation_data(self):
         """Get activation data (reg code etc) needed to authorize the device."""
         url = 'https://login.viaplay.%s/api/device/code' % self.country
-        payload = {
+        params = {
             'deviceKey': 'pc-%s' % self.country,
             'deviceId': self.get_deviceid()
         }
 
-        return self.make_request(url=url, method='get', payload=payload)
+        return self.make_request(url=url, method='get', params=params)
 
     def authorize_device(self, activation_data):
         """Try to register the device. This will set the session cookies."""
         url = 'https://login.viaplay.%s/api/device/authorized' % self.country
-        payload = {
+        params = {
             'deviceId': self.get_deviceid(),
             'deviceToken': activation_data['deviceToken'],
             'userCode': activation_data['userCode']
         }
 
-        self.make_request(url=url, method='get', payload=payload)
+        self.make_request(url=url, method='get', params=params)
         self.validate_session()  # we need this to validate the new cookies
 
     def validate_session(self):
         """Check if the session is valid."""
         url = 'https://login.viaplay.%s/api/persistentLogin/v1' % self.country
-        payload = {
+        params = {
             'deviceKey': 'pc-%s' % self.country
         }
-        self.make_request(url=url, method='get', payload=payload)
+        self.make_request(url=url, method='get', params=params)
 
     def get_stream(self, guid, pincode=None):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         stream = {}
         url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
-        payload = {
+        params = {
             'deviceId': self.get_deviceid(),
             'deviceName': 'web',
             'deviceType': 'pc',
@@ -138,7 +145,7 @@ class Viaplay(object):
         if pincode:
             payload['pgPin'] = pincode
 
-        data = self.make_request(url=url, method='get', payload=payload)
+        data = self.make_request(url=url, method='get', params=params)
         if 'viaplay:media' in data['_links'].keys():
             mpd_url = data['_links']['viaplay:media']['href']
         elif 'viaplay:fallbackMedia' in data['_links'].keys():
@@ -163,7 +170,7 @@ class Viaplay(object):
         """Dynamically builds the root page from the returned _links.
         Uses the named dict as 'id' when no 'id' exists in the dict."""
         pages = []
-        data = self.make_request(self.base_url, 'get')
+        data = self.make_request(url=self.base_url, method='get')
         if not 'user' in data.keys():
             raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
 
@@ -181,7 +188,7 @@ class Viaplay(object):
         return pages
 
     def get_collections(self, url):
-        data = self.make_request(url, 'get')
+        data = self.make_request(url=url, method='get')
         # return all blocks (collections) with type == 'dynamicList'
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'dynamicList']
 
@@ -191,7 +198,7 @@ class Viaplay(object):
             params = {'query': search_query}
         else:
             params = None
-        data = self.make_request(url, method='get', payload=params)
+        data = self.make_request(url, method='get', params=params)
 
         if 'list' in data['type'].lower():
             products = data['_embedded']['viaplay:products']
@@ -226,27 +233,25 @@ class Viaplay(object):
     def download_subtitles(self, suburls):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
         Return a list of the path to the downloaded subtitles."""
-        subtitle_paths = []
-        for suburl in suburls:
-            req = requests.get(suburl)
-            sami = req.content.decode('utf-8', 'ignore').strip()
+        paths = []
+        for url in suburls:
+            sami = self.make_request(url=url, method='get').decode('utf-8', 'ignore').strip()
             htmlparser = HTMLParser.HTMLParser()
             subtitle = htmlparser.unescape(sami).encode('utf-8')
-            subtitle = subtitle.replace('  ', ' ')  # replace two spaces with one
 
-            subpattern = re.search(r'[_]([a-z]+)', suburl)
-            if subpattern:
-                sublang = subpattern.group(1)
+            lang_pattern = re.search(r'[_]([a-z]+)', url)
+            if lang_pattern:
+                sub_lang = lang_pattern.group(1)
             else:
-                sublang = 'unknown'
-                self.log('Unable to identify subtitle language.')
+                sub_lang = 'unknown'
+                self.log('Failed to identify subtitle language.')
 
-            path = os.path.join(self.tempdir, '%s.sami') % sublang
+            path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
             with open(path, 'w') as subfile:
                 subfile.write(subtitle)
-            subtitle_paths.append(path)
+            paths.append(path)
 
-        return subtitle_paths
+        return paths
 
     def get_deviceid(self):
         """"Read/write deviceId (generated UUID4) from/to file and return it."""
