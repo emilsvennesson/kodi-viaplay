@@ -186,17 +186,14 @@ class KodiHelper(object):
                     self.play(guid, pincode=pincode)
             return
 
-        if stream:
-            playitem = xbmcgui.ListItem(path=stream['mpd_url'])
-            playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
-            playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
-            playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
-            playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
-            if self.get_setting('subtitles') and 'subtitles' in stream.keys():
-                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles']))
-            xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
-        else:
-            self.dialog(dialog_type='ok', heading=self.language(30005), message=self.language(30038))
+        playitem = xbmcgui.ListItem(path=stream['mpd_url'])
+        playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+        playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+        playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
+        if self.get_setting('subtitles') and 'subtitles' in stream.keys():
+            playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles']))
+        xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 
     def get_as_bool(self, string):
         if string == 'true':
