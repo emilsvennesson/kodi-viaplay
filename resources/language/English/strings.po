@@ -166,7 +166,7 @@ msgid "Activate your device"
 msgstr ""
 
 msgctxt "#30041"
-msgid "Categories and themes"
+msgid "Categories"
 msgstr ""
 
 msgctxt "#30042"
