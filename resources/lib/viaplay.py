@@ -30,7 +30,8 @@ class Viaplay(object):
             os.makedirs(self.tempdir)
         self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
-        self.base_url = 'https://content.viaplay.%s/pc-%s' % (self.country, self.country)
+        self.device_key = 'xdk-%s' % self.country
+        self.base_url = 'https://content.viaplay.{0}/{1}'.format(self.country, self.device_key)
         self.login_api = 'https://login.viaplay.%s/api' % self.country
         self.vod_pages = ['series', 'movie', 'kids', 'rental']
         try:
@@ -107,7 +108,7 @@ class Viaplay(object):
         """Get activation data (reg code etc) needed to authorize the device."""
         url = self.login_api + '/device/code'
         params = {
-            'deviceKey': 'pc-%s' % self.country,
+            'deviceKey': self.device_key,
             'deviceId': self.get_deviceid()
         }
 
@@ -130,7 +131,7 @@ class Viaplay(object):
         """Check if the session is valid."""
         url = self.login_api + '/persistentLogin/v1'
         params = {
-            'deviceKey': 'pc-%s' % self.country
+            'deviceKey': self.device_key
         }
         self.make_request(url=url, method='get', params=params)
 
@@ -138,7 +139,7 @@ class Viaplay(object):
         """Log out from Viaplay."""
         url = self.login_api + '/logout/v1'
         params = {
-            'deviceKey': 'pc-%s' % self.country
+            'deviceKey': self.device_key
         }
         self.make_request(url=url, method='get', params=params)
 
@@ -202,7 +203,7 @@ class Viaplay(object):
     def get_collections(self, url):
         data = self.make_request(url=url, method='get')
         # return all blocks (collections) with type == 'dynamicList'
-        return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'dynamicList']
+        return [x for x in data['_embedded']['viaplay:blocks'] if 'list' in x['type'].lower()]
 
     def get_products(self, url, filter_event=False, search_query=None):
         """Return a dict containing the products and next page if available."""
