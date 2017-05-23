@@ -95,6 +95,7 @@ class Viaplay(object):
         return self.parse_response(req.content)
 
     def parse_response(self, response):
+        """Try to load JSON data into dict and raise potential errors."""
         try:
             response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
             if 'success' in response.keys() and not response['success']:  # raise ViaplayError when 'success' is False
@@ -201,8 +202,9 @@ class Viaplay(object):
         return pages
 
     def get_collections(self, url):
+        """Return all available collections."""
         data = self.make_request(url=url, method='get')
-        # return all blocks (collections) 'list' in type
+        # return all blocks (collections) with 'list' in type
         return [x for x in data['_embedded']['viaplay:blocks'] if 'list' in x['type'].lower()]
 
     def get_products(self, url, filter_event=False, search_query=None):
