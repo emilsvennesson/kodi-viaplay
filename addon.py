@@ -210,7 +210,7 @@ def add_episode(episode):
         'episode': int(details['series'].get('episodeNumber'))
     }
 
-    helper.add_item(episode_info['list_title'], params=params, folder=True, info=episode_info, art=add_art(details['images'], 'episode'), content='episodes')
+    helper.add_item(episode_info['list_title'], params=params, info=episode_info, art=add_art(details['images'], 'episode'), content='episodes', playable=True)
 
 
 def add_sports_event(event):
