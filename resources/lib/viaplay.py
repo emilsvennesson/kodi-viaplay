@@ -12,7 +12,6 @@ import json
 import uuid
 import HTMLParser
 from collections import OrderedDict
-from urllib import urlencode
 from datetime import datetime, timedelta
 
 import iso8601
