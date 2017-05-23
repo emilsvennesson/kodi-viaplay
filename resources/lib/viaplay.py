@@ -58,11 +58,12 @@ class Viaplay(object):
             except:
                 pass
 
-    def url_parser(self, url):
+    def parse_url(self, url):
         """Sometimes, Viaplay adds some weird templated stuff to the URL
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
-        template = re.search(r'\{.+?\}', url)
-        if template:
+        template = r'\{.+?\}'
+        result = re.search(template, url)
+        if result:
             self.log('Unparsed URL: {0}'.format(url))
             url = re.sub(template, '', url)
 
@@ -70,6 +71,7 @@ class Viaplay(object):
 
     def make_request(self, url, method, params=None, payload=None, headers=None):
         """Make an HTTP request. Return the response."""
+        url = self.parse_url(url)
         self.log('Request URL: %s' % url)
         self.log('Method: %s' % method)
         if params:
@@ -80,11 +82,11 @@ class Viaplay(object):
             self.log('Headers: %s' % headers)
 
         if method == 'get':
-            req = self.http_session.get(self.url_parser(url), params=params, headers=headers)
+            req = self.http_session.get(url, params=params, headers=headers)
         elif method == 'put':
-            req = self.http_session.put(self.url_parser(url), params=params, data=payload, headers=headers)
+            req = self.http_session.put(url, params=params, data=payload, headers=headers)
         else:  # post
-            req = self.http_session.post(self.url_parser(url), params=params, data=payload, headers=headers)
+            req = self.http_session.post(url, params=params, data=payload, headers=headers)
         self.log('Response code: %s' % req.status_code)
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
