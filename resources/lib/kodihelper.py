@@ -172,7 +172,20 @@ class KodiHelper(object):
             helper.log('No guid or URL supplied.')
             return False
 
-        stream = self.vp.get_stream(guid, pincode=pincode)
+        try:
+            stream = self.vp.get_stream(guid, pincode=pincode)
+        except self.vp.ViaplayError as error:
+            if not error.value == 'ParentalGuidancePinChallengeNeededError':
+                raise
+
+            if pincode:
+                self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
+            else:
+                pincode = self.get_numeric_input(self.language(30032))
+                if pincode:
+                    self.play(guid, pincode=pincode)
+            return
+
         if stream:
             playitem = xbmcgui.ListItem(path=stream['mpd_url'])
             playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
