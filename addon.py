@@ -73,6 +73,7 @@ def categories_page(url):
         helper.add_item(i['title'], params)
     helper.eod()
 
+
 def sortings_page(url):
     sortings = helper.vp.make_request(url, 'get')['_links']['viaplay:sortings']
 
@@ -82,6 +83,41 @@ def sortings_page(url):
             'url': i['href']
         }
         helper.add_item(i['title'], params)
+    helper.eod()
+
+
+def sports_page(url):
+    collections = helper.vp.get_collections(url)
+    schedule_added = False
+
+    for i in collections:
+        if 'viaplay:seeTableau' in i['_links'].keys() and not schedule_added:
+            params = {
+                'action': 'sports_schedule_page',
+                'url': i['_links']['viaplay:seeTableau']['href']
+            }
+            helper.add_item(i['_links']['viaplay:seeTableau']['title'], params)
+            schedule_added = True
+
+        if i['totalProductCount'] < 1:
+            continue  # hide empty collections
+        params = {
+            'action': 'list_products',
+            'url': i['_links']['self']['href']
+        }
+        helper.add_item(i['title'], params)
+    helper.eod()
+
+
+def sports_schedule_page(url):
+    dates = helper.vp.make_request(url=url, method='get')['_links']['viaplay:days']
+
+    for date in dates:
+        params = {
+            'action': 'list_products',
+            'url': date['href']
+        }
+        helper.add_item(date['date'], params)
     helper.eod()
 
 
@@ -109,7 +145,6 @@ def list_products(url, filter_event=False, search_query=None):
 
     products_dict = helper.vp.get_products(url, filter_event=filter_event, search_query=search_query)
     for product in products_dict['products']:
-
         if product['type'] == 'series':
             add_series(product)
         elif product['type'] == 'episode':
@@ -119,7 +154,7 @@ def list_products(url, filter_event=False, search_query=None):
         elif product['type'] == 'sport':
             add_sports_event(product)
         else:
-            helper.log('product type: {0} not (yet) supported.'.format(product['type']))
+            helper.log('product type: {0} is not (yet) supported.'.format(product['type']))
             return False
 
     if products_dict['next_page']:
@@ -153,7 +188,8 @@ def add_movie(movie):
         'code': details['imdb'].get('id') if 'imdb' in details.keys() else None
     }
 
-    helper.add_item(movie_info['title'], params=params, info=movie_info, art=add_art(details['images'], 'movie'), content='movies', playable=True)
+    helper.add_item(movie_info['title'], params=params, info=movie_info, art=add_art(details['images'], 'movie'),
+                    content='movies', playable=True)
 
 
 def add_series(show):
@@ -180,7 +216,8 @@ def add_series(show):
         'season': int(details['series']['seasons']) if details['series'].get('seasons') else None
     }
 
-    helper.add_item(series_info['title'], params=params, folder=True, info=series_info, art=add_art(details['images'], 'series'), content='tvshows')
+    helper.add_item(series_info['title'], params=params, folder=True, info=series_info,
+                    art=add_art(details['images'], 'series'), content='tvshows')
 
 
 def add_episode(episode):
@@ -194,10 +231,11 @@ def add_episode(episode):
     episode_info = {
         'mediatype': 'episode',
         'title': details.get('title'),
-        'list_title': details['series']['episodeTitle'] if details['series'].get('episodeTitle') else details.get('title'),
+        'list_title': details['series']['episodeTitle'] if details['series'].get('episodeTitle') else details.get(
+            'title'),
         'tvshowtitle': details['series'].get('title'),
         'plot': details['synopsis'] if details.get('synopsis') else details['series'].get('synopsis'),
-        'duration' : details['duration']['milliseconds'] / 1000,
+        'duration': details['duration']['milliseconds'] / 1000,
         'genre': ', '.join([x['title'] for x in episode['_links']['viaplay:genres']]),
         'year': details['production'].get('year') if 'production' in details.keys() else None,
         'cast': details['people'].get('actors', []) if 'people' in details.keys() else [],
@@ -210,7 +248,8 @@ def add_episode(episode):
         'episode': int(details['series'].get('episodeNumber'))
     }
 
-    helper.add_item(episode_info['list_title'], params=params, info=episode_info, art=add_art(details['images'], 'episode'), content='episodes', playable=True)
+    helper.add_item(episode_info['list_title'], params=params, info=episode_info,
+                    art=add_art(details['images'], 'episode'), content='episodes', playable=True)
 
 
 def add_sports_event(event):
@@ -245,10 +284,13 @@ def add_sports_event(event):
         'plot': details['synopsis'],
         'year': int(details['production'].get('year')),
         'genre': details['format'].get('title'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event['event_status']), details.get('title').encode('utf-8'))
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event['event_status']),
+                                               details.get('title').encode('utf-8'))
     }
 
-    helper.add_item(event_info['list_title'], params=params, playable=playable, info=event_info, art=add_art(details['images'], 'sport'), content='movies')
+    helper.add_item(event_info['list_title'], params=params, playable=playable, info=event_info,
+                    art=add_art(details['images'], 'sport'), content='movies')
+
 
 def list_seasons(url):
     """List all series seasons."""
@@ -296,40 +338,6 @@ def search(url):
     query = helper.get_user_input(helper.language(30015))
     if query:
         list_products(url, search_query=query)
-
-def sports_page(url):
-    collections = helper.vp.get_collections(url)
-    schedule_added = False
-
-    for i in collections:
-        if 'viaplay:seeTableau' in i['_links'].keys() and not schedule_added:
-            params = {
-                'action': 'sports_schedule_page',
-                'url': i['_links']['viaplay:seeTableau']['href']
-            }
-            helper.add_item(i['_links']['viaplay:seeTableau']['title'], params)
-            schedule_added = True
-
-        if i['totalProductCount'] < 1:
-            continue  # hide empty collections
-        params = {
-            'action': 'list_products',
-            'url': i['_links']['self']['href']
-        }
-        helper.add_item(i['title'], params)
-    helper.eod()
-
-
-def sports_schedule_page(url):
-    dates = helper.vp.make_request(url=url, method='get')['_links']['viaplay:days']
-
-    for date in dates:
-        params = {
-            'action': 'list_products',
-            'url': date['href']
-        }
-        helper.add_item(date['date'], params)
-    helper.eod()
 
 
 def coloring(text, meaning):
