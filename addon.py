@@ -4,6 +4,7 @@ A Kodi add-on for Viaplay
 """
 import sys
 import urlparse
+import re
 from datetime import datetime
 
 from resources.lib.kodihelper import KodiHelper
@@ -274,7 +275,7 @@ def add_art(images, content_type):
     artwork = {}
 
     for i in images:
-        image_url = helper.vp.url_parser(images[i]['template'])
+        image_url = re.sub(r'{(.*)', '', images[i]['template'])  # get rid of template
 
         if i == 'landscape':
             if content_type == 'episode' or 'sport':
