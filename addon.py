@@ -153,7 +153,7 @@ def add_movie(movie):
         'code': details['imdb'].get('id') if 'imdb' in details.keys() else None
     }
 
-    helper.add_item(movie_info['title'], params=params, info=movie_info, content='movies', playable=True)
+    helper.add_item(movie_info['title'], params=params, info=movie_info, art=add_art(details['images'], 'movie'), content='movies', playable=True)
 
 
 def add_series(show):
@@ -180,7 +180,7 @@ def add_series(show):
         'season': int(details['series']['seasons']) if details['series'].get('seasons') else None
     }
 
-    helper.add_item(series_info['title'], params=params, folder=True, info=series_info, content='tvshows')
+    helper.add_item(series_info['title'], params=params, folder=True, info=series_info, art=add_art(details['images'], 'series'), content='tvshows')
 
 
 def add_episode(episode):
@@ -210,7 +210,7 @@ def add_episode(episode):
         'episode': int(details['series'].get('episodeNumber'))
     }
 
-    helper.add_item(episode_info['list_title'], params=params, folder=True, info=episode_info, content='episodes')
+    helper.add_item(episode_info['list_title'], params=params, folder=True, info=episode_info, art=add_art(details['images'], 'episode'), content='episodes')
 
 
 def add_sports_event(event):
@@ -248,7 +248,7 @@ def add_sports_event(event):
         'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event['event_status']), details.get('title').encode('utf-8'))
     }
 
-    helper.add_item(event_info['list_title'], params=params, playable=playable, info=event_info, content='movies')
+    helper.add_item(event_info['list_title'], params=params, playable=playable, info=event_info, art=add_art(details['images'], 'sport'), content='movies')
 
 def list_seasons(url):
     """List all series seasons."""
@@ -270,47 +270,26 @@ def list_seasons(url):
         helper.eod()
 
 
-def return_art(product, content):
-    """Return the available art in a xbmcgui.setArt friendly dict."""
-    try:
-        boxart = product['content']['images']['boxart']['url'].split('.jpg')[0] + '.jpg'
-    except KeyError:
-        boxart = None
-    try:
-        hero169 = product['content']['images']['hero169']['template'].split('.jpg')[0] + '.jpg'
-    except KeyError:
-        hero169 = None
-    try:
-        coverart23 = product['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
-    except KeyError:
-        coverart23 = None
-    try:
-        coverart169 = product['content']['images']['coverart23']['template'].split('.jpg')[0] + '.jpg'
-    except KeyError:
-        coverart169 = None
-    try:
-        landscape = product['content']['images']['landscape']['url'].split('.jpg')[0] + '.jpg'
-    except KeyError:
-        landscape = None
+def add_art(images, content_type):
+    artwork = {}
 
-    if content == 'episode' or content == 'sport':
-        thumbnail = landscape
-    else:
-        thumbnail = boxart
-    fanart = hero169
-    banner = landscape
-    cover = coverart23
-    poster = boxart
+    for i in images:
+        image_url = helper.vp.url_parser(images[i]['template'])
 
-    art = {
-        'thumb': thumbnail,
-        'fanart': fanart,
-        'banner': banner,
-        'cover': cover,
-        'poster': poster
-    }
+        if i == 'landscape':
+            if content_type == 'episode' or 'sport':
+                artwork['thumb'] = image_url
+            artwork['banner'] = image_url
+        elif i == 'hero169':
+            artwork['fanart'] = image_url
+        elif i == 'coverart23':
+            artwork['cover'] = image_url
+        elif i == 'boxart':
+            if content_type != 'episode' or 'sport':
+                artwork['thumb'] = image_url
+            artwork['poster'] = image_url
 
-    return art
+    return artwork
 
 
 def search(url):
