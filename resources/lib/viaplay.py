@@ -202,7 +202,7 @@ class Viaplay(object):
 
     def get_collections(self, url):
         data = self.make_request(url=url, method='get')
-        # return all blocks (collections) with type == 'dynamicList'
+        # return all blocks (collections) 'list' in type
         return [x for x in data['_embedded']['viaplay:blocks'] if 'list' in x['type'].lower()]
 
     def get_products(self, url, filter_event=False, search_query=None):
@@ -217,6 +217,9 @@ class Viaplay(object):
             products = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':
             products = data['_embedded']['viaplay:product']
+        elif data.get('sectionType') == 'sportPerDay':
+            # products are separated in different viaplay:blocks - collect them all
+            products = [p for x in data['_embedded']['viaplay:blocks'] for p in x['_embedded']['viaplay:products']]
         else:
             products = self.get_products_block(data)['_embedded']['viaplay:products']
 

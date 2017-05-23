@@ -298,58 +298,37 @@ def search(url):
         list_products(url, search_query=query)
 
 def sports_page(url):
-    event_date = ['today', 'upcoming', 'archive']
+    collections = helper.vp.get_collections(url)
+    schedule_added = False
 
-    for date in event_date:
-        if date == 'today':
-            title = helper.language(30027)
-        elif date == 'upcoming':
-            title = helper.language(30028)
-        else:
-            title = helper.language(30029)
-        if date == 'today':
-            parameters = {
-                'action': 'list_sports_today',
-                'url': url
+    for i in collections:
+        if 'viaplay:seeTableau' in i['_links'].keys() and not schedule_added:
+            params = {
+                'action': 'sports_schedule_page',
+                'url': i['_links']['viaplay:seeTableau']['href']
             }
-        else:
-            parameters = {
-                'action': 'list_sports_dates',
-                'url': url,
-                'event_date': date
-            }
+            helper.add_item(i['_links']['viaplay:seeTableau']['title'], params)
+            schedule_added = True
 
-        helper.add_item(title, parameters)
-    helper.eod()
-
-
-def list_sports_today(url):
-    event_status = [helper.language(30037), helper.language(30031)]
-    for status in event_status:
-        if status == helper.language(30037):
-            filter = 'live, upcoming'
-        else:
-            filter = 'archive'
-        parameters = {
-            'action': 'list_products_sports_today',
-            'url': url,
-            'filter_sports_event': filter
+        if i['totalProductCount'] < 1:
+            continue  # hide empty collections
+        params = {
+            'action': 'list_products',
+            'url': i['_links']['self']['href']
         }
-
-        helper.add_item(status, parameters)
+        helper.add_item(i['title'], params)
     helper.eod()
 
 
-def list_sports_dates(url, event_date):
-    dates = helper.vp.get_sports_dates(url, event_date)
+def sports_schedule_page(url):
+    dates = helper.vp.make_request(url=url, method='get')['_links']['viaplay:days']
+
     for date in dates:
-        title = date['date']
-        parameters = {
+        params = {
             'action': 'list_products',
             'url': date['href']
         }
-
-        helper.add_item(title, parameters)
+        helper.add_item(date['date'], params)
     helper.eod()
 
 
@@ -396,6 +375,8 @@ def router(paramstring):
             search(params['url'])
         elif params['action'] == 'viaplay:logout':
             helper.log_out()
+        elif params['action'] == 'sports_schedule_page':
+            sports_schedule_page(params['url'])
         elif params['action'] == 'play_guid':
             helper.play(guid=params['guid'])
         elif params['action'] == 'play_url':
@@ -404,12 +385,6 @@ def router(paramstring):
             list_seasons(params['url'])
         elif params['action'] == 'list_products':
             list_products(params['url'])
-        elif params['action'] == 'list_sports_today':
-            list_sports_today(params['url'])
-        elif params['action'] == 'list_products_sports_today':
-            list_products(params['url'], params['filter_sports_event'])
-        elif params['action'] == 'list_sports_dates':
-            list_sports_dates(params['url'], params['event_date'])
         elif params['action'] == 'dialog':
             helper.dialog(params['dialog_type'], params['heading'], params['message'])
     else:
