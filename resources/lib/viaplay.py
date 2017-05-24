@@ -134,6 +134,7 @@ class Viaplay(object):
             'deviceKey': self.device_key
         }
         self.make_request(url=url, method='get', params=params)
+        time.sleep(3)  # sleep to make sure session has been registred before next request
 
     def log_out(self):
         """Log out from Viaplay."""
