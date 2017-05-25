@@ -289,7 +289,7 @@ def add_sports_event(event):
     }
 
     helper.add_item(event_info['list_title'], params=params, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), content='movies')
+                    art=add_art(details['images'], 'sport'), content='episodes')
 
 
 def list_seasons(url):
