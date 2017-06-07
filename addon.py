@@ -194,7 +194,7 @@ def add_movie(movie):
 
 def add_series(show):
     params = {
-        'action': 'list_seasons',
+        'action': 'seasons_page',
         'url': show['_links']['viaplay:page']['href']
     }
 
@@ -292,20 +292,17 @@ def add_sports_event(event):
                     art=add_art(details['images'], 'sport'), content='episodes')
 
 
-def list_seasons(url):
+def seasons_page(url):
     """List all series seasons."""
     seasons = helper.vp.get_seasons(url)
-    if len(seasons) == 1:
-        # list products if there's only one season
-        season_url = seasons[0]['_links']['self']['href']
-        list_products(season_url)
+    if len(seasons) == 1:  # list products if there's only one season
+        list_products(seasons[0]['_links']['self']['href'])
     else:
         for season in seasons:
-            season_url = season['_links']['self']['href']
-            title = '%s %s' % (helper.language(30014), season['title'])
+            title = helper.language(30014).format(season['title'])
             parameters = {
                 'action': 'list_products',
-                'url': season_url
+                'url': seasons[0]['_links']['self']['href']
             }
 
             helper.add_item(title, parameters)
@@ -389,8 +386,8 @@ def router(paramstring):
             helper.play(guid=params['guid'])
         elif params['action'] == 'play_url':
             helper.play(url=params['url'])
-        elif params['action'] == 'list_seasons':
-            list_seasons(params['url'])
+        elif params['action'] == 'seasons_page':
+            seasons_page(params['url'])
         elif params['action'] == 'list_products':
             list_products(params['url'])
         elif params['action'] == 'dialog':
