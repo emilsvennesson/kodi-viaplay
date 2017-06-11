@@ -220,11 +220,9 @@ class Viaplay(object):
         elif data['type'] == 'product':
             # explicity put into list when only one product is returned
             products = [data['_embedded']['viaplay:product']]
-        elif data.get('sectionType') == 'sportPerDay':
-            # products are separated in different viaplay:blocks - collect them all
-            products = [p for x in data['_embedded']['viaplay:blocks'] for p in x['_embedded']['viaplay:products']]
         else:
-            products = self.get_products_block(data)['_embedded']['viaplay:products']
+            # try to collect all products found in viaplay:blocks
+            products = [p for x in data['_embedded']['viaplay:blocks'] for p in x['_embedded']['viaplay:products']]
 
         # add additional info to sports products
         for product in products:
@@ -299,22 +297,13 @@ class Viaplay(object):
     def get_next_page(self, data):
         """Return the URL to the next page if the current page count is less than the total page count."""
         if data['type'] == 'page':
-            data = self.get_products_block(data)  # sometimes, the info is only available in viaplay:blocks
+            data = data['_embedded']['viaplay:blocks'][0]  # sometimes, the info is only available in viaplay:blocks
         if data.get('pageCount'):
             if int(data['pageCount']) > int(data['currentPage']):
                 next_page_url = data['_links']['next']['href']
                 return next_page_url
-            return False
 
-    def get_products_block(self, data):
-        """Get the viaplay:blocks containing all product information."""
-        blocks = []
-        blocks_data = data['_embedded']['viaplay:blocks']
-        for block in blocks_data:
-            # example: https://content.viaplay.se/pc-se/sport
-            if 'viaplay:products' in block['_embedded'].keys():
-                blocks.append(block)
-        return blocks[-1]  # the last block is always (?) the right one
+        return False
 
     def utc_to_local(self, utc_dt):
         # get integer timestamp to avoid precision lost
