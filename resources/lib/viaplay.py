@@ -218,7 +218,8 @@ class Viaplay(object):
         if 'list' in data['type'].lower():
             products = data['_embedded']['viaplay:products']
         elif data['type'] == 'product':
-            products = data['_embedded']['viaplay:product']
+            # explicity put into list when only one product is returned
+            products = [data['_embedded']['viaplay:product']]
         elif data.get('sectionType') == 'sportPerDay':
             # products are separated in different viaplay:blocks - collect them all
             products = [p for x in data['_embedded']['viaplay:blocks'] for p in x['_embedded']['viaplay:products']]
@@ -226,11 +227,10 @@ class Viaplay(object):
             products = self.get_products_block(data)['_embedded']['viaplay:products']
 
         # add additional info to sports products
-        if isinstance(products, list):  # viaplay:product is not a list
-            for product in products:
-                if product.get('type') == 'sport':
-                    product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
-                    product['event_status'] = self.get_event_status(product)
+        for product in products:
+            if product.get('type') == 'sport':
+                product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
+                product['event_status'] = self.get_event_status(product)
 
         if filter_event:
             # filter out and only return products with event_status in filter_event
