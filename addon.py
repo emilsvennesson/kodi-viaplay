@@ -302,7 +302,7 @@ def seasons_page(url):
             title = helper.language(30014).format(season['title'])
             parameters = {
                 'action': 'list_products',
-                'url': seasons[0]['_links']['self']['href']
+                'url': season['_links']['self']['href']
             }
 
             helper.add_item(title, parameters)
