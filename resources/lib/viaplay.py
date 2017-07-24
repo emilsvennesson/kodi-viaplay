@@ -225,7 +225,7 @@ class Viaplay(object):
             products = [data['_embedded']['viaplay:product']]
         else:
             # try to collect all products found in viaplay:blocks
-            products = [p for x in data['_embedded']['viaplay:blocks'] for p in x['_embedded']['viaplay:products']]
+            products = [p for x in data['_embedded']['viaplay:blocks'] if 'viaplay:products' in x['_embedded'].keys() for p in x['_embedded']['viaplay:products']]
 
         # add additional info to sports products
         for product in products:
