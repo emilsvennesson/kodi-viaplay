@@ -308,13 +308,6 @@ class Viaplay(object):
 
         return False
 
-    def utc_to_local(self, utc_dt):
-        # get integer timestamp to avoid precision lost
-        timestamp = calendar.timegm(utc_dt.timetuple())
-        local_dt = datetime.fromtimestamp(timestamp)
-        assert utc_dt.resolution >= timedelta(microseconds=1)
-        return local_dt.replace(microsecond=utc_dt.microsecond)
-
     def parse_datetime(self, iso8601_string, localize=False):
         """Parse ISO8601 string to datetime object."""
         datetime_obj = iso8601.parse_date(iso8601_string)
@@ -322,3 +315,11 @@ class Viaplay(object):
             return self.utc_to_local(datetime_obj)
         else:
             return datetime_obj
+
+    @staticmethod
+    def utc_to_local(utc_dt):
+        # get integer timestamp to avoid precision lost
+        timestamp = calendar.timegm(utc_dt.timetuple())
+        local_dt = datetime.fromtimestamp(timestamp)
+        assert utc_dt.resolution >= timedelta(microseconds=1)
+        return local_dt.replace(microsecond=utc_dt.microsecond)
