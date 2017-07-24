@@ -195,7 +195,7 @@ class Viaplay(object):
                 if 'title' in data['_links'][link].keys():
                     title = data['_links'][link]['title']
                     data['_links'][link]['name'] = link  # add name key to dict
-                    if not title.islower() and not title in blacklist:
+                    if not title.islower() and title not in blacklist:
                         pages.append(data['_links'][link])
             else:  # list (viaplay:sections for example)
                 for i in data['_links'][link]:
