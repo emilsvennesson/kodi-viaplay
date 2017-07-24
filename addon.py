@@ -29,7 +29,7 @@ def root_page():
 
     for page in pages:
         params = {
-            'action': page['name'] if page.get('name') else page['id'],
+            'action': page['name'],
             'url': page['href']
         }
         helper.add_item(page['title'], params)

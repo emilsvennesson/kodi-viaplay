@@ -182,8 +182,9 @@ class Viaplay(object):
 
     def get_root_page(self):
         """Dynamically builds the root page from the returned _links.
-        Uses the named dict as 'id' when no 'id' exists in the dict."""
+        Uses the named dict as 'name' when no 'name' exists in the dict."""
         pages = []
+        blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
         if not 'user' in data.keys():
             raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
@@ -191,9 +192,11 @@ class Viaplay(object):
         for link in data['_links']:
             if isinstance(data['_links'][link], dict):
                 # sort out _links that doesn't contain a title
-                if 'title' in data['_links'][link].keys() and not data['_links'][link]['title'].islower():
-                    data['_links'][link]['id'] = link  # add the dict name as the 'id' tag
-                    pages.append(data['_links'][link])
+                if 'title' in data['_links'][link].keys():
+                    title = data['_links'][link]['title']
+                    data['_links'][link]['name'] = link  # add name key to dict
+                    if not title.islower() and not title in blacklist:
+                        pages.append(data['_links'][link])
             else:  # list (viaplay:sections for example)
                 for i in data['_links'][link]:
                     if 'title' in i.keys() and not i['title'].islower():
