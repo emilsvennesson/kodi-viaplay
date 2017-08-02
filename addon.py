@@ -91,7 +91,7 @@ def sports_page(url):
     schedule_added = False
 
     for i in collections:
-        if 'viaplay:seeTableau' in i['_links'].keys() and not schedule_added:
+        if 'viaplay:seeTableau' in i['_links'] and not schedule_added:
             params = {
                 'action': 'sports_schedule_page',
                 'url': i['_links']['viaplay:seeTableau']['href']
@@ -180,12 +180,12 @@ def add_movie(movie):
         'genre': ', '.join([x['title'] for x in movie['_links']['viaplay:genres']]),
         'year': details['production'].get('year'),
         'duration': int(details['duration'].get('milliseconds')) / 1000,
-        'cast': details['people'].get('actors', []) if 'people' in details.keys() else [],
-        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details.keys() else [],
+        'cast': details['people'].get('actors', []) if 'people' in details else [],
+        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details else [],
         'mpaa': details.get('parentalRating'),
-        'rating': float(details['imdb'].get('rating')) if 'imdb' in details.keys() else None,
-        'votes': str(details['imdb'].get('votes')) if 'imdb' in details.keys() else None,
-        'code': details['imdb'].get('id') if 'imdb' in details.keys() else None
+        'rating': float(details['imdb'].get('rating')) if 'imdb' in details else None,
+        'votes': str(details['imdb'].get('votes')) if 'imdb' in details else None,
+        'code': details['imdb'].get('id') if 'imdb' in details else None
     }
 
     helper.add_item(movie_info['title'], params=params, info=movie_info, art=add_art(details['images'], 'movie'),
@@ -206,13 +206,13 @@ def add_series(show):
         'tvshowtitle': details['series']['title'],
         'plot': details['synopsis'] if details.get('synopsis') else details['series'].get('synopsis'),
         'genre': ', '.join([x['title'] for x in show['_links']['viaplay:genres']]),
-        'year': details['production'].get('year') if 'production' in details.keys() else None,
-        'cast': details['people'].get('actors', []) if 'people' in details.keys() else [],
-        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details.keys() else None,
+        'year': details['production'].get('year') if 'production' in details else None,
+        'cast': details['people'].get('actors', []) if 'people' in details else [],
+        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details else None,
         'mpaa': details.get('parentalRating'),
-        'rating': float(details['imdb'].get('rating')) if 'imdb' in details.keys() else None,
-        'votes': str(details['imdb'].get('votes')) if 'imdb' in details.keys() else None,
-        'code': details['imdb'].get('id') if 'imdb' in details.keys() else None,
+        'rating': float(details['imdb'].get('rating')) if 'imdb' in details else None,
+        'votes': str(details['imdb'].get('votes')) if 'imdb' in details else None,
+        'code': details['imdb'].get('id') if 'imdb' in details else None,
         'season': int(details['series']['seasons']) if details['series'].get('seasons') else None
     }
 
@@ -237,13 +237,13 @@ def add_episode(episode):
         'plot': details['synopsis'] if details.get('synopsis') else details['series'].get('synopsis'),
         'duration': details['duration']['milliseconds'] / 1000,
         'genre': ', '.join([x['title'] for x in episode['_links']['viaplay:genres']]),
-        'year': details['production'].get('year') if 'production' in details.keys() else None,
-        'cast': details['people'].get('actors', []) if 'people' in details.keys() else [],
-        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details.keys() else None,
+        'year': details['production'].get('year') if 'production' in details else None,
+        'cast': details['people'].get('actors', []) if 'people' in details else [],
+        'director': ', '.join(details['people'].get('directors', [])) if 'people' in details else None,
         'mpaa': details.get('parentalRating'),
-        'rating': float(details['imdb'].get('rating')) if 'imdb' in details.keys() else None,
-        'votes': str(details['imdb'].get('votes')) if 'imdb' in details.keys() else None,
-        'code': details['imdb'].get('id') if 'imdb' in details.keys() else None,
+        'rating': float(details['imdb'].get('rating')) if 'imdb' in details else None,
+        'votes': str(details['imdb'].get('votes')) if 'imdb' in details else None,
+        'code': details['imdb'].get('id') if 'imdb' in details else None,
         'season': int(details['series']['season'].get('seasonNumber')),
         'episode': int(details['series'].get('episodeNumber'))
     }

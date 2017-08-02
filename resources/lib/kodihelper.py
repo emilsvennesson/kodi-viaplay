@@ -95,7 +95,7 @@ class KodiHelper(object):
         activation_data = self.vp.get_activation_data()
         message = self.language(30039).format(activation_data['verificationUrl'], activation_data['userCode'])
         dialog = xbmcgui.DialogProgress()
-        xbmc.sleep(200)  # small delay to prevent DialogProgress to hang
+        xbmc.sleep(200)  # small delay to prevent DialogProgress from hanging
         dialog.create(self.language(30040), message)
         secs = 0
         expires = activation_data['expires']
@@ -199,7 +199,7 @@ class KodiHelper(object):
         playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
         playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
         playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
-        if self.get_setting('subtitles') and 'subtitles' in stream.keys():
+        if self.get_setting('subtitles') and 'subtitles' in stream:
             playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles']))
         xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 

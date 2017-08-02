@@ -97,7 +97,7 @@ class Viaplay(object):
         """Try to load JSON data into dict and raise potential errors."""
         try:
             response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
-            if 'success' in response.keys() and not response['success']:  # raise ViaplayError when 'success' is False
+            if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False
                 raise self.ViaplayError(response['name'].encode('utf-8'))
         except ValueError:  # if response is not json
             pass
@@ -160,13 +160,13 @@ class Viaplay(object):
             params['pgPin'] = pincode
 
         data = self.make_request(url=url, method='get', params=params)
-        if 'viaplay:media' in data['_links'].keys():
+        if 'viaplay:media' in data['_links']:
             mpd_url = data['_links']['viaplay:media']['href']
-        elif 'viaplay:fallbackMedia' in data['_links'].keys():
+        elif 'viaplay:fallbackMedia' in data['_links']:
             mpd_url = data['_links']['viaplay:fallbackMedia'][0]['href']
-        elif 'viaplay:playlist' in data['_links'].keys():
+        elif 'viaplay:playlist' in data['_links']:
             mpd_url = data['_links']['viaplay:playlist']['href']
-        elif 'viaplay:encryptedPlaylist' in data['_links'].keys():
+        elif 'viaplay:encryptedPlaylist' in data['_links']:
             mpd_url = data['_links']['viaplay:encryptedPlaylist']['href']
         else:
             self.log('Failed to retrieve stream URL.')
@@ -175,7 +175,7 @@ class Viaplay(object):
         stream['mpd_url'] = mpd_url
         stream['license_url'] = data['_links']['viaplay:license']['href']
         stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
-        if 'viaplay:sami' in data['_links'].keys():
+        if 'viaplay:sami' in data['_links']:
             stream['subtitles'] = [x['href'] for x in data['_links']['viaplay:sami']]
 
         return stream
@@ -186,20 +186,20 @@ class Viaplay(object):
         pages = []
         blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
-        if not 'user' in data.keys():
+        if not 'user' in data:
             raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
 
         for link in data['_links']:
             if isinstance(data['_links'][link], dict):
                 # sort out _links that doesn't contain a title
-                if 'title' in data['_links'][link].keys():
+                if 'title' in data['_links'][link]:
                     title = data['_links'][link]['title']
                     data['_links'][link]['name'] = link  # add name key to dict
                     if not title.islower() and title not in blacklist:
                         pages.append(data['_links'][link])
             else:  # list (viaplay:sections for example)
                 for i in data['_links'][link]:
-                    if 'title' in i.keys() and not i['title'].islower():
+                    if 'title' in i and not i['title'].islower():
                         pages.append(i)
 
         return pages
@@ -225,7 +225,7 @@ class Viaplay(object):
             products = [data['_embedded']['viaplay:product']]
         else:
             # try to collect all products found in viaplay:blocks
-            products = [p for x in data['_embedded']['viaplay:blocks'] if 'viaplay:products' in x['_embedded'].keys() for p in x['_embedded']['viaplay:products']]
+            products = [p for x in data['_embedded']['viaplay:blocks'] if 'viaplay:products' in x['_embedded'] for p in x['_embedded']['viaplay:products']]
 
         # add additional info to sports products
         for product in products:
