@@ -249,15 +249,11 @@ class Viaplay(object):
         data = self.make_request(url=url, method='get')
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'season-list']
 
-    def download_subtitles(self, suburls):
+    def download_subtitles(self, suburls, language_to_download=None):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
         Return a list of the path to the downloaded subtitles."""
         paths = []
         for url in suburls:
-            sami = self.make_request(url=url, method='get').decode('utf-8', 'ignore').strip()
-            htmlparser = HTMLParser.HTMLParser()
-            subtitle = htmlparser.unescape(sami).encode('utf-8')
-
             lang_pattern = re.search(r'[_]([a-z]+)', url)
             if lang_pattern:
                 sub_lang = lang_pattern.group(1)
@@ -265,10 +261,16 @@ class Viaplay(object):
                 sub_lang = 'unknown'
                 self.log('Failed to identify subtitle language.')
 
-            path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
-            with open(path, 'w') as subfile:
-                subfile.write(subtitle)
-            paths.append(path)
+            if language_to_download and sub_lang not in language_to_download:
+                continue
+            else:
+                sami = self.make_request(url=url, method='get').decode('utf-8', 'ignore').strip()
+                htmlparser = HTMLParser.HTMLParser()
+                subtitle = htmlparser.unescape(sami).encode('utf-8')
+                path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
+                with open(path, 'w') as subfile:
+                    subfile.write(subtitle)
+                paths.append(path)
 
         return paths
 

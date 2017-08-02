@@ -58,7 +58,7 @@ msgid "Finland"
 msgstr ""
 
 msgctxt "#30012"
-msgid "Download available subtitles"
+msgid "Subtitles"
 msgstr ""
 
 msgctxt "#30013"
@@ -175,4 +175,24 @@ msgstr ""
 
 msgctxt "#30043"
 msgid "Are you sure you want to log out?"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Subtitle language"
+msgstr ""
+
+msgctxt "#30045"
+msgid "Swedish"
+msgstr ""
+
+msgctxt "#30046"
+msgid "Danish"
+msgstr ""
+
+msgctxt "#30047"
+msgid "Norwegian"
+msgstr ""
+
+msgctxt "#30048"
+msgid "Finnish"
 msgstr ""
