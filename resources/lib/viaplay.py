@@ -220,6 +220,9 @@ class Viaplay(object):
 
         if 'list' in data['type'].lower():
             products = data['_embedded']['viaplay:products']
+        elif data['type'] == 'tvChannel':
+            # sort out 'nobroadcast' items
+            products = [x for x in data['_embedded']['viaplay:products'] if 'nobroadcast' not in x['system']['flags']]
         elif data['type'] == 'product':
             # explicity put into list when only one product is returned
             products = [data['_embedded']['viaplay:product']]
@@ -243,6 +246,17 @@ class Viaplay(object):
         }
 
         return products_dict
+
+    def get_channels(self, url):
+        data = self.make_request(url, method='get')
+        channels_block = data['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:blocks']
+        channels = [x['viaplay:channel'] for x in channels_block]
+        channels_dict = {
+            'channels': channels,
+            'next_page': self.get_next_page(data)
+        }
+
+        return channels_dict
 
     def get_seasons(self, url):
         """Return all available series seasons."""
@@ -286,13 +300,22 @@ class Viaplay(object):
             return deviceid
 
     def get_event_status(self, data):
-        """Return whether the event is live/upcoming/archive."""
+        """Return whether the event/program is live/upcoming/archive."""
         now = datetime.utcnow()
-        producttime_start = self.parse_datetime(data['epg']['start'])
-        producttime_start = producttime_start.replace(tzinfo=None)
+        if 'startTime' in data['epg']:
+            start_time = data['epg']['startTime']
+            end_time = data['epg']['endTime']
+        else:
+            start_time = data['epg']['start']
+            end_time = data['epg']['end']
+        start_time_obj = self.parse_datetime(start_time).replace(tzinfo=None)
+        end_time_obj = self.parse_datetime(end_time).replace(tzinfo=None)
+
         if 'isLive' in data['system']['flags']:
             status = 'live'
-        elif producttime_start >= now:
+        elif now >= start_time_obj and now < end_time_obj:
+            status = 'live'
+        elif start_time_obj >= now:
             status = 'upcoming'
         else:
             status = 'archive'
@@ -300,13 +323,14 @@ class Viaplay(object):
         return status
 
     def get_next_page(self, data):
-        """Return the URL to the next page if the current page count is less than the total page count."""
+        """Return the URL to the next page. Returns False when there is no next page."""
         if data['type'] == 'page':
             data = data['_embedded']['viaplay:blocks'][0]  # sometimes, the info is only available in viaplay:blocks
-        if data.get('pageCount'):
-            if int(data['pageCount']) > int(data['currentPage']):
-                next_page_url = data['_links']['next']['href']
-                return next_page_url
+        elif data['type'] == 'product':
+            data = data['_embedded']['viaplay:product']
+        if 'next' in data['_links']:
+            next_page_url = data['_links']['next']['href']
+            return next_page_url
 
         return False
 

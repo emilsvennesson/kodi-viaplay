@@ -196,3 +196,7 @@ msgstr ""
 msgctxt "#30048"
 msgid "Finnish"
 msgstr ""
+
+msgctxt "#30049"
+msgid "No broadcast"
+msgstr ""

@@ -186,9 +186,10 @@ class KodiHelper(object):
         xbmcplugin.endOfDirectory(self.handle)
 
     def play(self, guid=None, url=None, pincode=None):
-        if guid or url:
-            if not guid:
-                guid = self.vp.get_products(url)['products']['system']['guid']
+        if url:
+            guid = self.vp.get_products(url)['products'][0]['system']['guid']
+        elif guid:
+            pass
         else:
             helper.log('No guid or URL supplied.')
             return False
@@ -198,7 +199,6 @@ class KodiHelper(object):
         except self.vp.ViaplayError as error:
             if not error.value == 'ParentalGuidancePinChallengeNeededError':
                 raise
-
             if pincode:
                 self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
             else:
