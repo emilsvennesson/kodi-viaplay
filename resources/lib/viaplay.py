@@ -324,8 +324,11 @@ class Viaplay(object):
 
     def get_next_page(self, data):
         """Return the URL to the next page. Returns False when there is no next page."""
-        if data['type'] == 'page':
-            data = data['_embedded']['viaplay:blocks'][0]  # sometimes, the info is only available in viaplay:blocks
+        if data['type'] == 'page':  # multiple blocks in _embedded, find the right one
+            for block in data['_embedded']['viaplay:blocks']:
+                if block['type'] == 'list':
+                    data = block
+                    break
         elif data['type'] == 'product':
             data = data['_embedded']['viaplay:product']
         if 'next' in data['_links']:
