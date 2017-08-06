@@ -82,7 +82,7 @@ msgid "Information"
 msgstr ""
 
 msgctxt "#30018"
-msgid "Next Page"
+msgid "[B]Next page[/B]"
 msgstr ""
 
 msgctxt "#30020"
