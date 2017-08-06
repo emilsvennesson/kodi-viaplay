@@ -140,6 +140,7 @@ def channels_page(url):
                     current_program_title = coloring(program['content']['title'].encode('utf-8'), 'live')
                 else:  # no broadcast
                     current_program_title = coloring(helper.language(30049).encode('utf-8'), 'no_broadcast')
+                break
 
         list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
 
