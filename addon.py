@@ -197,11 +197,10 @@ def list_products(url, filter_event=False, search_query=None):
 def add_movie(movie):
     params = {}
     if movie['system'].get('guid'):
-        params['action'] = 'play_guid'
         params['guid'] = movie['system']['guid']
     else:
-        params['action'] = 'play_url'
         params['url'] = movie['_links']['self']['href']
+    params['action'] = 'play'
 
     details = movie['content']
 
@@ -254,7 +253,7 @@ def add_series(show):
 
 def add_episode(episode):
     params = {
-        'action': 'play_guid',
+        'action': 'play',
         'guid': episode['system']['guid']
     }
 
@@ -303,7 +302,7 @@ def add_sports_event(event):
         playable = False
     else:
         params = {
-            'action': 'play_guid',
+            'action': 'play',
             'guid': event['system']['guid']
         }
         playable = True
@@ -345,7 +344,7 @@ def add_tv_event(event):
         playable = False
     else:
         params = {
-            'action': 'play_guid',
+            'action': 'play',
             'guid': event['system']['guid']
         }
         playable = True
@@ -462,10 +461,8 @@ def router(paramstring):
             helper.log_out()
         elif params['action'] == 'sports_schedule_page':
             sports_schedule_page(params['url'])
-        elif params['action'] == 'play_guid':
-            helper.play(guid=params['guid'])
-        elif params['action'] == 'play_url':
-            helper.play(url=params['url'])
+        elif params['action'] == 'play':
+            helper.play(guid=params.get('guid'), url=params.get('url'))
         elif params['action'] == 'seasons_page':
             seasons_page(params['url'])
         elif params['action'] == 'list_products':
