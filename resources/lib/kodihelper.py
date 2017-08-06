@@ -208,6 +208,8 @@ class KodiHelper(object):
             return
 
         playitem = xbmcgui.ListItem(path=stream['mpd_url'])
+        playitem.setContentLookup(False)
+        playitem.setMimeType('application/xml+dash')  # prevents HEAD request that causes 404 error
         playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
         playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
         playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
