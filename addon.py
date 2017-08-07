@@ -442,9 +442,14 @@ def show_auth_error(error):
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
+    vod_pages = ['series', 'movie', 'kids', 'rental']
+    products_pages = ['viaplay:starred', 'viaplay:watched', 'viaplay:purchased']
+
     if 'action' in params:
-        if params['action'] in helper.vp.vod_pages:
+        if params['action'] in vod_pages:
             vod_page(params['url'])
+        elif params['action'] in products_pages:
+            list_products(params['url'])
         elif params['action'] == 'sport':
             sports_page(params['url'])
         elif params['action'] == 'tve':

@@ -32,7 +32,6 @@ class Viaplay(object):
         self.device_key = 'xdk-%s' % self.country
         self.base_url = 'https://content.viaplay.{0}/{1}'.format(self.country, self.device_key)
         self.login_api = 'https://login.viaplay.%s/api' % self.country
-        self.vod_pages = ['series', 'movie', 'kids', 'rental']
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
@@ -326,7 +325,7 @@ class Viaplay(object):
         """Return the URL to the next page. Returns False when there is no next page."""
         if data['type'] == 'page':  # multiple blocks in _embedded, find the right one
             for block in data['_embedded']['viaplay:blocks']:
-                if block['type'] == 'list':
+                if 'list' in block['type'].lower():
                     data = block
                     break
         elif data['type'] == 'product':
