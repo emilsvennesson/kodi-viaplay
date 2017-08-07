@@ -325,7 +325,7 @@ class Viaplay(object):
         """Return the URL to the next page. Returns False when there is no next page."""
         if data['type'] == 'page':  # multiple blocks in _embedded, find the right one
             for block in data['_embedded']['viaplay:blocks']:
-                if 'list' in block['type'].lower():
+                if 'list' in block['type'].lower() or 'grid' in block['type'].lower():
                     data = block
                     break
         elif data['type'] == 'product':
