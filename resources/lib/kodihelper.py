@@ -116,6 +116,7 @@ class KodiHelper(object):
         while secs < expires:
             try:
                 self.vp.authorize_device(activation_data)
+                dialog.close()
                 return True
             except self.vp.ViaplayError as error:
                 # raise all non-pending authorization errors
@@ -126,8 +127,10 @@ class KodiHelper(object):
             dialog.update(percent, message)
             xbmc.sleep(activation_data['interval'] * 1000)
             if dialog.iscanceled():
+                dialog.close()
                 return False
 
+        dialog.close()
         return False
 
     def get_user_input(self, heading, hidden=False):
@@ -191,7 +194,7 @@ class KodiHelper(object):
         elif guid:
             pass
         else:
-            helper.log('No guid or URL supplied.')
+            self.log('No guid or URL supplied.')
             return False
 
         try:
