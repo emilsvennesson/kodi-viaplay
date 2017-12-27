@@ -1,4 +1,7 @@
-﻿2017.12.27 v2.0.0
+﻿2017.12.27 v2.0.1
++ Minor changes needed for approval in the official repository
+
+2017.12.27 v2.0.0
 + New dependency: script.module.inputstreamhelper
 + Switch to registration code activation
 + Finally replace HLS with MPEG-DASH (Widevine DRM is now required)
