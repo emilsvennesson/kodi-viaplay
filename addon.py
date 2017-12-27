@@ -286,13 +286,15 @@ def add_episode(episode):
 def add_sports_event(event):
     now = datetime.now()
     date_today = now.date()
+    event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
+    event_status = helper.vp.get_event_status(event)
 
-    if date_today == event['event_date'].date():
-        start_time = '{0} {1}'.format(helper.language(30027), event['event_date'].strftime('%H:%M'))
+    if date_today == event_date.date():
+        start_time = '{0} {1}'.format(helper.language(30027), event_date.strftime('%H:%M'))
     else:
-        start_time = event['event_date'].strftime('%Y-%m-%d %H:%M')
+        start_time = event_date.strftime('%Y-%m-%d %H:%M')
 
-    if event['event_status'] == 'upcoming':
+    if event_status == 'upcoming':
         params = {
             'action': 'dialog',
             'dialog_type': 'ok',
@@ -315,7 +317,7 @@ def add_sports_event(event):
         'plot': details['synopsis'],
         'year': int(details['production'].get('year')),
         'genre': details['format'].get('title'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event['event_status']),
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status),
                                                details.get('title').encode('utf-8'))
     }
 

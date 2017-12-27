@@ -229,12 +229,6 @@ class Viaplay(object):
             # try to collect all products found in viaplay:blocks
             products = [p for x in data['_embedded']['viaplay:blocks'] if 'viaplay:products' in x['_embedded'] for p in x['_embedded']['viaplay:products']]
 
-        # add additional info to sports products
-        for product in products:
-            if product.get('type') == 'sport':
-                product['event_date'] = self.parse_datetime(product['epg']['start'], localize=True)
-                product['event_status'] = self.get_event_status(product)
-
         if filter_event:
             # filter out and only return products with event_status in filter_event
             products = [x for x in products if x['event_status'] in filter_event]
