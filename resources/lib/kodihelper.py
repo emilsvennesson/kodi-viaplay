@@ -6,6 +6,7 @@ import xbmc
 import xbmcvfs
 import xbmcgui
 import xbmcplugin
+import inputstreamhelper
 from xbmcaddon import Addon
 
 
@@ -210,16 +211,18 @@ class KodiHelper(object):
                     self.play(guid, pincode=pincode)
             return
 
-        playitem = xbmcgui.ListItem(path=stream['mpd_url'])
-        playitem.setContentLookup(False)
-        playitem.setMimeType('application/xml+dash')  # prevents HEAD request that causes 404 error
-        playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
-        playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
-        playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
-        playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
-        if self.get_setting('subtitles') and 'subtitles' in stream:
-            playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
-        xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
+        ia_helper = inputstreamhelper.Helper('mpd', drm='widevine')
+        if ia_helper.check_inputstream():
+            playitem = xbmcgui.ListItem(path=stream['mpd_url'])
+            playitem.setContentLookup(False)
+            playitem.setMimeType('application/xml+dash')  # prevents HEAD request that causes 404 error
+            playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+            playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+            playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+            playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
+            if self.get_setting('subtitles') and 'subtitles' in stream:
+                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
+            xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 
     def get_as_bool(self, string):
         if string == 'true':
