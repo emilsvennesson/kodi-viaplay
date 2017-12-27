@@ -347,7 +347,8 @@ def add_tv_event(event):
     else:
         params = {
             'action': 'play',
-            'guid': event['system']['guid']
+            'guid': event['system']['guid'],
+            'tve': 'true'
         }
         playable = True
 
@@ -471,7 +472,7 @@ def router(paramstring):
         elif params['action'] == 'sports_schedule_page':
             sports_schedule_page(params['url'])
         elif params['action'] == 'play':
-            helper.play(guid=params.get('guid'), url=params.get('url'))
+            helper.play(guid=params.get('guid'), url=params.get('url'), tve=params.get('tve'))
         elif params['action'] == 'seasons_page':
             seasons_page(params['url'])
         elif params['action'] == 'list_products':

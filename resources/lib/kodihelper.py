@@ -192,7 +192,7 @@ class KodiHelper(object):
         """Tell Kodi that the end of the directory listing is reached."""
         xbmcplugin.endOfDirectory(self.handle)
 
-    def play(self, guid=None, url=None, pincode=None):
+    def play(self, guid=None, url=None, pincode=None, tve=False):
         if url:
             guid = self.vp.get_products(url)['products'][0]['system']['guid']
         elif guid:
@@ -200,9 +200,11 @@ class KodiHelper(object):
         else:
             self.log('No guid or URL supplied.')
             return False
+        if tve == 'true':
+            tve = True
 
         try:
-            stream = self.vp.get_stream(guid, pincode=pincode)
+            stream = self.vp.get_stream(guid, pincode=pincode, tve=tve)
         except self.vp.ViaplayError as error:
             if not error.value == 'ParentalGuidancePinChallengeNeededError':
                 raise
