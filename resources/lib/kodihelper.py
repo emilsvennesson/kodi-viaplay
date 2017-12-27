@@ -23,6 +23,9 @@ class KodiHelper(object):
         self.logging_prefix = '[%s-%s]' % (self.addon_name, self.addon_version)
         if not xbmcvfs.exists(self.addon_profile):
             xbmcvfs.mkdir(self.addon_profile)
+        if self.get_setting('first_run'):
+            self.get_addon().openSettings()
+            self.set_setting('first_run', 'false')
         self.vp = Viaplay(self.addon_profile, self.get_country_code(), True)
 
     def get_addon(self):
@@ -223,9 +226,3 @@ class KodiHelper(object):
             if self.get_setting('subtitles') and 'subtitles' in stream:
                 playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
-
-    def get_as_bool(self, string):
-        if string == 'true':
-            return True
-        else:
-            return False
