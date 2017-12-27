@@ -47,7 +47,7 @@ class KodiHelper(object):
         xbmc.log(msg=msg, level=xbmc.LOGDEBUG)
 
     def get_country_code(self):
-        country_id = self.get_setting('country')
+        country_id = self.get_setting('site')
         if country_id == '0':
             country_code = 'se'
         elif country_id == '1':

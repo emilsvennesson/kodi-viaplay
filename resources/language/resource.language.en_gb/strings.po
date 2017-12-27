@@ -38,23 +38,23 @@ msgid "Login failed. Please make sure that your account information is correct."
 msgstr ""
 
 msgctxt "#30007"
-msgid "Country"
+msgid "Site"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Sweden"
+msgid "viaplay.se"
 msgstr ""
 
 msgctxt "#30009"
-msgid "Denmark"
+msgid "viaplay.dk"
 msgstr ""
 
 msgctxt "#30010"
-msgid "Norway"
+msgid "viaplay.no"
 msgstr ""
 
 msgctxt "#30011"
-msgid "Finland"
+msgid "viaplay.fi"
 msgstr ""
 
 msgctxt "#30012"
