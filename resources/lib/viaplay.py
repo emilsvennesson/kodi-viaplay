@@ -185,7 +185,7 @@ class Viaplay(object):
         pages = []
         blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
-        if not 'user' in data:
+        if 'user' not in data:
             raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
 
         for link in data['_links']:
