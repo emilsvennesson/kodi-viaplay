@@ -6,7 +6,6 @@ import codecs
 import os
 import cookielib
 import calendar
-import time
 import re
 import json
 import uuid
@@ -124,7 +123,6 @@ class Viaplay(object):
 
         self.make_request(url=url, method='get', params=params)
         self.validate_session()  # we need this to validate the new cookies
-        time.sleep(3)  # sleep to make sure session has been registred before next request
 
     def validate_session(self):
         """Check if the session is valid."""
@@ -133,7 +131,6 @@ class Viaplay(object):
             'deviceKey': self.device_key
         }
         self.make_request(url=url, method='get', params=params)
-        time.sleep(3)  # sleep to make sure session has been registred before next request
 
     def log_out(self):
         """Log out from Viaplay."""
