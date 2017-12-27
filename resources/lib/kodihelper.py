@@ -117,7 +117,7 @@ class KodiHelper(object):
         secs = 0
         expires = activation_data['expires']
 
-        while secs < expires:
+        while not xbmc.Monitor().abortRequested() and secs < expires:
             try:
                 self.vp.authorize_device(activation_data)
                 dialog.close()
@@ -129,7 +129,7 @@ class KodiHelper(object):
             secs += activation_data['interval']
             percent = int(100 * float(secs) / float(expires))
             dialog.update(percent, message)
-            xbmc.sleep(activation_data['interval'] * 1000)
+            xbmc.Monitor().waitForAbort(activation_data['interval'])
             if dialog.iscanceled():
                 dialog.close()
                 return False
