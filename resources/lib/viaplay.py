@@ -123,6 +123,7 @@ class Viaplay(object):
 
         self.make_request(url=url, method='get', params=params)
         self.validate_session()  # we need this to validate the new cookies
+        return True
 
     def validate_session(self):
         """Check if the session is valid."""
@@ -131,6 +132,7 @@ class Viaplay(object):
             'deviceKey': self.device_key
         }
         self.make_request(url=url, method='get', params=params)
+        return True
 
     def log_out(self):
         """Log out from Viaplay."""
@@ -139,6 +141,7 @@ class Viaplay(object):
             'deviceKey': self.device_key
         }
         self.make_request(url=url, method='get', params=params)
+        return True
 
     def get_stream(self, guid, pincode=None):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
