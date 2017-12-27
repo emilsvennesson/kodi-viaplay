@@ -47,12 +47,12 @@ class Viaplay(object):
     def log(self, string):
         if self.debug:
             try:
-                print '[Viaplay]: %s' % string
+                print('[Viaplay]: %s' % string)
             except UnicodeEncodeError:
                 # we can't anticipate everything in unicode they might throw at
                 # us, but we can handle a simple BOM
                 bom = unicode(codecs.BOM_UTF8, 'utf8')
-                print '[Viaplay]: %s' % string.replace(bom, '')
+                print('[Viaplay]: %s' % string.replace(bom, ''))
             except:
                 pass
 
