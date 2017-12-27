@@ -21,7 +21,7 @@ def run():
             if helper.authorize():
                 router(sys.argv[2][1:])
         else:
-            helper.dialog('ok', helper.language(30005), error.value)
+            show_error(error.value)
 
 
 def root_page():
@@ -428,13 +428,15 @@ def coloring(text, meaning):
     return colored_text
 
 
-def show_auth_error(error):
+def show_error(error):
     if error == 'UserNotAuthorizedForContentError':
         message = helper.language(30020)
     elif error == 'PurchaseConfirmationRequiredError':
         message = helper.language(30021)
     elif error == 'UserNotAuthorizedRegionBlockedError':
         message = helper.language(30022)
+    elif error == 'ConcurrentStreamsLimitReachedError':
+        message = helper.language(30050)
     else:
         message = error
 

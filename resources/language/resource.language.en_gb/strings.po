@@ -86,15 +86,15 @@ msgid "[B]Next page[/B]"
 msgstr ""
 
 msgctxt "#30020"
-msgid "Your account is not authorized to watch this content. You find information on how to upgrade your package on the Viaplay website."
+msgid "This content is not included in your current subscription."
 msgstr ""
 
 msgctxt "#30021"
-msgid "You need to rent/purchase this movie on the Viaplay website before playing it."
+msgid "You need to rent or purchase this movie on the Viaplay website."
 msgstr ""
 
 msgctxt "#30022"
-msgid "You're not allowed to watch content from this region."
+msgid "This content is not available in your current region."
 msgstr ""
 
 msgctxt "#30023"
@@ -199,4 +199,8 @@ msgstr ""
 
 msgctxt "#30049"
 msgid "No broadcast"
+msgstr ""
+
+msgctxt "#30050"
+msgid "You can watch two videos at the same time using a Viaplay account. Your account is currently being used to watch two other videos."
 msgstr ""
