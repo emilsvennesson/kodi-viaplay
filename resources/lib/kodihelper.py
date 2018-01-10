@@ -124,15 +124,20 @@ class KodiHelper(object):
                 return True
             except self.vp.ViaplayError as error:
                 # raise all non-pending authorization errors
-                if not error.value == 'DeviceAuthorizationPendingError':
+                if error.value == 'DeviceAuthorizationPendingError':
+                    secs += activation_data['interval']
+                    percent = int(100 * float(secs) / float(expires))
+                    dialog.update(percent, message)
+                    xbmc.Monitor().waitForAbort(activation_data['interval'])
+                    if dialog.iscanceled():
+                        dialog.close()
+                        return False
+                elif error.value == 'DeviceAuthorizationNotFound':  # time expired
+                    dialog.close()
+                    self.dialog('ok', self.language(30051), self.language(30052))
+                    return False
+                else:
                     raise
-            secs += activation_data['interval']
-            percent = int(100 * float(secs) / float(expires))
-            dialog.update(percent, message)
-            xbmc.Monitor().waitForAbort(activation_data['interval'])
-            if dialog.iscanceled():
-                dialog.close()
-                return False
 
         dialog.close()
         return False

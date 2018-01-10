@@ -204,3 +204,11 @@ msgstr ""
 msgctxt "#30050"
 msgid "You can watch two videos at the same time using a Viaplay account. Your account is currently being used to watch two other videos."
 msgstr ""
+
+msgctxt "#30051"
+msgid "You are not logged in"
+msgstr ""
+
+msgctxt "#30052"
+msgid "An activation error occurred."
+msgstr ""
