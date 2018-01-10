@@ -400,11 +400,13 @@ def add_art(images, content_type):
         elif i == 'hero169':
             artwork['fanart'] = image_url
         elif i == 'coverart23':
+            if content_type != 'sport':
+                artwork['poster'] = image_url
+        elif i == 'coverart169':
             artwork['cover'] = image_url
         elif i == 'boxart':
-            if content_type != 'episode' or 'sport':
+            if content_type != 'episode' or content_type != 'sport':
                 artwork['thumb'] = image_url
-            artwork['poster'] = image_url
 
     return artwork
 
