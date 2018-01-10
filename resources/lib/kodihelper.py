@@ -137,6 +137,7 @@ class KodiHelper(object):
                     self.dialog('ok', self.language(30051), self.language(30052))
                     return False
                 else:
+                    dialog.close()
                     raise
 
         dialog.close()
