@@ -152,7 +152,7 @@ class Viaplay(object):
             'deviceName': 'web',
             'deviceType': 'pc',
             'userAgent': 'Kodi',
-            'deviceKey': 'pcdash-%s' % self.country,
+            'deviceKey': 'chromecast-%s' % self.country,
             'guid': guid
         }
         if pincode:
