@@ -459,7 +459,7 @@ def router(paramstring):
             list_products(params['url'])
         elif params['action'] == 'sport':
             sports_page(params['url'])
-        elif params['action'] == 'tve':
+        elif params['action'] == 'tve' or params['action'] == 'channels':
             channels_page(params['url'])
         elif params['action'] == 'categories_page':
             categories_page(params['url'])
