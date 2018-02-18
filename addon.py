@@ -449,6 +449,7 @@ def show_error(error):
 def router(paramstring):
     """Router function that calls other functions depending on the provided paramstring."""
     params = dict(urlparse.parse_qsl(paramstring))
+    helper.log('router params: %s' % params)
     vod_pages = ['series', 'movie', 'kids', 'rental']
     products_pages = ['viaplay:starred', 'viaplay:watched', 'viaplay:purchased']
 
