@@ -8,7 +8,7 @@ This add-on is unoffical and is not endorsed or supported by Viaplay in any way.
 This add-on is available in the official Kodi repository and all dependencies will be installed automatically when installed from there. However, if you're installing straight from git, please make sure you've got the following modules installed:
  * script.module.requests >= 2.9.1 (http://mirrors.kodi.tv/addons/krypton/script.module.requests/)
  * script.module.iso8601 (http://mirrors.kodi.tv/addons/krypton/script.module.iso8601/)
- * script.module.inputstreamhelper >= 0.2.4 (http://mirrors.kodi.tv/addons/krypton/script.module.inputstreamhelper/)
+ * script.module.inputstreamhelper >= 0.3.3 (http://mirrors.kodi.tv/addons/krypton/script.module.inputstreamhelper/)
  * script.module.routing >= 0.2.0 (http://mirrors.kodi.tv/addons/krypton/script.module.routing/)
  
 This add-on requires Kodi 17.4 or higher with InputStream Adaptive installed. Kodi 18 is required for Android based devices.
