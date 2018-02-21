@@ -5,9 +5,10 @@ A Kodi add-on for Viaplay
 import sys
 from datetime import datetime
 
+from resources.lib.kodihelper import KodiHelper
+
 import xbmc
 import routing
-from resources.lib.kodihelper import KodiHelper
 
 base_url = sys.argv[0]
 handle = int(sys.argv[1])
@@ -305,8 +306,8 @@ def add_sports_event(event):
         playable = True
     else:
         url = plugin.url_for(dialog, dialog_type='ok',
-                                     heading=helper.language(30017),
-                                     message=helper.language(30016).format(start_time))
+                             heading=helper.language(30017),
+                             message=helper.language(30016).format(start_time))
         playable = False
 
     details = event['content']
@@ -340,8 +341,8 @@ def add_tv_event(event):
         playable = True
     else:
         url = plugin.url_for(dialog, dialog_type='ok',
-                                     heading=helper.language(30017),
-                                     message=helper.language(30016).format(start_time))
+                             heading=helper.language(30017),
+                             message=helper.language(30016).format(start_time))
         playable = False
 
     details = event['content']
@@ -354,8 +355,10 @@ def add_tv_event(event):
                                                details.get('title').encode('utf-8'))
     }
     art = {
-        'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
-        'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
+        'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details[
+            'images'] else None,
+        'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details[
+            'images'] else None
     }
 
     helper.add_item(event_info['list_title'], url, playable=playable, info=event_info, art=art, content='episodes')
