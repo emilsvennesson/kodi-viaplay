@@ -185,7 +185,7 @@ class KodiHelper(object):
         xbmcplugin.endOfDirectory(self.handle)
 
     def play(self, guid=None, url=None, pincode=None, tve='false'):
-        if url != 'None':
+        if url and url != 'None':
             guid = self.vp.get_products(url)['products'][0]['system']['guid']
         try:
             stream = self.vp.get_stream(guid, pincode=pincode, tve=tve)
