@@ -58,7 +58,6 @@ def root():
 @plugin.route('/start')
 def start():
     collections = helper.vp.get_collections(plugin.args['url'][0])
-
     for i in collections:
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
@@ -357,10 +356,8 @@ def add_tv_event(event):
                                                details.get('title').encode('utf-8'))
     }
     art = {
-        'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details[
-            'images'] else None,
-        'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details[
-            'images'] else None
+        'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
+        'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
     }
 
     helper.add_item(event_info['list_title'], url, playable=playable, info=event_info, art=art, content='episodes')
