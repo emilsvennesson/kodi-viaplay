@@ -48,8 +48,7 @@ def root():
 
     for page in pages:
         if page['name'] in supported_pages:
-            url = plugin.url_for(supported_pages[page['name']], url=page['href'])
-            helper.add_item(page['title'], url)
+            helper.add_item(page['title'], plugin.url_for(supported_pages[page['name']], url=page['href']))
         else:
             helper.log('Unsupported page found: %s' % page['name'])
     helper.eod()
