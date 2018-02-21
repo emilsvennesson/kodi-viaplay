@@ -212,3 +212,7 @@ msgstr ""
 msgctxt "#30052"
 msgid "An activation error occurred."
 msgstr ""
+
+msgctxt "#30053"
+msgid "InputStream Adaptive settings"
+msgstr ""

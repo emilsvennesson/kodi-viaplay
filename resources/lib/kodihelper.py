@@ -213,3 +213,8 @@ class KodiHelper(object):
             if self.get_setting('subtitles') and 'subtitles' in stream:
                 playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
+
+    def ia_settings(self):
+        """Open InputStream Adaptive settings."""
+        ia_addon = Addon('inputstream.adaptive')
+        ia_addon.openSettings()

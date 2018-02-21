@@ -86,8 +86,8 @@ def sport():
 
     for i in collections:
         if 'viaplay:seeTableau' in i['_links'] and not schedule_added:
-            url = plugin.url_for(sports_schedule, url=i['_links']['viaplay:seeTableau']['href'])
-            helper.add_item(i['_links']['viaplay:seeTableau']['title'], url)
+            plugin_url = plugin.url_for(sports_schedule, url=i['_links']['viaplay:seeTableau']['href'])
+            helper.add_item(i['_links']['viaplay:seeTableau']['title'], plugin_url)
             schedule_added = True
 
         if i['totalProductCount'] < 1:
@@ -101,7 +101,7 @@ def channels():
     channels_dict = helper.vp.get_channels(plugin.args['url'][0])
 
     for channel in channels_dict['channels']:
-        url = plugin.url_for(list_products, url=channel['_links']['self']['href'])
+        plugin_url = plugin.url_for(list_products, url=channel['_links']['self']['href'])
         art = {
             'thumb': channel['content']['images']['fallback']['template'].split('{')[0],
             'fanart': channel['content']['images']['fallback']['template'].split('{')[0]
@@ -117,7 +117,7 @@ def channels():
 
         list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
 
-        helper.add_item(list_title, url, art=art)
+        helper.add_item(list_title, plugin_url, art=art)
 
     if channels_dict['next_page']:
         helper.add_item(helper.language(30018), plugin.url_for(channels, url=channels_dict['next_page']))
@@ -208,6 +208,11 @@ def dialog():
                   message=plugin.args['message'][0])
 
 
+@plugin.route('/ia_settings')
+def ia_settings():
+    helper.ia_settings()
+
+
 def add_movie(movie):
     if movie['system'].get('guid'):
         guid = movie['system']['guid']
@@ -216,7 +221,7 @@ def add_movie(movie):
         guid = None
         url = movie['_links']['self']['href']
 
-    url = plugin.url_for(play, guid=guid, url=url, tve='false')
+    plugin_url = plugin.url_for(play, guid=guid, url=url, tve='false')
     details = movie['content']
 
     movie_info = {
@@ -234,12 +239,12 @@ def add_movie(movie):
         'code': details['imdb'].get('id') if 'imdb' in details else None
     }
 
-    helper.add_item(movie_info['title'], url, info=movie_info, art=add_art(details['images'], 'movie'),
+    helper.add_item(movie_info['title'], plugin_url, info=movie_info, art=add_art(details['images'], 'movie'),
                     content='movies', playable=True)
 
 
 def add_series(show):
-    url = plugin.url_for(seasons_page, url=show['_links']['viaplay:page']['href'])
+    plugin_url = plugin.url_for(seasons_page, url=show['_links']['viaplay:page']['href'])
     details = show['content']
 
     series_info = {
@@ -258,12 +263,12 @@ def add_series(show):
         'season': int(details['series']['seasons']) if details['series'].get('seasons') else None
     }
 
-    helper.add_item(series_info['title'], url, folder=True, info=series_info,
+    helper.add_item(series_info['title'], plugin_url, folder=True, info=series_info,
                     art=add_art(details['images'], 'series'), content='tvshows')
 
 
 def add_episode(episode):
-    url = plugin.url_for(play, guid=episode['system']['guid'], url=None, tve='false')
+    plugin_url = plugin.url_for(play, guid=episode['system']['guid'], url=None, tve='false')
     details = episode['content']
 
     episode_info = {
@@ -286,7 +291,7 @@ def add_episode(episode):
         'episode': int(details['series'].get('episodeNumber'))
     }
 
-    helper.add_item(episode_info['list_title'], url, info=episode_info,
+    helper.add_item(episode_info['list_title'], plugin_url, info=episode_info,
                     art=add_art(details['images'], 'episode'), content='episodes', playable=True)
 
 
@@ -302,10 +307,10 @@ def add_sports_event(event):
         start_time = event_date.strftime('%Y-%m-%d %H:%M')
 
     if event_status != 'upcoming':
-        url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
+        plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
         playable = True
     else:
-        url = plugin.url_for(dialog, dialog_type='ok',
+        plugin_url = plugin.url_for(dialog, dialog_type='ok',
                              heading=helper.language(30017),
                              message=helper.language(30016).format(start_time))
         playable = False
@@ -321,7 +326,7 @@ def add_sports_event(event):
                                                details.get('title').encode('utf-8'))
     }
 
-    helper.add_item(event_info['list_title'], url, playable=playable, info=event_info,
+    helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info,
                     art=add_art(details['images'], 'sport'), content='episodes')
 
 
@@ -337,10 +342,10 @@ def add_tv_event(event):
         start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
 
     if event_status != 'upcoming':
-        url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='true')
+        plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='true')
         playable = True
     else:
-        url = plugin.url_for(dialog, dialog_type='ok',
+        plugin_url = plugin.url_for(dialog, dialog_type='ok',
                              heading=helper.language(30017),
                              message=helper.language(30016).format(start_time))
         playable = False
@@ -359,7 +364,7 @@ def add_tv_event(event):
         'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
     }
 
-    helper.add_item(event_info['list_title'], url, playable=playable, info=event_info, art=art, content='episodes')
+    helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
 
 
 def add_art(images, content_type):
