@@ -9,7 +9,7 @@ This add-on is available in the official Kodi repository and all dependencies wi
  * script.module.requests >= 2.9.1 (http://mirrors.kodi.tv/addons/krypton/script.module.requests/)
  * script.module.iso8601 (http://mirrors.kodi.tv/addons/krypton/script.module.iso8601/)
  * script.module.inputstreamhelper >= 0.2.4 (http://mirrors.kodi.tv/addons/krypton/script.module.inputstreamhelper/)
- * script.module.routing >= 0.2.0 (http://mirrors.kodi.tv/addons/krypton/script.module.inputstreamhelper/)
+ * script.module.routing >= 0.2.0 (http://mirrors.kodi.tv/addons/krypton/script.module.routing/)
  
 This add-on requires Kodi 17.4 or higher with InputStream Adaptive installed. Kodi 18 is required for Android based devices.
 
