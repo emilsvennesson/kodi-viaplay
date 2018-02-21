@@ -336,6 +336,9 @@ def add_tv_event(event):
     start_time_obj = helper.vp.parse_datetime(event['epg']['startTime'], localize=True)
     event_status = helper.vp.get_event_status(event)
 
+    # hide non-available catchup items
+    if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
+        return
     if date_today == start_time_obj.date():
         start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
     else:
