@@ -49,6 +49,8 @@ def root():
     for page in pages:
         if page['name'] in supported_pages:
             helper.add_item(page['title'], plugin.url_for(supported_pages[page['name']], url=page['href']))
+        elif 'type' in page and page['type'] in supported_pages:  # weird channels listing fix on some subscriptions
+            helper.add_item(page['title'], plugin.url_for(supported_pages[page['type']], url=page['href']))
         else:
             helper.log('Unsupported page found: %s' % page['name'])
     helper.eod()
