@@ -104,9 +104,13 @@ def channels():
 
     for channel in channels_dict['channels']:
         plugin_url = plugin.url_for(list_products, url=channel['_links']['self']['href'])
+        if 'fallback' in channel['content']['images']:
+            channel_image = channel['content']['images']['fallback']['template'].split('{')[0]
+        else:
+            channel_image = channel['content']['images']['logo']['template'].split('{')[0]
         art = {
-            'thumb': channel['content']['images']['fallback']['template'].split('{')[0],
-            'fanart': channel['content']['images']['fallback']['template'].split('{')[0]
+            'thumb': channel_image,
+            'fanart': channel_image
         }
 
         for program in channel['_embedded']['viaplay:products']:  # get current live program
