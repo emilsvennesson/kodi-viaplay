@@ -313,7 +313,7 @@ def add_sports_event(event):
         start_time = event_date.strftime('%Y-%m-%d %H:%M')
 
     if event_status != 'upcoming':
-        plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
+        plugin_url = plugin.url_for(play, guid=event['system']['guid'] + '-%s' % helper.get_country_code().upper(), url=None, tve='false')
         playable = True
     else:
         plugin_url = plugin.url_for(dialog, dialog_type='ok',
