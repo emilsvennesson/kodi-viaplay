@@ -177,7 +177,7 @@ class Viaplay(object):
         stream['license_url'] = data['_links']['viaplay:license']['href']
         stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
         if 'viaplay:sami' in data['_links']:
-            stream['subtitles'] = [x['href'] for x in data['_links']['viaplay:sami']]
+            stream['subtitles'] = data['_links']['viaplay:sami']
 
         return stream
 
@@ -258,28 +258,18 @@ class Viaplay(object):
         data = self.make_request(url=url, method='get')
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'season-list']
 
-    def download_subtitles(self, suburls, language_to_download=None):
+    def download_subtitles(self, suburls):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
         Return a list of the path to the downloaded subtitles."""
         paths = []
-        for url in suburls:
-            lang_pattern = re.search(r'[_]([a-z]+)', url)
-            if lang_pattern:
-                sub_lang = lang_pattern.group(1)
-            else:
-                sub_lang = 'unknown'
-                self.log('Failed to identify subtitle language.')
-
-            if language_to_download and sub_lang not in language_to_download:
-                continue
-            else:
-                sami = self.make_request(url=url, method='get').decode('utf-8', 'ignore').strip()
-                htmlparser = HTMLParser.HTMLParser()
-                subtitle = htmlparser.unescape(sami).encode('utf-8')
-                path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
-                with open(path, 'w') as subfile:
-                    subfile.write(subtitle)
-                paths.append(path)
+        for sub_data in suburls:
+            sami = self.make_request(url=sub_data['href'], method='get').decode('utf-8', 'ignore').strip()
+            htmlparser = HTMLParser.HTMLParser()
+            subtitle = htmlparser.unescape(sami).encode('utf-8')
+            path = os.path.join(self.tempdir, '{0}.sami'.format(sub_data['languageCode']))
+            with open(path, 'w') as subfile:
+                subfile.write(subtitle)
+            paths.append(path)
 
         return paths
 

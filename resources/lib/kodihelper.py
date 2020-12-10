@@ -62,19 +62,6 @@ class KodiHelper(object):
 
         return country_code
 
-    def get_sub_lang(self):
-        sub_lang_id = self.get_setting('sub_lang')
-        if sub_lang_id == '0':
-            sub_lang = 'sv'
-        elif sub_lang_id == '1':
-            sub_lang = 'da'
-        elif sub_lang_id == '2':
-            sub_lang = 'no'
-        else:
-            sub_lang = 'fi'
-
-        return sub_lang
-
     def dialog(self, dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
         dialog = xbmcgui.Dialog()
         if dialog_type == 'ok':
@@ -209,9 +196,10 @@ class KodiHelper(object):
             playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
             playitem.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
             playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
-            playitem.setProperty('inputstream.adaptive.license_key', stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
-            if self.get_setting('subtitles') and 'subtitles' in stream:
-                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
+            playitem.setProperty('inputstream.adaptive.license_key',
+                                 stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
+            if 'subtitles' in stream:
+                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles']))
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 
     def ia_settings(self):
