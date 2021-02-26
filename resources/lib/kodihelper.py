@@ -1,6 +1,4 @@
-import urllib
-
-from viaplay import Viaplay
+from .viaplay import Viaplay
 
 import xbmc
 import xbmcvfs
@@ -15,8 +13,8 @@ class KodiHelper(object):
         addon = self.get_addon()
         self.base_url = base_url
         self.handle = handle
-        self.addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
-        self.addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
+        self.addon_path = xbmcvfs.translatePath(addon.getAddonInfo('path'))
+        self.addon_profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
         self.addon_name = addon.getAddonInfo('id')
         self.addon_version = addon.getAddonInfo('version')
         self.language = addon.getLocalizedString
@@ -75,12 +73,19 @@ class KodiHelper(object):
             else:
                 return None
 
+    def log_out(self):
+        confirm = self.dialog('yesno', self.language(30042), self.language(30043))
+        if confirm:
+            self.vp.log_out()
+            # send Kodi back to home screen
+            xbmc.executebuiltin("Action(Back,%s)" % xbmcgui.getCurrentWindowId())
+
     def authorize(self):
         try:
             self.vp.validate_session()
             return True
         except self.vp.ViaplayError as error:
-            if not error.value == 'PersistentLoginError' or error.value == 'MissingSessionCookieError':
+            if not error.value == b'PersistentLoginError' or error.value == b'MissingSessionCookieError':
                 raise
             else:
                 return self.device_registration()
@@ -103,7 +108,7 @@ class KodiHelper(object):
                 return True
             except self.vp.ViaplayError as error:
                 # raise all non-pending authorization errors
-                if error.value == 'DeviceAuthorizationPendingError':
+                if error.value == b'DeviceAuthorizationPendingError':
                     secs += activation_data['interval']
                     percent = int(100 * float(secs) / float(expires))
                     dialog.update(percent, message)
@@ -111,7 +116,7 @@ class KodiHelper(object):
                     if dialog.iscanceled():
                         dialog.close()
                         return False
-                elif error.value == 'DeviceAuthorizationNotFound':  # time expired
+                elif error.value == b'DeviceAuthorizationNotFound':  # time expired
                     dialog.close()
                     self.dialog('ok', self.language(30051), self.language(30052))
                     return False
@@ -177,22 +182,26 @@ class KodiHelper(object):
         try:
             stream = self.vp.get_stream(guid, pincode=pincode, tve=tve)
         except self.vp.ViaplayError as error:
-            if not error.value == 'ParentalGuidancePinChallengeNeededError':
-                raise
-            if pincode:
-                self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
-            else:
-                pincode = self.get_numeric_input(self.language(30032))
+            if error.value == b'MissingSessionCookieError':
+                self.authorize()
+                return
+            if error.value == b'ParentalGuidancePinChallengeNeededError':
                 if pincode:
-                    self.play(guid, pincode=pincode)
-            return
+                    self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
+                else:
+                    pincode = self.get_numeric_input(self.language(30032))
+                    if pincode:
+                        self.play(guid, pincode=pincode)
+                    return
+            else:
+                raise
 
         ia_helper = inputstreamhelper.Helper('mpd', drm='widevine')
         if ia_helper.check_inputstream():
             playitem = xbmcgui.ListItem(path=stream['mpd_url'])
             playitem.setContentLookup(False)
             playitem.setMimeType('application/xml+dash')  # prevents HEAD request that causes 404 error
-            playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+            playitem.setProperty('inputstream', 'inputstream.adaptive')
             playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
             playitem.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
             playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')

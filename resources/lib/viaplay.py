@@ -2,14 +2,13 @@
 """
 A Kodi-agnostic library for Viaplay
 """
-import codecs
 import os
-import cookielib
+import http.cookiejar as cookielib
 import calendar
 import re
 import json
 import uuid
-import HTMLParser
+import html.parser as HTMLParser
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -46,15 +45,7 @@ class Viaplay(object):
 
     def log(self, string):
         if self.debug:
-            try:
-                print('[Viaplay]: %s' % string)
-            except UnicodeEncodeError:
-                # we can't anticipate everything in unicode they might throw at
-                # us, but we can handle a simple BOM
-                bom = unicode(codecs.BOM_UTF8, 'utf8')
-                print('[Viaplay]: %s' % string.replace(bom, ''))
-            except:
-                pass
+            print('[Viaplay]: %s' % string)
 
     def parse_url(self, url):
         """Sometimes, Viaplay adds some weird templated stuff to the URL
@@ -188,7 +179,7 @@ class Viaplay(object):
         blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
         if 'user' not in data:
-            raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
+            raise self.ViaplayError(b'MissingSessionCookieError')  # raise error if user is not logged in
 
         for link in data['_links']:
             if isinstance(data['_links'][link], dict):
@@ -267,7 +258,7 @@ class Viaplay(object):
             htmlparser = HTMLParser.HTMLParser()
             subtitle = htmlparser.unescape(sami).encode('utf-8')
             path = os.path.join(self.tempdir, '{0}.sami'.format(sub_data['languageCode']))
-            with open(path, 'w') as subfile:
+            with open(path, 'wb') as subfile:
                 subfile.write(subtitle)
             paths.append(path)
 

@@ -8,6 +8,7 @@ from datetime import datetime
 from resources.lib.kodihelper import KodiHelper
 
 import xbmc
+import xbmcgui
 import routing
 
 base_url = sys.argv[0]
@@ -20,7 +21,7 @@ def run():
     try:
         plugin.run()
     except helper.vp.ViaplayError as error:
-        if error.value == 'MissingSessionCookieError':
+        if error.value == b'MissingSessionCookieError':
             if helper.authorize():
                 plugin.run()
         else:
@@ -60,6 +61,8 @@ def root():
 def start():
     collections = helper.vp.get_collections(plugin.args['url'][0])
     for i in collections:
+        if i['type'] == 'list-featurebox':  # skip feature box for now
+            continue
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
 
@@ -116,9 +119,9 @@ def channels():
         for program in channel['_embedded']['viaplay:products']:  # get current live program
             if helper.vp.get_event_status(program) == 'live':
                 if 'content' in program:
-                    current_program_title = coloring(program['content']['title'].encode('utf-8'), 'live')
+                    current_program_title = coloring(program['content']['title'], 'live')
                 else:  # no broadcast
-                    current_program_title = coloring(helper.language(30049).encode('utf-8'), 'no_broadcast')
+                    current_program_title = coloring(helper.language(30049), 'no_broadcast')
                 break
 
         list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
@@ -132,12 +135,7 @@ def channels():
 
 @plugin.route('/log_out')
 def log_out():
-    confirm = helper.dialog('yesno', helper.language(30042), helper.language(30043))
-    if confirm:
-        helper.vp.log_out()
-        # send Kodi back to home screen
-        xbmc.executebuiltin('XBMC.Container.Update(path, replace)')
-        xbmc.executebuiltin('XBMC.ActivateWindow(Home)')
+    helper.log_out()
 
 
 @plugin.route('/list_products')
@@ -328,8 +326,7 @@ def add_sports_event(event):
         'plot': details['synopsis'],
         'year': int(details['production'].get('year')),
         'genre': details['format'].get('title'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status),
-                                               details.get('title').encode('utf-8'))
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), details.get('title'))
     }
 
     helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info,
@@ -365,8 +362,7 @@ def add_tv_event(event):
         'title': details.get('title'),
         'plot': details.get('synopsis'),
         'year': details['production'].get('year'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status),
-                                               details.get('title').encode('utf-8'))
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), details.get('title'))
     }
     art = {
         'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
@@ -415,13 +411,13 @@ def coloring(text, meaning):
 
 
 def show_error(error):
-    if error == 'UserNotAuthorizedForContentError':
+    if error == b'UserNotAuthorizedForContentError':
         message = helper.language(30020)
-    elif error == 'PurchaseConfirmationRequiredError':
+    elif error == b'PurchaseConfirmationRequiredError':
         message = helper.language(30021)
-    elif error == 'UserNotAuthorizedRegionBlockedError':
+    elif error == b'UserNotAuthorizedRegionBlockedError':
         message = helper.language(30022)
-    elif error == 'ConcurrentStreamsLimitReachedError':
+    elif error == b'ConcurrentStreamsLimitReachedError':
         message = helper.language(30050)
     else:
         message = error
