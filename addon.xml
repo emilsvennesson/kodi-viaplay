@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.1.2" name="Viaplay" provider-name="emilsvennesson">
+<addon id="plugin.video.viaplay" version="2.1.3" name="Viaplay" provider-name="emilsvennesson">
    <requires>
-      <import addon="xbmc.python" version="3.0.0" />
       <import addon="script.module.requests" version="2.9.1" />
       <import addon="script.module.iso8601" version="0.1.11" />
       <import addon="script.module.inputstreamhelper" version="0.3.3" />
@@ -16,12 +15,10 @@
       <description lang="fi_FI">Katso sisältöä Viaplay.</description>
       <description lang="nb_NO">Se innhold fra Viaplay.</description>
       <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
-      <news>2019.03.11 v.2.1.2
-      + Fix channels listing on some subscriptions
-      + Fix 'fallback' image is not always available
+      <news>2020.08.05 v.2.1.3[CR]+ Added viaplay.pl
       </news>
       <platform>all</platform>
-      <language>sv dk no fi en</language>
+      <language>sv dk no fi en pl</language>
       <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
       <source>https://github.com/emilsvennesson/kodi-viaplay</source>
       <forum>http://forum.kodi.tv/showthread.php?tid=286387</forum>

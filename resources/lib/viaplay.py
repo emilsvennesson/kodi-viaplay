@@ -2,18 +2,26 @@
 """
 A Kodi-agnostic library for Viaplay
 """
+import sys
 import os
-import http.cookiejar as cookielib
+
+if sys.version_info[0] > 2:
+    import http.cookiejar as cookielib
+    import html.parser as HTMLParser
+else:
+    import cookielib
+    import HTMLParser
+
 import calendar
 import re
 import json
 import uuid
-import html.parser as HTMLParser
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import iso8601
 import requests
+import xbmc
 
 
 class Viaplay(object):
@@ -45,13 +53,21 @@ class Viaplay(object):
 
     def log(self, string):
         if self.debug:
-            print('[Viaplay]: %s' % string)
+            try:
+                print('[Viaplay]: %s' % string)
+            except UnicodeEncodeError:
+                # we can't anticipate everything in unicode they might throw at
+                # us, but we can handle a simple BOM
+                bom = unicode(codecs.BOM_UTF8, 'utf8')
+                print('[Viaplay]: %s' % string.replace(bom, ''))
+            except:
+                pass
 
     def parse_url(self, url):
         """Sometimes, Viaplay adds some weird templated stuff to the URL
         we need to get rid of. Example: https://content.viaplay.se/androiddash-se/serier{?dtg}"""
         template = r'\{.+?\}'
-        result = re.search(template, url)
+        result = re.search(template, str(url))
         if result:
             self.log('Unparsed URL: {0}'.format(url))
             url = re.sub(template, '', url)
@@ -87,7 +103,10 @@ class Viaplay(object):
         try:
             response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
             if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False
-                raise self.ViaplayError(response['name'].encode('utf-8'))
+                if sys.version_info[0] > 2:
+                    raise self.ViaplayError(response['name'])
+                else:
+                    raise self.ViaplayError(response['name'].encode('utf-8'))
         except ValueError:  # if response is not json
             pass
 
@@ -137,6 +156,7 @@ class Viaplay(object):
     def get_stream(self, guid, pincode=None, tve='false'):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         stream = {}
+        #url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
         url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.country
         params = {
             'deviceId': self.get_deviceid(),
@@ -144,6 +164,7 @@ class Viaplay(object):
             'deviceType': 'pc',
             'userAgent': 'Kodi',
             'deviceKey': 'chromecast-%s' % self.country,
+            #'guid': guid
             'mediaGuid': guid
         }
         if pincode:
@@ -168,6 +189,7 @@ class Viaplay(object):
         stream['license_url'] = data['_links']['viaplay:license']['href']
         stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
         if 'viaplay:sami' in data['_links']:
+            #stream['subtitles'] = [x['href'] for x in data['_links']['viaplay:sami']]
             stream['subtitles'] = data['_links']['viaplay:sami']
 
         return stream
@@ -179,7 +201,10 @@ class Viaplay(object):
         blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
         if 'user' not in data:
-            raise self.ViaplayError(b'MissingSessionCookieError')  # raise error if user is not logged in
+            if sys.version_info[0] > 2:
+                raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
+            else:
+                raise self.ViaplayError(b'MissingSessionCookieError')  # raise error if user is not logged in
 
         for link in data['_links']:
             if isinstance(data['_links'][link], dict):
@@ -249,18 +274,49 @@ class Viaplay(object):
         data = self.make_request(url=url, method='get')
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'season-list']
 
-    def download_subtitles(self, suburls):
+    def download_subtitles(self, suburls, language_to_download=None):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
         Return a list of the path to the downloaded subtitles."""
         paths = []
-        for sub_data in suburls:
-            sami = self.make_request(url=sub_data['href'], method='get').decode('utf-8', 'ignore').strip()
-            htmlparser = HTMLParser.HTMLParser()
-            subtitle = htmlparser.unescape(sami).encode('utf-8')
-            path = os.path.join(self.tempdir, '{0}.sami'.format(sub_data['languageCode']))
-            with open(path, 'wb') as subfile:
-                subfile.write(subtitle)
-            paths.append(path)
+        lookup_table_replace = {}
+
+        for url in suburls:
+            lang_pattern = re.search(r'[_]([a-z]+)', str(url['href']))
+            if lang_pattern:
+                sub_lang = lang_pattern.group(1)
+            else:
+                sub_lang = 'unknown'
+                self.log('Failed to identify subtitle language.')
+
+            if sys.version_info[0] < 3:
+                if sub_lang == 'pl':
+                    lookup_table_replace = {
+                        '&aogon;': 'ą', '&Aogon;': 'Ą',
+                        '&cacute;': 'ć', '&Cacute;': 'Ć',
+                        '&eogon;': 'ę', '&Eogon;': 'Ę',
+                        '&lstrok;': 'ł', '&Lstrok;': 'Ł',
+                        '&nacute;': 'ń', '&Nacute;': 'Ń',
+                        '&sacute;': 'ś', '&Sacute;': 'Ś',
+                        '&zacute;': 'ź', '&Zacute;': 'Ź',
+                        '&zdot;': 'ż', '&Zdot;': 'Ż'
+                    }
+
+            if language_to_download and sub_lang not in language_to_download:
+                continue
+            else:
+                sami = self.make_request(url=url['href'], method='get').decode('utf-8', 'ignore').strip()
+                try:
+                    for k, v in lookup_table_replace.items():
+                        sami = sami.replace(k, v.decode('utf-8'))
+                except:
+                    pass
+
+                htmlparser = HTMLParser.HTMLParser()
+                subtitle = htmlparser.unescape(sami).encode('utf-8')
+                path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
+                with open(path, 'wb') as subfile:
+                    subfile.write(subtitle)
+                paths.append(path)
 
         return paths
 

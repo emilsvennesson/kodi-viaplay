@@ -21,7 +21,11 @@ def run():
     try:
         plugin.run()
     except helper.vp.ViaplayError as error:
-        if error.value == b'MissingSessionCookieError':
+        if sys.version_info[0] > 2:
+            missing_cookie = 'MissingSessionCookieError'
+        else:
+            missing_cookie = b'MissingSessionCookieError'
+        if error.value == missing_cookie:
             if helper.authorize():
                 plugin.run()
         else:
@@ -80,6 +84,18 @@ def vod():
     helper.add_item(helper.language(30041), plugin.url_for(categories, url=plugin.args['url'][0]))
     collections = helper.vp.get_collections(plugin.args['url'][0])
     for i in collections:
+        if i['title'] == '':
+            if 'a6-00' in i['id']:
+                i['title'] = '3+'
+            elif 'a6-01' in i['id']:
+                i['title'] = '7+'
+            elif 'a6-02' in i['id']:
+                i['title'] = '12+'
+            elif 'a6-03' in i['id']:
+                i['title'] = '16+'
+            else:
+                i['title'] = ''
+
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
 
@@ -124,7 +140,10 @@ def channels():
                     current_program_title = coloring(helper.language(30049), 'no_broadcast')
                 break
 
-        list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
+        if sys.version_info[0] > 2:
+            list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
+        else:   
+            list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title.encode('utf-8'))
 
         helper.add_item(list_title, plugin_url, art=art)
 
@@ -135,7 +154,12 @@ def channels():
 
 @plugin.route('/log_out')
 def log_out():
-    helper.log_out()
+    confirm = helper.dialog('yesno', helper.language(30042), helper.language(30043))
+    if confirm:
+        helper.vp.log_out()
+        # send Kodi back to home screen
+        xbmc.executebuiltin('XBMC.Container.Update(path, replace)')
+        xbmc.executebuiltin('XBMC.ActivateWindow(Home)')
 
 
 @plugin.route('/list_products')
@@ -316,17 +340,23 @@ def add_sports_event(event):
     else:
         plugin_url = plugin.url_for(dialog, dialog_type='ok',
                              heading=helper.language(30017),
-                             message=helper.language(30016).format(start_time))
+                             message=helper.language(30016).format(start_time).encode('utf-8'))
         playable = False
 
     details = event['content']
+
+    if sys.version_info[0] > 2:
+        title = details.get('title')
+    else:
+        title = details.get('title').encode('utf-8')
+
     event_info = {
         'mediatype': 'video',
         'title': details.get('title'),
         'plot': details['synopsis'],
         'year': int(details['production'].get('year')),
         'genre': details['format'].get('title'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), details.get('title'))
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
     }
 
     helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info,
@@ -353,16 +383,22 @@ def add_tv_event(event):
     else:
         plugin_url = plugin.url_for(dialog, dialog_type='ok',
                              heading=helper.language(30017),
-                             message=helper.language(30016).format(start_time))
+                             message=helper.language(30016).format(start_time).encode('utf-8'))
         playable = False
 
     details = event['content']
+
+    if sys.version_info[0] > 2:
+        title = details.get('title')
+    else:
+        title = details.get('title').encode('utf-8')
+
     event_info = {
         'mediatype': 'video',
         'title': details.get('title'),
         'plot': details.get('synopsis'),
         'year': details['production'].get('year'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), details.get('title'))
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
     }
     art = {
         'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
@@ -411,15 +447,27 @@ def coloring(text, meaning):
 
 
 def show_error(error):
-    if error == b'UserNotAuthorizedForContentError':
-        message = helper.language(30020)
-    elif error == b'PurchaseConfirmationRequiredError':
-        message = helper.language(30021)
-    elif error == b'UserNotAuthorizedRegionBlockedError':
-        message = helper.language(30022)
-    elif error == b'ConcurrentStreamsLimitReachedError':
-        message = helper.language(30050)
+    if sys.version_info[0] > 2:
+        if error == 'UserNotAuthorizedForContentError':
+            message = helper.language(30020)
+        elif error == 'PurchaseConfirmationRequiredError':
+            message = helper.language(30021)
+        elif error == 'UserNotAuthorizedRegionBlockedError':
+            message = helper.language(30022)
+        elif error == 'ConcurrentStreamsLimitReachedError':
+            message = helper.language(30050)
+        else:
+            message = error
     else:
-        message = error
+        if error == b'UserNotAuthorizedForContentError':
+            message = helper.language(30020)
+        elif error == b'PurchaseConfirmationRequiredError':
+            message = helper.language(30021)
+        elif error == b'UserNotAuthorizedRegionBlockedError':
+            message = helper.language(30022)
+        elif error == b'ConcurrentStreamsLimitReachedError':
+            message = helper.language(30050)
+        else:
+            message = error
 
     helper.dialog(dialog_type='ok', heading=helper.language(30017), message=message)

@@ -1,4 +1,10 @@
-from .viaplay import Viaplay
+import urllib
+import sys
+
+if sys.version_info[0] > 2:
+    from .viaplay import Viaplay
+else:
+    from viaplay import Viaplay
 
 import xbmc
 import xbmcvfs
@@ -13,8 +19,12 @@ class KodiHelper(object):
         addon = self.get_addon()
         self.base_url = base_url
         self.handle = handle
-        self.addon_path = xbmcvfs.translatePath(addon.getAddonInfo('path'))
-        self.addon_profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
+        if sys.version_info[0] > 2:
+            self.addon_path = xbmcvfs.translatePath(addon.getAddonInfo('path'))
+            self.addon_profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
+        else:
+            self.addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
+            self.addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
         self.addon_name = addon.getAddonInfo('id')
         self.addon_version = addon.getAddonInfo('version')
         self.language = addon.getLocalizedString
@@ -55,10 +65,27 @@ class KodiHelper(object):
             country_code = 'dk'
         elif country_id == '2':
             country_code = 'no'
-        else:
+        elif country_id == '3':
             country_code = 'fi'
+        elif country_id == '4':
+            country_code = 'pl'
 
         return country_code
+
+    def get_sub_lang(self):
+        sub_lang_id = self.get_setting('sub_lang')
+        if sub_lang_id == '0':
+            sub_lang = 'sv'
+        elif sub_lang_id == '1':
+            sub_lang = 'da'
+        elif sub_lang_id == '2':
+            sub_lang = 'no'
+        elif sub_lang_id == '3':
+            sub_lang = 'fi'
+        elif sub_lang_id == '4':
+            sub_lang = 'pl'
+
+        return sub_lang
 
     def dialog(self, dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
         dialog = xbmcgui.Dialog()
@@ -85,7 +112,14 @@ class KodiHelper(object):
             self.vp.validate_session()
             return True
         except self.vp.ViaplayError as error:
-            if not error.value == b'PersistentLoginError' or error.value == b'MissingSessionCookieError':
+            if sys.version_info[0] > 2:
+                cookie_error = 'MissingSessionCookieError'
+                login_error = 'PersistentLoginError'
+            else:
+                cookie_error = b'MissingSessionCookieError'
+                login_error = b'PersistentLoginError'
+
+            if not error.value == login_error or error.value == cookie_error:
                 raise
             else:
                 return self.device_registration()
@@ -108,7 +142,14 @@ class KodiHelper(object):
                 return True
             except self.vp.ViaplayError as error:
                 # raise all non-pending authorization errors
-                if error.value == b'DeviceAuthorizationPendingError':
+                if sys.version_info[0] > 2:
+                    auth_error = 'DeviceAuthorizationPendingError'
+                    dev_error = 'DeviceAuthorizationNotFound'
+                else:
+                    auth_error = b'DeviceAuthorizationPendingError'
+                    dev_error = b'DeviceAuthorizationNotFound'
+
+                if error.value == auth_error:
                     secs += activation_data['interval']
                     percent = int(100 * float(secs) / float(expires))
                     dialog.update(percent, message)
@@ -116,7 +157,7 @@ class KodiHelper(object):
                     if dialog.iscanceled():
                         dialog.close()
                         return False
-                elif error.value == b'DeviceAuthorizationNotFound':  # time expired
+                elif error.value == dev_error:  # time expired
                     dialog.close()
                     self.dialog('ok', self.language(30051), self.language(30052))
                     return False
@@ -182,10 +223,15 @@ class KodiHelper(object):
         try:
             stream = self.vp.get_stream(guid, pincode=pincode, tve=tve)
         except self.vp.ViaplayError as error:
-            if error.value == b'MissingSessionCookieError':
+            if sys.version_info[0] > 2:
+                parent_error = 'ParentalGuidancePinChallengeNeededError'
+            else:
+                parent_error = b'ParentalGuidancePinChallengeNeededError'
+
+            if error.value == parent_error:
                 self.authorize()
                 return
-            if error.value == b'ParentalGuidancePinChallengeNeededError':
+            if error.value == parent_error:
                 if pincode:
                     self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
                 else:
@@ -201,14 +247,17 @@ class KodiHelper(object):
             playitem = xbmcgui.ListItem(path=stream['mpd_url'])
             playitem.setContentLookup(False)
             playitem.setMimeType('application/xml+dash')  # prevents HEAD request that causes 404 error
-            playitem.setProperty('inputstream', 'inputstream.adaptive')
+            if sys.version_info[0] > 2:
+                playitem.setProperty('inputstream', 'inputstream.adaptive')
+            else:    
+                playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
             playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
             playitem.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
             playitem.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
-            playitem.setProperty('inputstream.adaptive.license_key',
-                                 stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
-            if 'subtitles' in stream:
-                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles']))
+            playitem.setProperty('inputstream.adaptive.license_key',stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
+            if self.get_setting('subtitles') and 'subtitles' in stream:
+                playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
+            playitem.setProperty('inputstream.adaptive.play_timeshift_buffer', 'true')
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 
     def ia_settings(self):
