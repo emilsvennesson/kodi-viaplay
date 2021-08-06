@@ -15,6 +15,7 @@
       <description lang="fi_FI">Katso sisältöä Viaplay.</description>
       <description lang="nb_NO">Se innhold fra Viaplay.</description>
       <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
+	  <description lang="pl_PL">Oglądaj treści z Viaplay.</description>
       <news>2020.08.05 v.2.1.3[CR]+ Added viaplay.pl
       </news>
       <platform>all</platform>
