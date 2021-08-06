@@ -15,31 +15,31 @@ msgstr ""
 
 msgctxt "#30001"
 msgid "Email"
-msgstr ""
+msgstr "e-mail"
 
 msgctxt "#30002"
 msgid "Password"
-msgstr ""
+msgstr "Hasło"
 
 msgctxt "#30003"
 msgid "General"
-msgstr ""
+msgstr "Ogólne"
 
 msgctxt "#30004"
 msgid "Advanced"
-msgstr ""
+msgstr "Zaawansowane"
 
 msgctxt "#30005"
 msgid "Error"
-msgstr ""
+msgstr "Błąd"
 
 msgctxt "#30006"
 msgid "Login failed. Please make sure that your account information is correct."
-msgstr ""
+msgstr "Logowanie nie powiodło się. Upewnij się, że informacje o Twoim koncie są poprawne."
 
 msgctxt "#30007"
 msgid "Site"
-msgstr ""
+msgstr "Strona"
 
 msgctxt "#30008"
 msgid "viaplay.se"
@@ -59,163 +59,163 @@ msgstr ""
 
 msgctxt "#30012"
 msgid "Subtitles"
-msgstr ""
+msgstr "Napisy"
 
 msgctxt "#30013"
 msgid "List all in alphabetical order"
-msgstr ""
+msgstr "Lista wszystkich zamówień w porządku alfabetycznym"
 
 msgctxt "#30014"
 msgid "Season {0}"
-msgstr ""
+msgstr "Sezon {0}"
 
 msgctxt "#30015"
 msgid "Search"
-msgstr ""
+msgstr "Szukaj"
 
 msgctxt "#30016"
 msgid "This event starts [B]{0}[/B]."
-msgstr ""
+msgstr "To wydarzenie rozpoczyna się [B]{0}[/B]."
 
 msgctxt "#30017"
 msgid "Information"
-msgstr ""
+msgstr "Informacje"
 
 msgctxt "#30018"
 msgid "[B]Next page[/B]"
-msgstr ""
+msgstr "Następna strona"
 
 msgctxt "#30020"
 msgid "This content is not included in your package."
-msgstr ""
+msgstr "Ta zawartość nie jest zawarta w Twoim pakiecie."
 
 msgctxt "#30021"
 msgid "You need to rent or purchase this movie on the Viaplay website."
-msgstr ""
+msgstr "Musisz wypożyczyć lub kupić ten film na stronie Viaplay."
 
 msgctxt "#30022"
 msgid "You cannot use Viaplay where you are. For copyright reasons, you can only watch in the following countries: Sweden, Finland, Norway and Denmark."
-msgstr ""
+msgstr "Nie możesz używać Viaplay tam, gdzie jesteś. Ze względu na prawa autorskie możesz oglądać tylko w następujących krajach: Szwecja, Finlandia, Norwegia, Polska i Dania."
 
 msgctxt "#30023"
 msgid "Preferred stream quality (movies & TV)"
-msgstr ""
+msgstr "Preferowana jakość strumienia (filmy i telewizja)"
 
 msgctxt "#30024"
 msgid "Always use highest bitrate"
-msgstr ""
+msgstr "Zawsze używaj najwyższej szybkości transmisji"
 
 msgctxt "#30025"
 msgid "Ask"
-msgstr ""
+msgstr "Pytaj"
 
 msgctxt "#30026"
 msgid "Select stream quality"
-msgstr ""
+msgstr "Wybierz jakość strumienia"
 
 msgctxt "#30027"
 msgid "Today"
-msgstr ""
+msgstr "Dzisiaj"
 
 msgctxt "#30028"
 msgid "Upcoming days"
-msgstr ""
+msgstr "Nadchodzące dni"
 
 msgctxt "#30029"
 msgid "Previous days"
-msgstr ""
+msgstr "Poprzednie dni"
 
 msgctxt "#30031"
 msgid "Archived events"
-msgstr ""
+msgstr "Zarchiwizowane wydarzenia"
 
 msgctxt "#30032"
 msgid "Enter your PIN code"
-msgstr ""
+msgstr "Wpisz swój kod PIN"
 
 msgctxt "#30033"
 msgid "Parental control"
-msgstr ""
+msgstr "Kontrola rodzicielska"
 
 msgctxt "#30034"
 msgid "The PIN code you have entered is incorrect."
-msgstr ""
+msgstr "Wprowadzony kod PIN jest nieprawidłowy."
 
 msgctxt "#30035"
 msgid "Limit bitrate"
-msgstr ""
+msgstr "Limit bitrate"
 
 msgctxt "#30036"
 msgid "Max bitrate allowed (Kbps)"
-msgstr ""
+msgstr "Maksymalna dozwolona szybkość transmisji bitów (Kb/s)"
 
 msgctxt "#30037"
 msgid "Live & upcoming events"
-msgstr ""
+msgstr "Wydarzenia na żywo i nadchodzące"
 
 msgctxt "#30038"
 msgid "No valid stream URL was found."
-msgstr ""
+msgstr "Nie znaleziono prawidłowego adresu URL transmisji."
 
 msgctxt "#30039"
 msgid "Go to [B]{0}[/B] on your mobile phone, tablet or computer and enter this code: [B]{1}[/B]"
-msgstr ""
+msgstr "Przejdź do [B]{0}[/B] na telefonie komórkowym, tablecie lub komputerze i wprowadź ten kod: [B]{1}[/B]"
 
 msgctxt "#30040"
 msgid "Log in using a single-use code"
-msgstr ""
+msgstr "Zaloguj się za pomocą kodu jednorazowego"
 
 msgctxt "#30041"
 msgid "Categories"
-msgstr ""
+msgstr "Kategorie"
 
 msgctxt "#30042"
 msgid "Log out"
-msgstr ""
+msgstr "Wyloguj"
 
 msgctxt "#30043"
 msgid "Are you sure you want to log out?"
-msgstr ""
+msgstr "Czy na pewno chcesz się wylogować?"
 
 msgctxt "#30044"
 msgid "Subtitle language"
-msgstr ""
+msgstr "Język napisów"
 
 msgctxt "#30045"
 msgid "Swedish"
-msgstr ""
+msgstr "Szwedzki"
 
 msgctxt "#30046"
 msgid "Danish"
-msgstr ""
+msgstr "Duński"
 
 msgctxt "#30047"
 msgid "Norwegian"
-msgstr ""
+msgstr "Norweski"
 
 msgctxt "#30048"
 msgid "Finnish"
-msgstr ""
+msgstr "Fiński"
 
 msgctxt "#30049"
 msgid "No broadcast"
-msgstr ""
+msgstr "Brak transmisji"
 
 msgctxt "#30050"
 msgid "You can watch two videos at the same time using a Viaplay account. Your account is currently being used to watch two other videos."
-msgstr ""
+msgstr "Możesz oglądać dwa filmy jednocześnie, korzystając z konta Viaplay. Twoje konto jest obecnie używane do oglądania dwóch innych filmów"
 
 msgctxt "#30051"
 msgid "You are not logged in"
-msgstr ""
+msgstr "Nie jesteś zalogowany"
 
 msgctxt "#30052"
 msgid "An activation error occurred."
-msgstr ""
+msgstr "Wystąpił błąd aktywacji."
 
 msgctxt "#30053"
 msgid "InputStream Adaptive settings"
-msgstr ""
+msgstr "Ustawienia InputStream Adaptive"
 
 msgctxt "#30054"
 msgid "viaplay.pl"
@@ -223,4 +223,4 @@ msgstr ""
 
 msgctxt "#30055"
 msgid "Polish"
-msgstr ""
+msgstr "Polski"
