@@ -89,6 +89,9 @@ def vod():
     helper.add_item(helper.language(30041), plugin.url_for(categories, url=plugin.args['url'][0]))
     collections = helper.vp.get_collections(plugin.args['url'][0])
     for i in collections:
+        if i['type'] == 'list-featurebox':  # skip feature box for now
+            continue
+            
         if i['title'] == '':
             if 'a6-00' in i['id']:
                 i['title'] = '3+'

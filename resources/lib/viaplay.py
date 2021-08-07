@@ -22,14 +22,24 @@ from datetime import datetime, timedelta
 import iso8601
 import requests
 import xbmc
+import xbmcvfs
+from xbmcaddon import Addon
 
 
 class Viaplay(object):
     def __init__(self, settings_folder, country, debug=False):
+        addon = self.get_addon()
         self.debug = debug
         self.country = country
         self.settings_folder = settings_folder
+        if sys.version_info[0] > 2:
+            self.addon_path = xbmcvfs.translatePath(addon.getAddonInfo('path'))
+            self.addon_profile = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
+        else:
+            self.addon_path = xbmc.translatePath(addon.getAddonInfo('path'))
+            self.addon_profile = xbmc.translatePath(addon.getAddonInfo('profile'))
         self.cookie_jar = cookielib.LWPCookieJar(os.path.join(self.settings_folder, 'cookie_file'))
+        #self.replace_cookies = self.replace_cookies() ### workaround to switch country sites
         self.tempdir = os.path.join(settings_folder, 'tmp')
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
@@ -43,6 +53,51 @@ class Viaplay(object):
         except IOError:
             pass
         self.http_session.cookies = self.cookie_jar
+
+    def get_addon(self):
+        """Returns a fresh addon instance."""
+        return Addon()
+
+    def get_setting(self, setting_id):
+        addon = self.get_addon()
+        setting = addon.getSetting(setting_id)
+        if setting == 'true':
+            return True
+        elif setting == 'false':
+            return False
+        else:
+            return setting
+
+    def get_country_code(self):
+        country_id = self.get_setting('site')
+        if country_id == '0':
+            country_code = 'se'
+        elif country_id == '1':
+            country_code = 'dk'
+        elif country_id == '2':
+            country_code = 'no'
+        elif country_id == '3':
+            country_code = 'fi'
+        elif country_id == '4':
+            country_code = 'pl'
+
+        return country_code
+
+    def replace_cookies(self):
+        cookie_file = os.path.join(self.addon_profile, 'cookie_file')
+        f = open(cookie_file, 'r')
+        cookies = f.read()
+
+        country_code = self.get_country_code()
+
+        pattern = re.compile('viaplay.(\w{2})', re.IGNORECASE)
+        n_country_code = pattern.search(cookies).group(1)
+
+        if n_country_code != country_code:
+            cookies = re.sub('viaplay.{cc}'.format(cc=n_country_code), 'viaplay.{cc}'.format(cc=country_code), cookies)
+            w = open(cookie_file, 'w')
+            w.write(cookies)
+            w.close()
 
     class ViaplayError(Exception):
         def __init__(self, value):
