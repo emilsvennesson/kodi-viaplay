@@ -257,7 +257,7 @@ class KodiHelper(object):
             playitem.setProperty('inputstream.adaptive.license_key',stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
             if self.get_setting('subtitles') and 'subtitles' in stream:
                 playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
-            playitem.setProperty('inputstream.adaptive.play_timeshift_buffer', 'true')
+            playitem.setProperty('inputstream.adaptive.play_timeshift_buffer', 'false')
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 
     def ia_settings(self):

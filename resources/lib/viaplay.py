@@ -211,12 +211,13 @@ class Viaplay(object):
                 # sort out _links that doesn't contain a title
                 if 'title' in data['_links'][link]:
                     title = data['_links'][link]['title']
+
                     data['_links'][link]['name'] = link  # add name key to dict
-                    if not title.islower() and title not in blacklist:
+                    if title not in blacklist:
                         pages.append(data['_links'][link])
             else:  # list (viaplay:sections for example)
                 for i in data['_links'][link]:
-                    if 'title' in i and not i['title'].islower():
+                    if 'title' in i:
                         pages.append(i)
 
         return pages

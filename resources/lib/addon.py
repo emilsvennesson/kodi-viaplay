@@ -52,6 +52,11 @@ def root():
     }
 
     for page in pages:
+        page['title'] = capitalize(page['title'])
+
+        if 'logout' in page['href']:
+            page['title'] = helper.language(30042)
+
         if page['name'] in supported_pages:
             helper.add_item(page['title'], plugin.url_for(supported_pages[page['name']], url=page['href']))
         elif 'type' in page and page['type'] in supported_pages:  # weird channels listing fix on some subscriptions
@@ -240,6 +245,8 @@ def dialog():
 def ia_settings():
     helper.ia_settings()
 
+def capitalize(string):
+    return string[0].upper()+string[1:]
 
 def add_movie(movie):
     if movie['system'].get('guid'):
