@@ -377,45 +377,55 @@ def add_tv_event(event):
     now = datetime.now()
     date_today = now.date()
     start_time_obj = helper.vp.parse_datetime(event['epg']['startTime'], localize=True)
+    end_time_obj = helper.vp.parse_datetime(event['epg']['endTime'], localize=True)
     event_status = helper.vp.get_event_status(event)
 
-    # hide non-available catchup items
-    if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
-        return
-    if date_today == start_time_obj.date():
-        start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
-    else:
-        start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
+    status = False
 
-    if event_status != 'upcoming':
-        plugin_url = plugin.url_for(play, guid=event['system']['guid'] + '-%s' % helper.get_country_code().upper(), url=None, tve='true')
-        playable = True
-    else:
-        plugin_url = plugin.url_for(dialog, dialog_type='ok',
-                             heading=helper.language(30017),
-                             message=helper.language(30016).format(start_time).encode('utf-8'))
-        playable = False
+    if end_time_obj >= now and helper.get_setting('previous_channels'):
+        status = True
+    elif not helper.get_setting('previous_channels'):
+        status = True
 
-    details = event['content']
+    if status:
+        # hide non-available catchup items
+        if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
+            return
+        
+        if date_today == start_time_obj.date():
+            start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
+        else:
+            start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
 
-    if sys.version_info[0] > 2:
-        title = details.get('title')
-    else:
-        title = details.get('title').encode('utf-8')
+        if event_status != 'upcoming':
+            plugin_url = plugin.url_for(play, guid=event['system']['guid'] + '-%s' % helper.get_country_code().upper(), url=None, tve='true')
+            playable = True
+        else:
+            plugin_url = plugin.url_for(dialog, dialog_type='ok',
+                                 heading=helper.language(30017),
+                                 message=helper.language(30016).format(start_time).encode('utf-8'))
+            playable = False
 
-    event_info = {
-        'mediatype': 'video',
-        'title': details.get('title'),
-        'plot': details.get('synopsis'),
-        'year': details['production'].get('year'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
-    }
-    art = {
-        'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
-        'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
-    }
+        details = event['content']
 
-    helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
+        if sys.version_info[0] > 2:
+            title = details.get('title')
+        else:
+            title = details.get('title').encode('utf-8')
+
+        event_info = {
+            'mediatype': 'video',
+            'title': details.get('title'),
+            'plot': details.get('synopsis'),
+            'year': details['production'].get('year'),
+            'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
+        }
+        art = {
+            'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
+            'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
+        }
+
+        helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
 
 
 def add_art(images, content_type):

@@ -224,3 +224,7 @@ msgstr ""
 msgctxt "#30055"
 msgid "Polish"
 msgstr ""
+
+msgctxt "#30056"
+msgid "Hide previously aired Live-Tv programmes"
+msgstr ""

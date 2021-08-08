@@ -1,3 +1,6 @@
+2021.08.08 v.2.1.5
++ Added setting "Hide previously aired Live-Tv programmes" @Mariusz89B
+
 2021.08.07 v.2.1.4
 + Added watched and purchased categories for viaplay.pl @Mariusz89B
 + Fixed category error
