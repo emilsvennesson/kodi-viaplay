@@ -7,17 +7,38 @@ from datetime import datetime
 
 from resources.lib.kodihelper import KodiHelper
 
+try:
+    import urllib.request, urllib.parse, urllib.error
+    from urllib.parse import urlencode, quote_plus, quote, unquote, parse_qsl
+except ImportError:
+    import urllib
+    import urlparse
+    from urllib import urlencode, quote_plus, quote, unquote
+    from urlparse import parse_qsl
+
 import xbmc
 import xbmcgui
+import xbmcvfs
 import routing
 
 base_url = sys.argv[0]
 handle = int(sys.argv[1])
+params = dict(parse_qsl(sys.argv[2][1:]))
 helper = KodiHelper(base_url, handle)
 plugin = routing.Plugin()
 
-
 def run():
+    mode = params.get('mode', None)
+    action = params.get('action', '')
+    gen = params.get('guid', '')
+    if action == 'BUILD_M3U':
+        generate_m3u()
+    elif gen != '':
+        id = params.get('url', '')
+        tve = params.get('tve', '')
+        guid = params.get('guid', '')
+        helper.play(url=id, tve=tve, guid=guid)
+    
     try:
         plugin.run()
     except helper.vp.ViaplayError as error:
@@ -31,6 +52,56 @@ def run():
         else:
             show_error(error.value)
 
+def generate_m3u():
+    sessionid = helper.authorize()
+    if not sessionid:
+        sessionid = helper.authorize()
+
+    file_name = helper.get_setting('fname')
+    path = helper.get_setting('path')
+
+    if file_name == '' or path == '':
+        xbmcgui.Dialog().notification('Viaplay', helper.language(30062),
+                                      xbmcgui.NOTIFICATION_ERROR)
+        return
+    xbmcgui.Dialog().notification('Viaplay', helper.language(30063), xbmcgui.NOTIFICATION_INFO)
+    
+    data = '#EXTM3U\n'
+
+    country_code = helper.get_country_code()
+    country_id = helper.get_setting('site')
+    if country_id == '0':
+        chann = 'kanaler'
+    elif country_id == '1':
+        chann = 'kanaler'
+    elif country_id == '2':
+        chann = 'kanaler'
+    elif country_id == '3':
+        chann = 'kanavia'
+    elif country_id == '4':
+        chann = 'channels'
+
+    url = 'https://content.viaplay.{c1}/xdk-{c2}/{chann}'.format(c1=country_code, c2=country_code, chann=chann)
+
+    response = helper.vp.make_request(url=url, method='get')
+    channels_block = response['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:blocks']
+    channels = [x['viaplay:channel']['content']['title'] for x in channels_block]
+    guids = [x['viaplay:channel']['_embedded']['viaplay:products'][1]['system']['guid'] for x in channels_block]
+
+    for i in range(len(channels)):
+        title = channels[i] + ' ' + helper.get_country_code().upper()
+        try:
+            title = capitalize(title.replace('-poland', '').replace('-', ' '))
+        except:
+            pass
+        guid = guids[i] + '-' + helper.get_country_code().upper()
+
+        data += '#EXTINF:-1,%s\nplugin://plugin.video.viaplay/play?guid=%s&url=None&tve=true\n' % (title, guid)
+    
+    f = xbmcvfs.File(path + file_name, 'w')
+    f.write(data)
+    f.close()
+    xbmcgui.Dialog().notification('Viaplay', helper.language(30064), xbmcgui.NOTIFICATION_INFO)
 
 @plugin.route('/')
 def root():
@@ -123,7 +194,6 @@ def sport():
             continue  # hide empty collections
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
-
 
 @plugin.route('/channels')
 def channels():

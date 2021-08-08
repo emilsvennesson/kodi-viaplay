@@ -228,3 +228,35 @@ msgstr ""
 msgctxt "#30056"
 msgid "Hide previously aired Live-Tv programmes"
 msgstr ""
+
+msgctxt "#30057"
+msgid "Playlist generator"
+msgstr ""
+
+msgctxt "#30058"
+msgid "M3U playlist"
+msgstr ""
+
+msgctxt "#30059"
+msgid "Filename"
+msgstr ""
+
+msgctxt "#30060"
+msgid "Directory"
+msgstr ""
+
+msgctxt "#30061"
+msgid "Create M3U playlist"
+msgstr ""
+
+msgctxt "#30062"
+msgid "Set filename and target directory."
+msgstr ""
+
+msgctxt "#30063"
+msgid "Creating M3U playlist..."
+msgstr ""
+
+msgctxt "#30064"
+msgid "M3U playlist created"
+msgstr ""

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.1.5" name="Viaplay" provider-name="emilsvennesson">
+<addon id="plugin.video.viaplay" version="2.1.6" name="Viaplay" provider-name="emilsvennesson">
    <requires>
       <import addon="script.module.requests" version="2.9.1" />
       <import addon="script.module.iso8601" version="0.1.11" />
@@ -16,7 +16,7 @@
       <description lang="nb_NO">Se innhold fra Viaplay.</description>
       <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
 	  <description lang="pl_PL">Oglądaj treści z Viaplay.</description>
-      <news>2021.08.08 v2.1.5[CR]+ Added setting "Hide previously aired Live-Tv programmes"[CR][CR]2021.08.07 v2.1.4[CR]+ Added watched and purchased categories for viaplay.pl[CR]+ Fixed category error[CR][CR]2021.08.05 v.2.1.3[CR]+ Added viaplay.pl
+      <news>2021.08.09 v2.1.6[CR]+ Added M3U playlist generator[CR][CR]2021.08.08 v2.1.5[CR]+ Added setting "Hide previously aired Live-Tv programmes"[CR][CR]2021.08.07 v2.1.4[CR]+ Added watched and purchased categories for viaplay.pl[CR]+ Fixed category error[CR][CR]2021.08.05 v.2.1.3[CR]+ Added viaplay.pl
       </news>
       <platform>all</platform>
       <language>sv dk no fi en pl</language>

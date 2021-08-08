@@ -228,3 +228,35 @@ msgstr "Polska"
 msgctxt "#30056"
 msgid "Hide previously aired Live-Tv programmes"
 msgstr "Dölj tidigare sända Live-TV program"
+
+msgctxt "#30057"
+msgid "Playlist generator"
+msgstr "M3U generator"
+
+msgctxt "#30058"
+msgid "M3U playlist"
+msgstr "M3U spellista"
+
+msgctxt "#30059"
+msgid "Filename"
+msgstr "Filnamn"
+
+msgctxt "#30060"
+msgid "Directory"
+msgstr "Katalog"
+
+msgctxt "#30061"
+msgid "Create M3U playlist"
+msgstr "Skapa M3U spellista"
+
+msgctxt "#30062"
+msgid "Set filename and target directory."
+msgstr "Ange filnamn och målkatalog."
+
+msgctxt "#30063"
+msgid "Creating M3U playlist..."
+msgstr "Skapar M3U spellista..."
+
+msgctxt "#30064"
+msgid "M3U playlist created"
+msgstr "M3U spellista skapad"
