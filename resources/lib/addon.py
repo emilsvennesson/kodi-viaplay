@@ -20,6 +20,7 @@ import xbmc
 import xbmcgui
 import xbmcvfs
 import routing
+import re
 
 base_url = sys.argv[0]
 handle = int(sys.argv[1])
@@ -86,17 +87,24 @@ def generate_m3u():
     response = helper.vp.make_request(url=url, method='get')
     channels_block = response['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:blocks']
     channels = [x['viaplay:channel']['content']['title'] for x in channels_block]
+    images = [x['viaplay:channel']['_embedded']['viaplay:products'][0]['station']['images']['fallbackImage']['template'] for x in channels_block]
     guids = [x['viaplay:channel']['_embedded']['viaplay:products'][1]['epg']['channelGuids'][0] for x in channels_block]
-
+    
     for i in range(len(channels)):
-        title = channels[i] + ' ' + helper.get_country_code().upper()
+        image = images[i].replace('{?width,height}', '')
+
+        img = re.compile('replace-(.*?)_.*\.png')
+
         try:
-            title = capitalize(title.replace('-poland', '').replace('-', ' '))
+            title = img.search(image).group(1)
+            title = re.sub(r"(\w)([A-Z])", r"\1 \2", title)
+            title = title + ' ' + helper.get_country_code().upper()
+
         except:
-            pass
+            title = channels[i] + ' ' + helper.get_country_code().upper() 
 
         guid = guids[i]
-        data += '#EXTINF:-1,%s\nplugin://plugin.video.viaplay/play?guid=%s&url=None&tve=true\n' % (title, guid)
+        data += '#EXTINF:-1 tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="Viasat",%s\nplugin://plugin.video.viaplay/play?guid=%s&url=None&tve=true\n' % (guid, title, image, title, guid)
     
     f = xbmcvfs.File(path + file_name, 'wb')
     if sys.version_info[0] > 2:
