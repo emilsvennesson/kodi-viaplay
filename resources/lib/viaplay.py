@@ -211,8 +211,25 @@ class Viaplay(object):
     def get_stream(self, guid, pincode=None, tve='false'):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         stream = {}
+        
+        if 'ch-' in guid:
+            country_code = self.get_country_code()
+            url = 'https://epg.viaplay.{c1}/xdk-{c2}/channel/{guid}/'.format(c1=country_code, c2=country_code,guid=guid)
+            response = self.make_request(url=url, method='get')['_embedded']['viaplay:products']
+
+            for i in response:
+                start_time_obj = self.parse_datetime(i['epg']['startTime'], localize=True)
+                end_time_obj = self.parse_datetime(i['epg']['endTime'], localize=True)
+
+                now = datetime.now()
+                date_today = now.date()
+
+                if start_time_obj <= now <= end_time_obj:
+                    guid = i['system']['guid'] + '-' + country_code.upper()
+
         #url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
         url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.country
+
         params = {
             'deviceId': self.get_deviceid(),
             'deviceName': 'web',

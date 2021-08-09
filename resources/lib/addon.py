@@ -77,7 +77,7 @@ def generate_m3u():
     elif country_id == '2':
         chann = 'kanaler'
     elif country_id == '3':
-        chann = 'kanavia'
+        chann = 'channels'
     elif country_id == '4':
         chann = 'channels'
 
@@ -86,7 +86,7 @@ def generate_m3u():
     response = helper.vp.make_request(url=url, method='get')
     channels_block = response['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:blocks']
     channels = [x['viaplay:channel']['content']['title'] for x in channels_block]
-    guids = [x['viaplay:channel']['_embedded']['viaplay:products'][1]['system']['guid'] for x in channels_block]
+    guids = [x['viaplay:channel']['_embedded']['viaplay:products'][1]['epg']['channelGuids'][0] for x in channels_block]
 
     for i in range(len(channels)):
         title = channels[i] + ' ' + helper.get_country_code().upper()
@@ -94,12 +94,15 @@ def generate_m3u():
             title = capitalize(title.replace('-poland', '').replace('-', ' '))
         except:
             pass
-        guid = guids[i] + '-' + helper.get_country_code().upper()
 
+        guid = guids[i]
         data += '#EXTINF:-1,%s\nplugin://plugin.video.viaplay/play?guid=%s&url=None&tve=true\n' % (title, guid)
     
-    f = xbmcvfs.File(path + file_name, 'w')
-    f.write(data)
+    f = xbmcvfs.File(path + file_name, 'wb')
+    if sys.version_info[0] > 2:
+        f.write(data)
+    else:
+        f.write(bytearray(data, 'utf-8'))
     f.close()
     xbmcgui.Dialog().notification('Viaplay', helper.language(30064), xbmcgui.NOTIFICATION_INFO)
 
@@ -194,6 +197,7 @@ def sport():
             continue  # hide empty collections
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
+
 
 @plugin.route('/channels')
 def channels():
