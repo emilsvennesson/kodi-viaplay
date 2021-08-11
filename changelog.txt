@@ -1,4 +1,4 @@
-2021.08.09 v.2.1.7
+2021.08.11 v.2.1.7
 + Fixed M3U playlist generator @Mariusz89B
 
 2021.08.09 v.2.1.6

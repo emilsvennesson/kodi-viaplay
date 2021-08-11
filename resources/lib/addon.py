@@ -91,7 +91,7 @@ def generate_m3u():
     guids = [x['viaplay:channel']['_embedded']['viaplay:products'][1]['epg']['channelGuids'][0] for x in channels_block]
     
     for i in range(len(channels)):
-        image = images[i].replace('{?width,height}', '')
+        image = images[i].split('{')[0]
 
         img = re.compile('replace-(.*?)_.*\.png')
 
