@@ -412,7 +412,7 @@ def add_episode(episode):
     }
 
     helper.add_item(episode_info['list_title'], plugin_url, info=episode_info,
-                    art=add_art(details['images'], 'episode'), content='episodes', playable=True)
+                    art=add_art(details['images'], 'episode'), content='episodes', playable=True, episode=True)
 
 
 def add_sports_event(event):

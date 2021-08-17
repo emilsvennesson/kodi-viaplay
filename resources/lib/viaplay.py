@@ -386,6 +386,8 @@ class Viaplay(object):
 
                 if sys.version_info[0] < 3:
                     html = HTMLParser.HTMLParser()
+                else:
+                    import html
 
                 subtitle = html.unescape(sami).encode('utf-8')
                 path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))

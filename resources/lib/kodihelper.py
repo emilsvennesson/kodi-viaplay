@@ -191,7 +191,7 @@ class KodiHelper(object):
         else:
             return None
 
-    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, content=False):
+    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, content=False, episode=False):
         addon = self.get_addon()
         listitem = xbmcgui.ListItem(label=title)
 
@@ -207,11 +207,14 @@ class KodiHelper(object):
             }
             listitem.setArt(art)
         if info:
-            listitem.setInfo('video', info)
+            listitem.setInfo('Video', info)
         if content:
             xbmcplugin.setContent(self.handle, content)
 
         xbmcplugin.addDirectoryItem(self.handle, url, listitem, folder)
+
+        if episode:
+            xbmcplugin.addSortMethod(handle=self.handle, sortMethod=xbmcplugin.SORT_METHOD_EPISODE)
 
     def eod(self):
         """Tell Kodi that the end of the directory listing is reached."""
@@ -257,7 +260,6 @@ class KodiHelper(object):
             playitem.setProperty('inputstream.adaptive.license_key',stream['license_url'].replace('{widevineChallenge}', 'B{SSM}') + '|||JBlicense')
             if self.get_setting('subtitles') and 'subtitles' in stream:
                 playitem.setSubtitles(self.vp.download_subtitles(stream['subtitles'], language_to_download=self.get_sub_lang()))
-            playitem.setProperty('inputstream.adaptive.play_timeshift_buffer', 'false')
             xbmcplugin.setResolvedUrl(self.handle, True, listitem=playitem)
 
     def ia_settings(self):
