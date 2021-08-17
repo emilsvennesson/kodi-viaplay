@@ -1,3 +1,6 @@
+2021.08.17 v.2.1.8
++ Fixed html import error @Mariusz89B
+
 2021.08.11 v.2.1.7
 + Fixed M3U playlist generator @Mariusz89B
 
