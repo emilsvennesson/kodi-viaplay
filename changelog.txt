@@ -1,3 +1,6 @@
+2021.09.27 v.2.1.9
++ Fixed product categories @Mariusz89B
+
 2021.08.17 v.2.1.8
 + Fixed html import error @Mariusz89B
 

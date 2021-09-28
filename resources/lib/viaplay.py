@@ -272,6 +272,7 @@ class Viaplay(object):
         pages = []
         blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
+        
         if 'user' not in data:
             if sys.version_info[0] > 2:
                 raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
@@ -411,12 +412,16 @@ class Viaplay(object):
     def get_event_status(self, data):
         """Return whether the event/program is live/upcoming/archive."""
         now = datetime.utcnow()
-        if 'startTime' in data['epg']:
-            start_time = data['epg']['startTime']
-            end_time = data['epg']['endTime']
-        else:
-            start_time = data['epg']['start']
-            end_time = data['epg']['end']
+        try:
+            if 'startTime' in data['epg']:
+                start_time = data['epg']['startTime']
+                end_time = data['epg']['endTime']
+            else:
+                start_time = data['epg']['start']
+                end_time = data['epg']['end']
+        except:
+            start_time = str(datetime.now())
+            end_time =  str(datetime.now()) 
         start_time_obj = self.parse_datetime(start_time).replace(tzinfo=None)
         end_time_obj = self.parse_datetime(end_time).replace(tzinfo=None)
 

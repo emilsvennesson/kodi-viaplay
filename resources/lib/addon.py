@@ -183,6 +183,8 @@ def vod():
                 i['title'] = '12+'
             elif 'a6-03' in i['id']:
                 i['title'] = '16+'
+            elif 'a6-04' in i['id']:
+                i['title'] = 'Filmy'
             else:
                 i['title'] = ''
 
@@ -267,6 +269,8 @@ def list_products(url=None, search_query=None):
         elif product['type'] == 'sport':
             add_sports_event(product)
         elif product['type'] == 'tvEvent':
+            add_tv_event(product)
+        elif product['type'] == 'clip':
             add_tv_event(product)
         else:
             helper.log('product type: {0} is not (yet) supported.'.format(product['type']))
@@ -458,8 +462,19 @@ def add_sports_event(event):
 def add_tv_event(event):
     now = datetime.now()
     date_today = now.date()
-    start_time_obj = helper.vp.parse_datetime(event['epg']['startTime'], localize=True)
-    end_time_obj = helper.vp.parse_datetime(event['epg']['endTime'], localize=True)
+    is_time = True
+
+    try:
+        start_time_obj = helper.vp.parse_datetime(event['epg']['startTime'], localize=True)
+    except:
+        start_time_obj = helper.vp.parse_datetime(str(datetime.now()), localize=True)
+        is_time = False
+    try:
+        end_time_obj = helper.vp.parse_datetime(event['epg']['endTime'], localize=True)
+    except:
+        end_time_obj =  helper.vp.parse_datetime(str(datetime.now()), localize=True)
+        is_time = False
+
     event_status = helper.vp.get_event_status(event)
 
     status = False
@@ -471,13 +486,15 @@ def add_tv_event(event):
 
     if status:
         # hide non-available catchup items
-        if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
-            return
-        
-        if date_today == start_time_obj.date():
-            start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
-        else:
-            start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
+        start_time = str(datetime.now())[:-16]
+        if is_time:
+            if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
+                return
+            
+            if date_today == start_time_obj.date():
+                start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
+            else:
+                start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
 
         if event_status != 'upcoming':
             plugin_url = plugin.url_for(play, guid=event['system']['guid'] + '-%s' % helper.get_country_code().upper(), url=None, tve='true')
