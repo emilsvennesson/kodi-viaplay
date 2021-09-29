@@ -257,12 +257,16 @@ class Viaplay(object):
             self.log('Failed to retrieve stream URL.')
             return False
 
+        subs_list = []
+
         stream['mpd_url'] = mpd_url
         stream['license_url'] = data['_links']['viaplay:license']['href']
         stream['release_pid'] = data['_links']['viaplay:license']['releasePid']
         if 'viaplay:sami' in data['_links']:
             #stream['subtitles'] = [x['href'] for x in data['_links']['viaplay:sami']]
-            stream['subtitles'] = data['_links']['viaplay:sami']
+            for subs in data['_links']['viaplay:sami']:
+                subs_list.append(subs['href'])
+                stream['subtitles'] = subs_list
 
         return stream
 
@@ -348,53 +352,51 @@ class Viaplay(object):
         data = self.make_request(url=url, method='get')
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'season-list']
 
-    def download_subtitles(self, suburls, language_to_download=None):
+    def download_subtitles(self, suburls):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
         Return a list of the path to the downloaded subtitles."""
         paths = []
         lookup_table_replace = {}
 
         for url in suburls:
-            lang_pattern = re.search(r'[_]([a-z]+)', str(url['href']))
+            lang_pattern = re.search(r'[_]([a-z]+)', str(url))
             if lang_pattern:
                 sub_lang = lang_pattern.group(1)
             else:
                 sub_lang = 'unknown'
                 self.log('Failed to identify subtitle language.')
 
-            if sys.version_info[0] < 3:
-                if sub_lang == 'pl':
-                    lookup_table_replace = {
-                        '&aogon;': 'ą', '&Aogon;': 'Ą',
-                        '&cacute;': 'ć', '&Cacute;': 'Ć',
-                        '&eogon;': 'ę', '&Eogon;': 'Ę',
-                        '&lstrok;': 'ł', '&Lstrok;': 'Ł',
-                        '&nacute;': 'ń', '&Nacute;': 'Ń',
-                        '&sacute;': 'ś', '&Sacute;': 'Ś',
-                        '&zacute;': 'ź', '&Zacute;': 'Ź',
-                        '&zdot;': 'ż', '&Zdot;': 'Ż'
-                    }
-
-            if language_to_download and sub_lang not in language_to_download:
-                continue
-            else:
-                sami = self.make_request(url=url['href'], method='get').decode('utf-8', 'ignore').strip()
-                try:
-                    for k, v in lookup_table_replace.items():
-                        sami = sami.replace(k, v.decode('utf-8'))
-                except:
-                    pass
-
+            sami = self.make_request(url=url, method='get').decode('utf-8', 'ignore').strip()
+            
+            try:
                 if sys.version_info[0] < 3:
-                    html = HTMLParser.HTMLParser()
-                else:
-                    import html
+                    if sub_lang == 'pl':
+                        lookup_table_replace = {
+                            '&aogon;': 'ą', '&Aogon;': 'Ą',
+                            '&cacute;': 'ć', '&Cacute;': 'Ć',
+                            '&eogon;': 'ę', '&Eogon;': 'Ę',
+                            '&lstrok;': 'ł', '&Lstrok;': 'Ł',
+                            '&nacute;': 'ń', '&Nacute;': 'Ń',
+                            '&sacute;': 'ś', '&Sacute;': 'Ś',
+                            '&zacute;': 'ź', '&Zacute;': 'Ź',
+                            '&zdot;': 'ż', '&Zdot;': 'Ż'
+                        }
 
-                subtitle = html.unescape(sami).encode('utf-8')
-                path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
-                with open(path, 'wb') as subfile:
-                    subfile.write(subtitle)
-                paths.append(path)
+                for k, v in lookup_table_replace.items():
+                    sami = sami.replace(k, v.decode('utf-8'))
+            except:
+                pass
+
+            if sys.version_info[0] < 3:
+                html = HTMLParser.HTMLParser()
+            else:
+                import html
+
+            subtitle = html.unescape(sami).encode('utf-8')
+            path = os.path.join(self.tempdir, '{0}.sami'.format(sub_lang))
+            with open(path, 'wb') as subfile:
+                subfile.write(subtitle)
+            paths.append(path)
 
         return paths
 
