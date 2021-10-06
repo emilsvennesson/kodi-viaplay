@@ -271,7 +271,7 @@ def list_products(url=None, search_query=None):
         elif product['type'] == 'tvEvent':
             add_tv_event(product)
         elif product['type'] == 'clip':
-            add_tv_event(product)
+            add_event(product)
         else:
             helper.log('product type: {0} is not (yet) supported.'.format(product['type']))
             return False
@@ -462,18 +462,9 @@ def add_sports_event(event):
 def add_tv_event(event):
     now = datetime.now()
     date_today = now.date()
-    is_time = True
 
-    try:
-        start_time_obj = helper.vp.parse_datetime(event['epg']['startTime'], localize=True)
-    except:
-        start_time_obj = helper.vp.parse_datetime(str(datetime.now()), localize=True)
-        is_time = False
-    try:
-        end_time_obj = helper.vp.parse_datetime(event['epg']['endTime'], localize=True)
-    except:
-        end_time_obj =  helper.vp.parse_datetime(str(datetime.now()), localize=True)
-        is_time = False
+    start_time_obj = helper.vp.parse_datetime(event['epg']['startTime'], localize=True)
+    end_time_obj = helper.vp.parse_datetime(event['epg']['endTime'], localize=True)
 
     event_status = helper.vp.get_event_status(event)
 
@@ -487,14 +478,13 @@ def add_tv_event(event):
     if status:
         # hide non-available catchup items
         start_time = str(datetime.now())[:-16]
-        if is_time:
-            if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
-                return
-            
-            if date_today == start_time_obj.date():
-                start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
-            else:
-                start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
+        if now > helper.vp.parse_datetime(event['system']['catchupAvailability']['end'], localize=True):
+            return
+
+        if date_today == start_time_obj.date():
+            start_time = '{0} {1}'.format(helper.language(30027), start_time_obj.strftime('%H:%M'))
+        else:
+            start_time = start_time_obj.strftime('%Y-%m-%d %H:%M')
 
         if event_status != 'upcoming':
             plugin_url = plugin.url_for(play, guid=event['system']['guid'] + '-%s' % helper.get_country_code().upper(), url=None, tve='true')
@@ -519,6 +509,7 @@ def add_tv_event(event):
             'year': details['production'].get('year'),
             'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
         }
+
         art = {
             'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
             'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
@@ -526,6 +517,30 @@ def add_tv_event(event):
 
         helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
 
+def add_event(event):
+    plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
+    
+    details = event['content']
+
+    if sys.version_info[0] > 2:
+        title = details.get('title')
+    else:
+        title = details.get('title').encode('utf-8')
+
+    event_info = {
+            'mediatype': 'video',
+            'title': details.get('title'),
+            'plot': details.get('synopsis'),
+            'year': details['production'].get('year'),
+            'list_title': '{0}'.format(title)
+        }
+
+    art = {
+            'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
+            'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
+        }
+
+    helper.add_item(event_info['list_title'], plugin_url, playable=True, info=event_info, art=art, content='episodes')
 
 def add_art(images, content_type):
     artwork = {}
