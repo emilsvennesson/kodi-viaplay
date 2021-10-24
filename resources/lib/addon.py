@@ -347,11 +347,15 @@ def add_movie(movie):
 
     plugin_url = plugin.url_for(play, guid=guid, url=url, tve='false')
     details = movie['content']
+    try:
+        plotx = details.get('synopsis')
+    except:
+        plotx = ''
 
     movie_info = {
         'mediatype': 'movie',
         'title': details['title'],
-        'plot': details.get('synopsis'),
+        'plot': plotx,
         'genre': ', '.join([x['title'] for x in movie['_links']['viaplay:genres']]),
         'year': details['production'].get('year'),
         'duration': int(details['duration'].get('milliseconds')) // 1000 if 'duration' in details else None,
@@ -445,11 +449,15 @@ def add_sports_event(event):
         title = details.get('title')
     else:
         title = details.get('title').encode('utf-8')
+    try:
+        plotx = details.get('synopsis')
+    except:
+        plotx = ''
 
     event_info = {
         'mediatype': 'video',
         'title': details.get('title'),
-        'plot': details['synopsis'],
+        'plot': plotx,
         'year': int(details['production'].get('year')),
         'genre': details['format'].get('title'),
         'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)

@@ -1,5 +1,8 @@
-2021.09.29 v.2.2.0
-+ Fixed subtitles @Mariusz89B
+2021.10.24 v.2.2.2
++ Fixed plot @mbebe
+
+2021.10.04 v.2.2.1
++ Fixed category sport matches abbreviations
 
 2021.09.27 v.2.1.9
 + Fixed product categories @Mariusz89B
