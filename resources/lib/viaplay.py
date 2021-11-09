@@ -23,6 +23,7 @@ import iso8601
 import requests
 import xbmc
 import xbmcvfs
+import xbmcgui
 from xbmcaddon import Addon
 
 
@@ -151,6 +152,9 @@ class Viaplay(object):
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
 
+        if b'MissingVideoError' in req.content:
+            xbmcgui.Dialog().ok('Viaplay', 'Content is missing.')
+
         return self.parse_response(req.content)
 
     def parse_response(self, response):
@@ -245,6 +249,7 @@ class Viaplay(object):
             params['isTve'] = tve
 
         data = self.make_request(url=url, method='get', params=params)
+        
         if 'viaplay:media' in data['_links']:
             mpd_url = data['_links']['viaplay:media']['href']
         elif 'viaplay:fallbackMedia' in data['_links']:

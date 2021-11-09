@@ -260,3 +260,11 @@ msgstr ""
 msgctxt "#30064"
 msgid "M3U playlist created"
 msgstr ""
+
+msgctxt "#30065"
+msgid "viaplay.lt"
+msgstr ""
+
+msgctxt "#30066"
+msgid "Lithuanian"
+msgstr ""

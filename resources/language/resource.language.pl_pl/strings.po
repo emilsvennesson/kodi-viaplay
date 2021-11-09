@@ -260,3 +260,11 @@ msgstr "Tworzenie listy odtwarzania M3U..."
 msgctxt "#30064"
 msgid "M3U playlist created"
 msgstr "Utworzono listę odtwarzania M3U"
+
+msgctxt "#30065"
+msgid "viaplay.lt"
+msgstr ""
+
+msgctxt "#30066"
+msgid "Lithuanian"
+msgstr "Litewski"
