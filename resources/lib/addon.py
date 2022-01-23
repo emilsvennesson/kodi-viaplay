@@ -320,6 +320,9 @@ def sortings():
 
 @plugin.route('/play')
 def play():
+    sessionid = helper.authorize()
+    if not sessionid:
+        sessionid = helper.authorize()
     helper.play(guid=plugin.args['guid'][0], url=plugin.args['url'][0], tve=plugin.args['tve'][0])
 
 
