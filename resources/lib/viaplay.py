@@ -130,7 +130,7 @@ class Viaplay(object):
 
         return url
 
-    def make_request(self, url, method, params=None, payload=None, headers=None):
+    def make_request(self, url, method, raised=False, params=None, payload=None, headers=None):
         """Make an HTTP request. Return the response."""
         url = self.parse_url(url)
         self.log('Request URL: %s' % url)
@@ -154,18 +154,24 @@ class Viaplay(object):
 
         if b'MissingVideoError' in req.content:
             xbmcgui.Dialog().ok('Viaplay', 'Content is missing.')
-
-        return self.parse_response(req.content)
+        try:
+            return self.parse_response(req.content, url)
+        except Exception:
+            if raised:
+                raise
+            self.validate_session()
+            return self.make_request(url, method, params=params, payload=payload, headers=headers, raised=True)
 
     def parse_response(self, response):
         """Try to load JSON data into dict and raise potential errors."""
         try:
             response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
-            if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False
+            if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False         
                 if sys.version_info[0] > 2:
                     raise self.ViaplayError(response['name'])
                 else:
                     raise self.ViaplayError(response['name'].encode('utf-8'))
+
         except ValueError:  # if response is not json
             pass
 
