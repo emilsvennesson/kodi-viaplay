@@ -43,10 +43,8 @@ def run():
     try:
         plugin.run()
     except helper.vp.ViaplayError as error:
-        if sys.version_info[0] > 2:
-            missing_cookie = 'MissingSessionCookieError'
-        else:
-            missing_cookie = b'MissingSessionCookieError'
+        missing_cookie = 'MissingSessionCookieError'
+
         if error.value == missing_cookie:
             if helper.authorize():
                 plugin.run()

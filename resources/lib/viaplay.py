@@ -26,8 +26,15 @@ import xbmcvfs
 import xbmcgui
 from xbmcaddon import Addon
 
-
 class Viaplay(object):
+
+    class ViaplayError(Exception):
+        def __init__(self, value):
+            self.value = value
+
+        def __str__(self):
+            return repr(self.value)
+
     def __init__(self, settings_folder, country, debug=False):
         addon = self.get_addon()
         self.debug = debug
@@ -100,13 +107,6 @@ class Viaplay(object):
             w.write(cookies)
             w.close()
 
-    class ViaplayError(Exception):
-        def __init__(self, value):
-            self.value = value
-
-        def __str__(self):
-            return repr(self.value)
-
     def log(self, string):
         if self.debug:
             try:
@@ -130,8 +130,16 @@ class Viaplay(object):
 
         return url
 
-    def make_request(self, url, method, raised=False, params=None, payload=None, headers=None):
+    def make_request(self, url, method, params=None, payload=None, headers=None):
         """Make an HTTP request. Return the response."""
+        try:
+            return self._make_request(url, method, params=params, payload=payload, headers=headers)
+        except self.ViaplayError:
+            self.validate_session()
+            return self._make_request(url, method, params=params, payload=payload, headers=headers)
+
+    def _make_request(self, url, method, params=None, payload=None, headers=None):
+        """Helper. Make an HTTP request. Return the response."""
         url = self.parse_url(url)
         self.log('Request URL: %s' % url)
         self.log('Method: %s' % method)
@@ -152,25 +160,14 @@ class Viaplay(object):
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
 
-        if b'MissingVideoError' in req.content:
-            xbmcgui.Dialog().ok('Viaplay', 'Content is missing.')
-        try:
-            return self.parse_response(req.content, url)
-        except Exception:
-            if raised:
-                raise
-            self.validate_session()
-            return self.make_request(url, method, params=params, payload=payload, headers=headers, raised=True)
+        return self.parse_response(req.content)
 
     def parse_response(self, response):
         """Try to load JSON data into dict and raise potential errors."""
         try:
             response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
-            if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False         
-                if sys.version_info[0] > 2:
-                    raise self.ViaplayError(response['name'])
-                else:
-                    raise self.ViaplayError(response['name'].encode('utf-8'))
+            if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False
+                raise self.ViaplayError(response['name'])
 
         except ValueError:  # if response is not json
             pass
@@ -196,7 +193,7 @@ class Viaplay(object):
             'userCode': activation_data['userCode']
         }
 
-        self.make_request(url=url, method='get', params=params)
+        self._make_request(url=url, method='get', params=params)
         self.validate_session()  # we need this to validate the new cookies
         return True
 
@@ -206,7 +203,7 @@ class Viaplay(object):
         params = {
             'deviceKey': self.device_key
         }
-        self.make_request(url=url, method='get', params=params)
+        self._make_request(url=url, method='get', params=params)
         return True
 
     def log_out(self):
@@ -221,7 +218,7 @@ class Viaplay(object):
     def get_stream(self, guid, pincode=None, tve='false'):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         stream = {}
-        
+
         if 'ch-' in guid:
             country_code = self.get_country_code()
             url = 'https://epg.viaplay.{c1}/xdk-{c2}/channel/{guid}/'.format(c1=country_code, c2=country_code,guid=guid)
@@ -287,12 +284,9 @@ class Viaplay(object):
         pages = []
         blacklist = ['byGuid']
         data = self.make_request(url=self.base_url, method='get')
-        
+
         if 'user' not in data:
-            if sys.version_info[0] > 2:
-                raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
-            else:
-                raise self.ViaplayError(b'MissingSessionCookieError')  # raise error if user is not logged in
+            raise self.ViaplayError('MissingSessionCookieError')  # raise error if user is not logged in
 
         for link in data['_links']:
             if isinstance(data['_links'][link], dict):
@@ -378,7 +372,7 @@ class Viaplay(object):
                 self.log('Failed to identify subtitle language.')
 
             sami = self.make_request(url=url, method='get').decode('utf-8', 'ignore').strip()
-            
+
             try:
                 if sys.version_info[0] < 3:
                     if sub_lang == 'pl':

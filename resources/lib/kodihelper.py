@@ -86,6 +86,8 @@ class KodiHelper(object):
                 return ret
             else:
                 return None
+        elif dialog_type == 'notification':
+            dialog.notification(heading, message)
 
     def log_out(self):
         confirm = self.dialog('yesno', self.language(30042), self.language(30043))
@@ -99,12 +101,8 @@ class KodiHelper(object):
             self.vp.validate_session()
             return True
         except self.vp.ViaplayError as error:
-            if sys.version_info[0] > 2:
-                cookie_error = 'MissingSessionCookieError'
-                login_error = 'PersistentLoginError'
-            else:
-                cookie_error = b'MissingSessionCookieError'
-                login_error = b'PersistentLoginError'
+            cookie_error = 'MissingSessionCookieError'
+            login_error = 'PersistentLoginError'
 
             if not error.value == login_error or error.value == cookie_error:
                 raise
@@ -129,12 +127,8 @@ class KodiHelper(object):
                 return True
             except self.vp.ViaplayError as error:
                 # raise all non-pending authorization errors
-                if sys.version_info[0] > 2:
-                    auth_error = 'DeviceAuthorizationPendingError'
-                    dev_error = 'DeviceAuthorizationNotFound'
-                else:
-                    auth_error = b'DeviceAuthorizationPendingError'
-                    dev_error = b'DeviceAuthorizationNotFound'
+                auth_error = 'DeviceAuthorizationPendingError'
+                dev_error = 'DeviceAuthorizationNotFound'
 
                 if error.value == auth_error:
                     secs += activation_data['interval']
@@ -210,18 +204,26 @@ class KodiHelper(object):
     def play(self, guid=None, url=None, pincode=None, tve='false'):
         if url and url != 'None':
             guid = self.vp.get_products(url)['products'][0]['system']['guid']
+        
         try:
             stream = self.vp.get_stream(guid, pincode=pincode, tve=tve)
+        
         except self.vp.ViaplayError as error:
-            if sys.version_info[0] > 2:
-                parent_error = 'ParentalGuidancePinChallengeNeededError'
-            else:
-                parent_error = b'ParentalGuidancePinChallengeNeededError'
+            if error.value == 'MissingVideoError':
+                message = 'Content is missing'
+                self.dialog(dialog_type='notification', heading=self.language(30017), message=message)
+                return
 
-            if error.value == parent_error:
+            elif error.value == 'AnonymousProxyError':
+                message = 'This content is not available via an anonymous proxy'
+                self.dialog(dialog_type='notification', heading=self.language(30017), message=message)
+                return
+
+            elif error.value == 'ParentalGuidancePinChallengeNeededError':
                 self.authorize()
                 return
-            if error.value == parent_error:
+
+            if error.value == 'ParentalGuidancePinChallengeNeededError':
                 if pincode:
                     self.dialog(dialog_type='ok', heading=self.language(30033), message=self.language(30034))
                 else:
