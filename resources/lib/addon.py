@@ -206,12 +206,13 @@ def vod():
         except:
             pass
 
-    ordered_lst = ""
+    if add_lst:
+        ordered_lst = ""
 
-    for url in add_lst:
-        ordered_lst += url
+        for url in add_lst:
+            ordered_lst += url
 
-    helper.add_item('Filmy', plugin.url_for(list_products, url=ordered_lst))
+        helper.add_item('Filmy', plugin.url_for(list_products, url=ordered_lst))
 
     helper.eod()
 
