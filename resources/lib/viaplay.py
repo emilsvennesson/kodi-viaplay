@@ -24,6 +24,7 @@ import requests
 import xbmc
 import xbmcvfs
 import xbmcgui
+import xbmcplugin
 from xbmcaddon import Addon
 
 class Viaplay(object):
@@ -212,8 +213,18 @@ class Viaplay(object):
         params = {
             'deviceKey': self.device_key
         }
-        self.make_request(url=url, method='get', params=params)
-        return True
+
+        res = self.make_request(url=url, method='get', params=params)
+        if res:
+            cookie_file = os.path.join(self.settings_folder, 'cookie_file')
+            if os.path.exists(cookie_file):
+                os.remove(cookie_file)
+
+            xbmc.executebuiltin('Container.Update')
+
+            xbmc.executebuiltin("Dialog.Close(all, true)")
+            xbmc.executebuiltin("ActivateWindow(Home)")
+
 
     def get_stream(self, guid, pincode=None, tve='false'):
         """Return a dict with the stream URL:s and available subtitle URL:s."""

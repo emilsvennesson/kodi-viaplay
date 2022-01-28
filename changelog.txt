@@ -1,3 +1,15 @@
+2022.01.28 v.2.2.7
++ Fixed logout @Mariusz89B
+
+2022.01.27 v.2.2.6
++ Fixed login error @Mariusz89B
+
+2022.01.25 v.2.2.5
++ Fixes @Mariusz89B
+
+2022.01.23 v.2.2.4
++ Fixed external authorization @rysson @notoco
+
 2021.11.09 v.2.2.3
 + Added viaplay.lt @Mariusz89B
 

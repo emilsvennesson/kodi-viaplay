@@ -93,21 +93,20 @@ class KodiHelper(object):
         confirm = self.dialog('yesno', self.language(30042), self.language(30043))
         if confirm:
             self.vp.log_out()
-            # send Kodi back to home screen
-            xbmc.executebuiltin("Action(Back,%s)" % xbmcgui.getCurrentWindowId())
 
     def authorize(self):
-        try:
-            self.vp.validate_session()
-            return True
-        except self.vp.ViaplayError as error:
-            cookie_error = 'MissingSessionCookieError'
-            login_error = 'PersistentLoginError'
+        if xbmc.getCondVisibility('!Window.IsVisible(Home)'):
+            try:
+                self.vp.validate_session()
+                return True
+            except self.vp.ViaplayError as error:
+                cookie_error = 'MissingSessionCookieError'
+                login_error = 'PersistentLoginError'
 
-            if not error.value == login_error or error.value == cookie_error:
-                raise
-            else:
-                return self.device_registration()
+                if not error.value == login_error or error.value == cookie_error:
+                    raise
+                else:
+                    return self.device_registration()
 
     def device_registration(self):
         """Presents a dialog with information on how to activate the device.
@@ -199,7 +198,7 @@ class KodiHelper(object):
 
     def eod(self):
         """Tell Kodi that the end of the directory listing is reached."""
-        xbmcplugin.endOfDirectory(self.handle)
+        xbmcplugin.endOfDirectory(self.handle, cacheToDisc=False)
 
     def play(self, guid=None, url=None, pincode=None, tve='false'):
         if url and url != 'None':

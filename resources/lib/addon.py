@@ -31,9 +31,11 @@ plugin = routing.Plugin()
 def run():
     mode = params.get('mode', None)
     action = params.get('action', '')
-    gen = params.get('guid', '')
+    gen = params.get('guid', '')    
+
     if action == 'BUILD_M3U':
         generate_m3u()
+
     elif gen != '':
         id = params.get('url', '')
         tve = params.get('tve', '')
@@ -166,8 +168,14 @@ def search():
 @plugin.route('/vod')
 def vod():
     """List categories and collections from the VOD pages (movies, series, kids, store)."""
+    from itertools import groupby, chain
+    from operator import itemgetter
+
     helper.add_item(helper.language(30041), plugin.url_for(categories, url=plugin.args['url'][0]))
     collections = helper.vp.get_collections(plugin.args['url'][0])
+
+    add_lst = []
+
     for i in collections:
         if i['type'] == 'list-featurebox':  # skip feature box for now
             continue
@@ -182,11 +190,29 @@ def vod():
             elif 'a6-03' in i['id']:
                 i['title'] = '16+'
             elif 'a6-04' in i['id']:
-                i['title'] = 'Filmy'
+                add_lst.append(i['_links']['self']['href'])
+                i = None
+            elif 'cfed1737-7efb-484c-aca9-a851901a6-05' in i['id']:
+                add_lst.append(i['_links']['self']['href'])
+                i = None
+            elif 'cfed1737-7efb-484c-aca9-a851901a6-06' in i['id']:
+                add_lst.append(i['_links']['self']['href'])
+                i = None
             else:
                 i['title'] = ''
 
-        helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
+        try:
+            helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
+        except:
+            pass
+
+    ordered_lst = ""
+
+    for url in add_lst:
+        ordered_lst += url
+
+    helper.add_item('Filmy', plugin.url_for(list_products, url=ordered_lst))
+
     helper.eod()
 
 
@@ -247,9 +273,6 @@ def log_out():
     confirm = helper.dialog('yesno', helper.language(30042), helper.language(30043))
     if confirm:
         helper.vp.log_out()
-        # send Kodi back to home screen
-        xbmc.executebuiltin('XBMC.Container.Update(path, replace)')
-        xbmc.executebuiltin('XBMC.ActivateWindow(Home)')
 
 
 @plugin.route('/list_products')
@@ -590,27 +613,18 @@ def coloring(text, meaning):
 
 
 def show_error(error):
-    if sys.version_info[0] > 2:
-        if error == 'UserNotAuthorizedForContentError':
-            message = helper.language(30020)
-        elif error == 'PurchaseConfirmationRequiredError':
-            message = helper.language(30021)
-        elif error == 'UserNotAuthorizedRegionBlockedError':
-            message = helper.language(30022)
-        elif error == 'ConcurrentStreamsLimitReachedError':
-            message = helper.language(30050)
-        else:
-            message = error
+    if error == 'UserNotAuthorizedForContentError':
+        message = helper.language(30020)
+    elif error == 'PurchaseConfirmationRequiredError':
+        message = helper.language(30021)
+    elif error == 'UserNotAuthorizedRegionBlockedError':
+        message = helper.language(30022)
+    elif error == 'ConcurrentStreamsLimitReachedError':
+        message = helper.language(30050)
+    elif error == 'PersistentLoginError':
+        message = error
     else:
-        if error == b'UserNotAuthorizedForContentError':
-            message = helper.language(30020)
-        elif error == b'PurchaseConfirmationRequiredError':
-            message = helper.language(30021)
-        elif error == b'UserNotAuthorizedRegionBlockedError':
-            message = helper.language(30022)
-        elif error == b'ConcurrentStreamsLimitReachedError':
-            message = helper.language(30050)
-        else:
-            message = error
+        message = error
+
 
     helper.dialog(dialog_type='ok', heading=helper.language(30017), message=message)
