@@ -319,6 +319,7 @@ class Viaplay(object):
         """Return all available collections."""
         data = self.make_request(url=url, method='get')
         # return all blocks (collections) with 'list' in type
+
         return [x for x in data['_embedded']['viaplay:blocks'] if 'list' in x['type'].lower()]
 
     def get_products(self, url, filter_event=False, search_query=None):
@@ -340,6 +341,7 @@ class Viaplay(object):
         else:
             # try to collect all products found in viaplay:blocks
             products = [p for x in data['_embedded']['viaplay:blocks'] if 'viaplay:products' in x['_embedded'] for p in x['_embedded']['viaplay:products']]
+
 
         if filter_event:
             # filter out and only return products with event_status in filter_event
@@ -463,6 +465,7 @@ class Viaplay(object):
                     break
         elif data['type'] == 'product':
             data = data['_embedded']['viaplay:product']
+
         if 'next' in data['_links']:
             next_page_url = data['_links']['next']['href']
             return next_page_url

@@ -168,43 +168,28 @@ def search():
 @plugin.route('/vod')
 def vod():
     """List categories and collections from the VOD pages (movies, series, kids, store)."""
-    from itertools import groupby, chain
-    from operator import itemgetter
-
     helper.add_item(helper.language(30041), plugin.url_for(categories, url=plugin.args['url'][0]))
-    collections = helper.vp.get_collections(plugin.args['url'][0])
-
-    add_lst = []
+    collections = helper.vp.get_collections(plugin.args['url'][0])  
 
     for i in collections:
         if i['type'] == 'list-featurebox':  # skip feature box for now
             continue
-            
+
         if i['title'] == '':
-            if 'a6-00' in i['id']:
-                i['title'] = '3+'
-            elif 'a6-01' in i['id']:
-                i['title'] = '7+'
-            elif 'a6-02' in i['id']:
-                i['title'] = '12+'
-            elif 'a6-03' in i['id']:
-                i['title'] = '16+'
-            elif 'a6-04' in i['id']:
-                add_lst.append(i['_links']['self']['href'])
-                i = None
-            elif 'cfed1737-7efb-484c-aca9-a851901a6-05' in i['id']:
-                add_lst.append(i['_links']['self']['href'])
-                i = None
-            elif 'cfed1737-7efb-484c-aca9-a851901a6-06' in i['id']:
-                add_lst.append(i['_links']['self']['href'])
-                i = None
-            else:
-                i['title'] = ''
+            i = None
 
         try:
             helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
         except:
             pass
+
+    """
+    add_lst = []
+
+    for i in collections:
+        if 'a6-01' in i['id'] or 'a6-00' in i['id']:
+            add_lst.append(i['_links']['self']['href'])
+            add = False
 
     if add_lst:
         ordered_lst = ""
@@ -212,7 +197,28 @@ def vod():
         for url in add_lst:
             ordered_lst += url
 
-        helper.add_item('Filmy', plugin.url_for(list_products, url=ordered_lst))
+        helper.add_item('Seriale', plugin.url_for(list_products, url=ordered_lst))
+
+
+    for i in collections:
+        add = True
+
+        if i['type'] == 'list-featurebox':  # skip feature box for now
+            continue
+
+        if i['title'] == '':
+            for x in i['_embedded']['viaplay:products']:
+                if x['type'] != 'series':
+                    title = x['content']['title']
+                    url = x['_links']['self']['href']
+                    helper.add_item(title, plugin.url_for(list_products, url=url))
+                    add = False        
+                else:
+                    add = False 
+
+        if add:
+            helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
+        """
 
     helper.eod()
 
