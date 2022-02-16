@@ -1,4 +1,10 @@
-2022.01.28 v.2.2.7
+2022.02.16 v.2.2.9
++ Sport category fix  @Mariusz89B
+
+2022.01.28 v.2.2.8
++ Kids category updates @Mariusz89B
+
+2022.01.27 v.2.2.7
 + Fixed logout @Mariusz89B
 
 2022.01.27 v.2.2.6

@@ -234,7 +234,7 @@ def sport():
             helper.add_item(i['_links']['viaplay:seeTableau']['title'], plugin_url)
             schedule_added = True
 
-        if i['totalProductCount'] < 1:
+        if i.get('totalProductCount', 0) < 1:
             continue  # hide empty collections
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
