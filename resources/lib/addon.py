@@ -19,14 +19,18 @@ except ImportError:
 import xbmc
 import xbmcgui
 import xbmcvfs
+import xbmcaddon
 import routing
 import re
+import os
 
 base_url = sys.argv[0]
 handle = int(sys.argv[1])
 params = dict(parse_qsl(sys.argv[2][1:]))
 helper = KodiHelper(base_url, handle)
 plugin = routing.Plugin()
+
+profile_path = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 
 def run():
     mode = params.get('mode', None)
@@ -160,9 +164,57 @@ def start():
 
 @plugin.route('/search')
 def search():
-    query = helper.get_user_input(helper.language(30015))
-    if query:
-        list_products(plugin.args['url'][0], search_query=query)
+    file_name = os.path.join(profile_path, 'title_search.list')
+    f = xbmcvfs.File(file_name, "rb")
+    searches = sorted(f.read().splitlines())
+    f.close()
+
+    actions = ["New search", "Remove search"] + searches
+
+    action = helper.dialog(dialog_type='select', heading="Program search", options=actions)
+
+    if action == -1:
+        return
+    elif action == 0:
+        pass
+    elif action == 1:
+        which = helper.dialog(dialog_type='multiselect', heading="Remove search", options=searches)
+        if which is None:
+            return
+        else:
+            for item in reversed(which):
+                del searches[item]
+                
+            f = xbmcvfs.File(file_name, "wb")
+            if sys.version_info[0] < 3:
+                searches = [x.decode('utf-8') for x in searches]
+            f.write(bytearray('\n'.join(searches), 'utf-8'))
+            f.close()
+            return
+    else:
+        if searches:
+            title = searches[action - 2]
+
+    if action == 0:
+        search = helper.get_user_input(helper.language(30015))
+
+    else:
+        if sys.version_info[0] > 2:
+            search = title
+        else:
+            search = title.encode('utf-8')
+    
+    if not search:
+        return
+    searches = (set([search] + searches))
+    f = xbmcvfs.File(file_name, "wb")
+    if sys.version_info[0] < 3:
+        searches = [x.decode('utf-8') for x in searches]
+    f.write(bytearray('\n'.join(searches), 'utf-8'))
+    f.close()
+
+    if search != '':
+        list_products(plugin.args['url'][0], search_query=search)
 
 
 @plugin.route('/vod')

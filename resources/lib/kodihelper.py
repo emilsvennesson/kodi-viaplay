@@ -86,6 +86,12 @@ class KodiHelper(object):
                 return ret
             else:
                 return None
+        elif dialog_type == 'multiselect':
+            ret = dialog.multiselect(heading, options)
+            if ret:
+                return ret
+            else:
+                return None
         elif dialog_type == 'notification':
             dialog.notification(heading, message)
 
