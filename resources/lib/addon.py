@@ -74,6 +74,7 @@ def generate_m3u():
     data = '#EXTM3U\n'
 
     country_code = helper.get_country_code()
+    tld = helper.get_tld()
     country_id = helper.get_setting('site')
     if country_id == '0':
         chann = 'kanaler'
@@ -86,7 +87,7 @@ def generate_m3u():
     elif country_id == '4':
         chann = 'channels'
 
-    url = 'https://content.viaplay.{c1}/xdk-{c2}/{chann}'.format(c1=country_code, c2=country_code, chann=chann)
+    url = 'https://content.viaplay.{c1}/xdk-{c2}/{chann}'.format(c1=tld, c2=country_code, chann=chann)
 
     response = helper.vp.make_request(url=url, method='get')
     channels_block = response['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:blocks']

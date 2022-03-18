@@ -40,6 +40,7 @@ class Viaplay(object):
         addon = self.get_addon()
         self.debug = debug
         self.country = country
+        self.tld = self.get_tld_for(country)
         self.settings_folder = settings_folder
         if sys.version_info[0] > 2:
             self.addon_path = xbmcvfs.translatePath(addon.getAddonInfo('path'))
@@ -55,8 +56,8 @@ class Viaplay(object):
         self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
         self.device_key = 'xdk-%s' % self.country
-        self.base_url = 'https://content.viaplay.{0}/{1}'.format(self.country, self.device_key)
-        self.login_api = 'https://login.viaplay.%s/api' % self.country
+        self.base_url = 'https://content.viaplay.{0}/{1}'.format(self.tld, self.device_key)
+        self.login_api = 'https://login.viaplay.%s/api' % self.tld
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
@@ -89,7 +90,19 @@ class Viaplay(object):
             country_code = 'fi'
         elif country_id == '4':
             country_code = 'pl'
+        elif country_id == '5':
+            country_code = 'lt'
+        elif country_id == '6':
+            country_code = 'nl'
 
+        return country_code
+    
+    def get_tld(self):
+        return self.get_tld_for(self.get_country_code())
+    
+    def get_tld_for(self, country_code):
+        if country_code == "nl":
+            return "com"
         return country_code
 
     def replace_cookies(self):
@@ -97,13 +110,13 @@ class Viaplay(object):
         f = open(cookie_file, 'r')
         cookies = f.read()
 
-        country_code = self.get_country_code()
+        tld = self.get_tld()
 
         pattern = re.compile('viaplay.(\w{2})', re.IGNORECASE)
-        n_country_code = pattern.search(cookies).group(1)
+        n_tld = pattern.search(cookies).group(1)
 
-        if n_country_code != country_code:
-            cookies = re.sub('viaplay.{cc}'.format(cc=n_country_code), 'viaplay.{cc}'.format(cc=country_code), cookies)
+        if n_tld != tld:
+            cookies = re.sub('viaplay.{cc}'.format(cc=n_tld), 'viaplay.{cc}'.format(cc=tld), cookies)
             w = open(cookie_file, 'w')
             w.write(cookies)
             w.close()
@@ -232,7 +245,8 @@ class Viaplay(object):
 
         if 'ch-' in guid:
             country_code = self.get_country_code()
-            url = 'https://epg.viaplay.{c1}/xdk-{c2}/channel/{guid}/'.format(c1=country_code, c2=country_code,guid=guid)
+            tld = self.get_tld()
+            url = 'https://epg.viaplay.{c1}/xdk-{c2}/channel/{guid}/'.format(c1=tld, c2=country_code,guid=guid)
             response = self.make_request(url=url, method='get')['_embedded']['viaplay:products']
 
             for i in response:
@@ -245,8 +259,8 @@ class Viaplay(object):
                 if start_time_obj <= now <= end_time_obj:
                     guid = i['system']['guid'] + '-' + country_code.upper()
 
-        #url = 'https://play.viaplay.%s/api/stream/byguid' % self.country
-        url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.country
+        #url = 'https://play.viaplay.%s/api/stream/byguid' % self.tld
+        url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.tld
 
         params = {
             'deviceId': self.get_deviceid(),
