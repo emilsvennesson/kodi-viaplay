@@ -349,6 +349,8 @@ def list_products(url=None, search_query=None):
             add_movie(product)
         elif product['type'] == 'sport':
             add_sports_event(product)
+        elif product['type'] == 'sportSeries':
+            add_sports_event(product)
         elif product['type'] == 'tvEvent':
             add_tv_event(product)
         elif product['type'] == 'clip':
@@ -510,7 +512,10 @@ def add_episode(episode):
 def add_sports_event(event):
     now = datetime.now()
     date_today = now.date()
-    event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
+    if event.get('epg'):
+        event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
+    else:
+        event_date = helper.vp.parse_datetime(event['system']['availability']['start'], localize=True)
     event_status = helper.vp.get_event_status(event)
 
     if date_today == event_date.date():
@@ -530,20 +535,31 @@ def add_sports_event(event):
     details = event['content']
 
     if sys.version_info[0] > 2:
-        title = details.get('title')
+        if details.get('title'):
+            title = details.get('title')
+        else:
+            title = details.get('series').get('title')
     else:
-        title = details.get('title').encode('utf-8')
+        if details.get('title'):
+            title = details.get('title').encode('utf-8')
+        else:
+            title = details.get('series').get('title').encode('utf-8')
     try:
         plotx = details.get('synopsis')
     except:
         plotx = ''
 
+    if details.get('format'):
+        genre = details.get('format').get('title')
+    else:
+        genre = ''
+
     event_info = {
         'mediatype': 'video',
-        'title': details.get('title'),
+        'title': title,
         'plot': plotx,
-        'year': int(details['production'].get('year')),
-        'genre': details['format'].get('title'),
+        'year': details['production'].get('year'),
+        'genre': genre,
         'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
     }
 
