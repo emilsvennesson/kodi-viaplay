@@ -350,7 +350,7 @@ def list_products(url=None, search_query=None):
         elif product['type'] == 'sport':
             add_sports_event(product)
         elif product['type'] == 'sportSeries':
-            add_sports_event(product)
+            add_sports_series(product)
         elif product['type'] == 'tvEvent':
             add_tv_event(product)
         elif product['type'] == 'clip':
@@ -369,6 +369,14 @@ def sports_schedule():
     dates = helper.vp.make_request(url=plugin.args['url'][0], method='get')['_links']['viaplay:days']
     for date in dates:
         helper.add_item(date['date'], plugin.url_for(list_products, url=date['href']))
+    helper.eod()
+
+
+@plugin.route('/sport_series')
+def sport_series():
+    categories = helper.vp.get_sport_series(plugin.args['url'][0])
+    for category in categories:
+        helper.add_item(category['content']['title'], plugin.url_for(list_products, url=category['_links']['self']['href']))
     helper.eod()
 
 
@@ -512,10 +520,7 @@ def add_episode(episode):
 def add_sports_event(event):
     now = datetime.now()
     date_today = now.date()
-    if event.get('epg'):
-        event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
-    else:
-        event_date = helper.vp.parse_datetime(event['system']['availability']['start'], localize=True)
+    event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
     event_status = helper.vp.get_event_status(event)
 
     if date_today == event_date.date():
@@ -535,15 +540,64 @@ def add_sports_event(event):
     details = event['content']
 
     if sys.version_info[0] > 2:
+        title = details.get('title')
+    else:
+        title = details.get('title').encode('utf-8')
+    try:
+        plotx = details.get('synopsis')
+    except:
+        plotx = ''
+
+    event_info = {
+        'mediatype': 'video',
+        'title': details.get('title'),
+        'plot': plotx,
+        'year': int(details['production'].get('year')),
+        'genre': details['format'].get('title'),
+        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
+    }
+
+    helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info,
+                    art=add_art(details['images'], 'sport'), content='episodes')
+
+
+def add_sports_series(event):
+    now = datetime.now()
+    date_today = now.date()
+    if event.get('epg'):
+        event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
+    else:
+        event_date = helper.vp.parse_datetime(event['system']['availability']['start'], localize=True)
+    event_status = helper.vp.get_event_status(event)
+
+    if date_today == event_date.date():
+        start_time = '{0} {1}'.format(helper.language(30027), event_date.strftime('%H:%M'))
+    else:
+        start_time = event_date.strftime('%Y-%m-%d %H:%M')
+
+    event_url = event['_links']['viaplay:page']['href']
+
+    if event_status != 'upcoming':
+        plugin_url = plugin.url_for(sport_series, url=event_url)
+        playable = False
+    else:
+        plugin_url = plugin.url_for(dialog, dialog_type='ok',
+                             heading=helper.language(30017),
+                             message=helper.language(30016).format(start_time).encode('utf-8'))
+        playable = False
+
+    details = event['content']
+
+    if sys.version_info[0] > 2:
         if details.get('title'):
             title = details.get('title')
         else:
-            title = details.get('series').get('title')
+            title = details.get('series', {}).get('title')
     else:
         if details.get('title'):
             title = details.get('title').encode('utf-8')
         else:
-            title = details.get('series').get('title').encode('utf-8')
+            title = details.get('series', {}).get('title').encode('utf-8')
     try:
         plotx = details.get('synopsis')
     except:
