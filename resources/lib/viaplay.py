@@ -384,6 +384,11 @@ class Viaplay(object):
         data = self.make_request(url=url, method='get')
         return [x for x in data['_embedded']['viaplay:blocks'] if x['type'] == 'season-list']
 
+    def get_sport_series(self, url):
+        """Return all available sport series."""
+        data = self.make_request(url=url, method='get')
+        return [p for x in data['_embedded']['viaplay:blocks'] if 'viaplay:products' in x['_embedded'] for p in x['_embedded']['viaplay:products']]
+
     def download_subtitles(self, suburls):
         """Download the SAMI subtitles, decode the HTML entities and save to temp directory.
         Return a list of the path to the downloaded subtitles."""
@@ -447,15 +452,19 @@ class Viaplay(object):
         """Return whether the event/program is live/upcoming/archive."""
         now = datetime.utcnow()
         try:
-            if 'startTime' in data['epg']:
+            if data['system']:
+                start_time = data['system']['availability']['start']
+                end_time = data['system']['availability']['end']
+            elif 'startTime' in data['epg']:
                 start_time = data['epg']['startTime']
                 end_time = data['epg']['endTime']
             else:
                 start_time = data['epg']['start']
                 end_time = data['epg']['end']
+
         except:
             start_time = str(datetime.now())
-            end_time =  str(datetime.now()) 
+            end_time = str(datetime.now())
         start_time_obj = self.parse_datetime(start_time).replace(tzinfo=None)
         end_time_obj = self.parse_datetime(end_time).replace(tzinfo=None)
 
