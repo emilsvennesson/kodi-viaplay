@@ -308,13 +308,14 @@ def channels():
             'fanart': channel_image
         }
 
-        for program in channel['_embedded']['viaplay:products']:  # get current live program
-            if helper.vp.get_event_status(program) == 'live':
-                if 'content' in program:
-                    current_program_title = coloring(program['content']['title'], 'live')
-                else:  # no broadcast
-                    current_program_title = coloring(helper.language(30049), 'no_broadcast')
-                break
+        for index, program in enumerate(channel['_embedded']['viaplay:products']):  # get current live program
+            if index > 0:
+                if helper.vp.get_event_status(program) == 'live':
+                    if program.get('content'):
+                        current_program_title = coloring(program['content']['title'], 'live')
+                    else:  # no broadcast
+                        current_program_title = coloring(helper.language(30049), 'no_broadcast')
+                    break
 
         if sys.version_info[0] > 2:
             list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
@@ -376,7 +377,9 @@ def sports_schedule():
 def sport_series():
     categories = helper.vp.get_sport_series(plugin.args['url'][0])
     for category in categories:
-        helper.add_item(category['content']['title'], plugin.url_for(list_products, url=category['_links']['self']['href']))
+        if category['content'].get('title'):
+            if category['_links'].get('self'):
+                helper.add_item(category['content']['title'], plugin.url_for(list_products, url=category['_links']['self']['href']))
     helper.eod()
 
 
