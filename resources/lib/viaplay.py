@@ -452,19 +452,20 @@ class Viaplay(object):
         """Return whether the event/program is live/upcoming/archive."""
         now = datetime.utcnow()
         try:
-            if data['system']:
+            if data.get('epg'):
+                if data['epg'].get('startTime'):
+                    start_time = data['epg']['startTime']
+                    end_time = data['epg']['endTime']
+                else:
+                    start_time = data['epg']['start']
+                    end_time = data['epg']['end']
+            else:
                 start_time = data['system']['availability']['start']
                 end_time = data['system']['availability']['end']
-            elif 'startTime' in data['epg']:
-                start_time = data['epg']['startTime']
-                end_time = data['epg']['endTime']
-            else:
-                start_time = data['epg']['start']
-                end_time = data['epg']['end']
-
         except:
             start_time = str(datetime.now())
             end_time = str(datetime.now())
+
         start_time_obj = self.parse_datetime(start_time).replace(tzinfo=None)
         end_time_obj = self.parse_datetime(end_time).replace(tzinfo=None)
 
