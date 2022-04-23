@@ -24,13 +24,22 @@ import routing
 import re
 import os
 
+if sys.version_info[0] > 2:
+    PY3 = True
+else:
+    PY3 = False
+
 base_url = sys.argv[0]
 handle = int(sys.argv[1])
 params = dict(parse_qsl(sys.argv[2][1:]))
 helper = KodiHelper(base_url, handle)
 plugin = routing.Plugin()
 
-profile_path = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
+
+if PY3:
+    profile_path = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
+else:
+    profile_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 
 def run():
     mode = params.get('mode', None)
