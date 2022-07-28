@@ -317,6 +317,8 @@ def channels():
             'fanart': channel_image
         }
 
+        current_program_title = coloring(helper.language(30049), 'no_broadcast')
+
         for index, program in enumerate(channel['_embedded']['viaplay:products']):  # get current live program
             if index > 0:
                 if helper.vp.get_event_status(program) == 'live':
