@@ -108,8 +108,8 @@ class KodiHelper(object):
         if confirm:
             self.vp.log_out()
 
-    def authorize(self):
-        if xbmc.getCondVisibility('!Window.IsVisible(Home)'):
+    def authorize(self, autologin=False):
+        if xbmc.getCondVisibility('!Window.IsVisible(Home)') or autologin:
             try:
                 self.vp.validate_session()
                 return True

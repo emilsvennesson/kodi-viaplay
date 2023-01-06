@@ -96,10 +96,10 @@ class Viaplay(object):
             country_code = 'nl'
 
         return country_code
-    
+
     def get_tld(self):
         return self.get_tld_for(self.get_country_code())
-    
+
     def get_tld_for(self, country_code):
         if country_code == "nl":
             return "com"
