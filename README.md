@@ -1,5 +1,5 @@
-[![GitHub release](https://img.shields.io/github/v/release/Mariusz89B/plugin.video.viaplay.svg)](https://github.com/Mariusz89B/plugin.video.viaplay/releases)
-[![GitHub downloads](https://img.shields.io/github/downloads/Mariusz89B/plugin.video.viaplay/total.svg)](https://github.com/Mariusz89B/plugin.video.viaplay)
+[![GitHub release](https://img.shields.io/github/v/release/Mariusz89B/kodi-viaplay.svg)](https://github.com/Mariusz89B/kodi-viaplay/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/Mariusz89B/kodi-viaplay/total.svg)](https://github.com/Mariusz89B/kodi-viaplay)
 [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-red.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![Kodi](https://img.shields.io/badge/platform-Kodi-lightgrey.svg)](https://kodi.tv/)
@@ -49,6 +49,6 @@ using the DRM Info app available in Play Store.
 This add-on is licensed under the **`GNU GENERAL PUBLIC LICENSE Version 3`** and **`MIT LICENSE`**. 
 Please see the **`LICENSE.txt`** file for details.
 
-![](https://github.com/Mariusz89B/plugin.video.viaplay/blob/main/resources/fanart.jpg?raw=true)
+![](https://github.com/Mariusz89B/kodi-viaplay/blob/master/resources/art/fanart.jpg?raw=true?raw=true)
 
 Copyright Mariusz89B © 2023
