@@ -272,3 +272,7 @@ msgstr "Litauiska"
 msgctxt "#30067"
 msgid "viaplay.com/nl"
 msgstr ""
+
+msgctxt "#30068"
+msgid "Autologin on Kodi startup"
+msgstr "Autoinloggning vid start av Kodi"

@@ -1,34 +1,116 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.3.6" name="Viaplay" provider-name="emilsvennesson, mariusz89b, heppen-dev, zuzia-dev">
-   <requires>
-      <import addon="script.module.requests" version="2.9.1" />
-      <import addon="script.module.iso8601" version="0.1.11" />
-      <import addon="script.module.inputstreamhelper" version="0.3.3" />
-      <import addon="script.module.routing" version="0.2.0" />
-   </requires>
-   <extension point="xbmc.python.pluginsource" library="default.py">
-      <provides>video</provides>
-   </extension>
-   <extension point="xbmc.service" library="login.py"/>
-   <extension point="xbmc.addon.metadata">
-      <description lang="da_DK">Se indhold fra Viaplay.</description>
-      <description lang="en_GB">Watch content from Viaplay.</description>
-      <description lang="fi_FI">Katso sisältöä Viaplay.</description>
-      <description lang="nb_NO">Se innhold fra Viaplay.</description>
-      <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
-	  <description lang="pl_PL">Oglądaj treści z Viaplay.</description>
-	  <description lang="lt_LT">Žiūrėkite turinį iš Viaplay.</description>
-      <news>2023.01.01 v2.3.6[CR]+ Added autologin on Kodi startup[CR]2022.07.28 v2.3.5[CR]+ Fixed live channels[CR]2022.04.23 v2.3.4[CR]+ Fixed py2 support[CR]2022.04.05 v2.3.3[CR]+ Fixed live tv channels and popular sports in .se @heppen-dev[CR]2022.03.27 v2.3.2[CR]+ Fixed sports series event listing @heppen-dev[CR]2022.03.24 v2.3.1[CR]+ Add NL country support[CR]+ Fixed popular sport tiles[CR]2022.02.17 v2.3.0[CR]+ Added search history function[CR][CR]2022.02.16 v2.2.9[CR]+ Sport category fix[CR][CR]2022.01.28 v2.2.8[CR]+ Kids category updates[CR][CR]2022.01.27 v2.2.7[CR]+ Fixed logout[CR][CR]2022.01.27 v2.2.6[CR]+ Fixed login error[CR][CR]2022.01.25 v2.2.5[CR]+ Fixes[CR][CR]2022.01.23 v2.2.4[CR]+ Fixed external authorization[CR][CR]2021.11.09 v2.2.3[CR]+ Added viaplay.lt[CR][CR]2021.10.24 v2.2.2[CR]+ Fixed plot[CR][CR]2021.10.06 v2.2.1[CR]+ Fixed category sport matches abbreviations[CR][CR]2021.09.29 v2.2.0[CR]+ Fixed subtitles[CR][CR]2021.09.27 v2.1.9[CR]+ Fixed product categories[CR][CR]2021.08.17 v2.1.8[CR]+ Fixed html import error[CR][CR]2021.08.11 v2.1.7[CR]+ Fixed M3U playlist generator[CR][CR]2021.08.09 v2.1.6[CR]+ Added M3U playlist generator[CR][CR]2021.08.08 v2.1.5[CR]+ Added setting "Hide previously aired Live-Tv programmes"[CR][CR]2021.08.07 v2.1.4[CR]+ Added watched and purchased categories for viaplay.pl[CR]+ Fixed category error[CR][CR]2021.08.05 v.2.1.3[CR]+ Added viaplay.pl
-      </news>
-      <platform>all</platform>
-      <language>sv dk no fi en pl lt</language>
-      <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-      <source>https://github.com/emilsvennesson/kodi-viaplay</source>
-      <forum>http://forum.kodi.tv/showthread.php?tid=286387</forum>
-      <disclaimer>This add-on requires you to have a subscription to Viaplay.[CR]This add-on is completely unofficial and is not endorsed by Viaplay in any way.</disclaimer>
-      <assets>
-         <icon>resources/art/icon.png</icon>
-         <fanart>resources/art/fanart.jpg</fanart>
-      </assets>
-   </extension>
+<addon id="plugin.video.viaplay" version="2.3.7" name="Viaplay" provider-name="emilsvennesson, mariusz89b, heppen-dev, zuzia-dev">
+  <requires>
+    <import addon="script.module.requests" version="2.9.1" />
+    <import addon="script.module.iso8601" version="0.1.11" />
+    <import addon="script.module.inputstreamhelper" version="0.3.3" />
+    <import addon="script.module.routing" version="0.2.0" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.service" library="login.py"/>
+  <extension point="xbmc.addon.metadata">
+    <description lang="da_DK">Se indhold fra Viaplay.</description>
+    <description lang="en_GB">Watch content from Viaplay.</description>
+    <description lang="fi_FI">Katso sisältöä Viaplay.</description>
+    <description lang="nb_NO">Se innhold fra Viaplay.</description>
+	<description lang="nl_NL">Bekijk inhoud van Viaplay.</description>
+    <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
+    <description lang="pl_PL">Oglądaj treści z Viaplay.</description>
+    <description lang="lt_LT">Žiūrėkite turinį iš Viaplay.</description>
+	<disclaimer lang="en_GB">This add-on is unoffical and is not endorsed or supported by any of the services provided in any way. Any trademarks used belong to their owning companies and organisations, it is also required to have a subscription to Viaplay.</disclaimer>
+	<language>da en fi nb nl sv pl lt</language>
+    <platform>all</platform>
+    <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 and MIT LICENSE.</license>
+    <source>https://github.com/Mariusz89B/plugin.video.viaplay</source>
+    <news>v2.3.7 (2023-01-10)
+- Fixes.
+
+v2.3.6 (2023-01-01)
+- Added autologin on Kodi startup.
+
+v2.3.5 (2022-07-28)
+- Fixed live channels. 
+
+v2.3.4 (2022-04-23)
+- Fixed py2 support.
+
+v2.3.3 (2022-04-05)
+- Fixed live tv channels and popular sports in .se. @heppen-dev 
+
+v2.3.2 (2022-03-27)
+- Fixed sports series event listing. @heppen-dev
+
+v2.3.1 (2022-03-24)
+- Add NL country support.
+- Fixed popular sport tiles. 
+
+v2.3.0 (2022-02-17)
+- Added search history function.
+
+v2.2.9 (2022-02-16)
+- Sport category fix. 
+
+v2.2.8 (2022-01-28)
+- Kids category updates.
+
+v2.2.7 (2022-01-27) 
+- Fixed logout. 
+
+v2.2.6 (2022-01-27)
+- Fixed login error. 
+
+v2.2.5 (2022-01-25)
+- Fixes.
+
+v2.2.4 (2022-01-23)
+- Fixed external authorization. 
+
+v2.2.3 (2021-11-09)
+- Added viaplay.lt. 
+
+v2.2.2 (2021-10-24)
+- Fixed plot. 
+
+v2.2.1 (2021-10-06)
+- Fixed category sport matches abbreviations. 
+
+v2.2.0 (2021-09-29)
+- Fixed subtitles. 
+
+v2.1.9 (2021-09-27)
+- Fixed product categories.
+
+v2.1.8 (2021-08-17 )
+- Fixed html import error. 
+
+v2.1.7 (2021-08-11)
+- Fixed M3U playlist generator. 
+
+v2.1.6 (2021-08-09)
+- Added M3U playlist generator. 
+
+v2.1.5 (2021-08-08)
+- Added setting "Hide previously aired Live-Tv programmes".
+
+v2.1.4 (2021-08-07)
+- Added watched and purchased categories for viaplay.pl
+- Fixed category error. 
+
+v.2.1.3 (2021-08-05)
+- Added viaplay.pl
+- Added Polish translation. @hevet
+- Added Swedish translation. @Mariusz89B
+    </news>
+    <assets>
+        <icon>resources/art/icon.png</icon>
+        <fanart>resources/art/fanart.jpg</fanart>
+        <banner></banner>
+        <clearlogo></clearlogo>
+        <screenshot>resources/screenshots/screenshot-01.jpg</screenshot>
+		<screenshot>resources/screenshots/screenshot-02.jpg</screenshot>
+		<screenshot>resources/screenshots/screenshot-03.jpg</screenshot>
+    </assets>
+  </extension>
 </addon>

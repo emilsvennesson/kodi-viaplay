@@ -1,6 +1,7 @@
 ﻿<settings>
   <category label="30003">
     <setting id="site" type="enum" label="30007" lvalues="30008|30009|30010|30011|30054|30065|30067" default="0"/>
+	<setting id="autologin" type="bool" label="30068" default="false"/>
     <setting id="subtitles" type="bool" label="30012" default="true"/>
     <setting id="first_run" type="bool" default="true" visible="false"/>
 	<setting type="sep" />
