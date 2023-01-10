@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.3.7" name="Viaplay" provider-name="emilsvennesson, mariusz89b, heppen-dev, zuzia-dev">
+<addon id="plugin.video.viaplay" version="2.3.8" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev, zuzia-dev">
   <requires>
     <import addon="script.module.requests" version="2.9.1" />
     <import addon="script.module.iso8601" version="0.1.11" />
@@ -24,7 +24,10 @@
     <platform>all</platform>
     <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 and MIT LICENSE.</license>
     <source>https://github.com/Mariusz89B/plugin.video.viaplay</source>
-    <news>v2.3.7 (2023-01-10)
+    <news>v2.3.8 (2023-01-10)
+- Added new Viaplay arts.
+
+v2.3.7 (2023-01-10)
 - Fixes.
 
 v2.3.6 (2023-01-01)
@@ -104,10 +107,10 @@ v.2.1.3 (2021-08-05)
 - Added Swedish translation. @Mariusz89B
     </news>
     <assets>
-        <icon>resources/art/icon.png</icon>
-        <fanart>resources/art/fanart.jpg</fanart>
-        <banner></banner>
-        <clearlogo></clearlogo>
+        <icon>icon.png</icon>
+        <fanart>resources/fanart.jpg</fanart>
+        <banner>resources/banner.jpg</banner>
+        <clearlogo>resources/clearlogo.png</clearlogo>
         <screenshot>resources/screenshots/screenshot-01.jpg</screenshot>
 		<screenshot>resources/screenshots/screenshot-02.jpg</screenshot>
 		<screenshot>resources/screenshots/screenshot-03.jpg</screenshot>
