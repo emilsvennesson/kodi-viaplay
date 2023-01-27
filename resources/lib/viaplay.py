@@ -258,9 +258,12 @@ class Viaplay(object):
 
                 if start_time_obj <= now <= end_time_obj:
                     guid = i['system']['guid'] + '-' + country_code.upper()
+            else:
+                guid = guid + '-' + self.get_country_code().upper()
 
         #url = 'https://play.viaplay.%s/api/stream/byguid' % self.tld
-        url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.tld
+        #url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.tld
+        url = 'https://play-live.viaplay.%s/api/stream/bymediaguid' % self.tld
 
         params = {
             'deviceId': self.get_deviceid(),
