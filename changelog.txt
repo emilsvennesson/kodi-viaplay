@@ -1,3 +1,6 @@
+v2.3.9 (2023-01-27)
+- Fix live.
+
 v2.3.8 (2023-01-10)
 - Added new Viaplay arts.
 
