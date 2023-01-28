@@ -258,8 +258,8 @@ class Viaplay(object):
 
                 if start_time_obj <= now <= end_time_obj:
                     guid = i['system']['guid'] + '-' + country_code.upper()
-            else:
-                guid = guid + '-' + self.get_country_code().upper()
+                else:
+                    guid = guid + '-' + country_code.upper()
 
         #url = 'https://play.viaplay.%s/api/stream/byguid' % self.tld
         #url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.tld
@@ -280,7 +280,7 @@ class Viaplay(object):
             params['isTve'] = tve
 
         data = self.make_request(url=url, method='get', params=params)
-        
+
         if 'viaplay:media' in data['_links']:
             mpd_url = data['_links']['viaplay:media']['href']
         elif 'viaplay:fallbackMedia' in data['_links']:
