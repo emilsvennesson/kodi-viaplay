@@ -49,6 +49,6 @@ using the DRM Info app available in Play Store.
 This add-on is licensed under the **`GNU GENERAL PUBLIC LICENSE Version 3`** and **`MIT LICENSE`**. 
 Please see the **`LICENSE.txt`** file for details.
 
-![](https://github.com/Mariusz89B/plugin.video.viaplay/blob/master/resources/art/fanart.jpg?raw=true?raw=true)
+![](https://github.com/Mariusz89B/plugin.video.viaplay/blob/master/resources/fanart.jpg?raw=true?raw=true)
 
 Copyright Mariusz89B © 2023
