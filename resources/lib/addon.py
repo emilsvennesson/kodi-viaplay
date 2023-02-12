@@ -663,7 +663,7 @@ def add_sports_event(event):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), content='episodes')
+                    art=add_art(details['images'], 'sport'), content='playlists')
 
 
 def add_sports_series(event):
@@ -795,19 +795,31 @@ def add_event(event):
         title = details.get('title').encode('utf-8')
 
     event_info = {
-            'mediatype': 'video',
-            'originaltitle': details.get('title'),
-            'plot': details.get('synopsis'),
-            'year': details['production'].get('year'),
-            'title': '{0}'.format(title)
-        }
+        'mediatype': 'video',
+        'originaltitle': details.get('title'),
+        'plot': details.get('synopsis'),
+        'year': details['production'].get('year'),
+        'title': '{0}'.format(title)
+    }
 
     art = {
-            'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
-            'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
-        }
+        'thumb': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None,
+        'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
+    }
 
-    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, content='episodes')
+    watched_list, duration_list = sql_watched()
+
+    properties = []
+
+    for w in watched_list:
+        if w[0] == event['system']['guid']:
+            event_info.update({'playcount': w[1], 'lastplayed': w[2]})
+
+            for d in duration_list:
+                if d[2] == w[3]:
+                    properties.append((d[0], d[1]))
+
+    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, content='episodes', properties=properties)
 
 def add_art(images, content_type):
     artwork = {}
