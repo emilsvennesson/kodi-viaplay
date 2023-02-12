@@ -239,13 +239,14 @@ class Viaplay(object):
             xbmc.executebuiltin("ActivateWindow(Home)")
 
 
-    def get_stream(self, guid, pincode=None, tve='false'):
+    def get_stream(self, guid, pincode=None, tve='false', url=''):
         """Return a dict with the stream URL:s and available subtitle URL:s."""
         stream = {}
 
+        country_code = self.get_country_code()
+        tld = self.get_tld()
+
         if 'ch-' in guid:
-            country_code = self.get_country_code()
-            tld = self.get_tld()
             url = 'https://epg.viaplay.{c1}/xdk-{c2}/channel/{guid}/'.format(c1=tld, c2=country_code,guid=guid)
             response = self.make_request(url=url, method='get')['_embedded']['viaplay:products']
 
@@ -258,19 +259,22 @@ class Viaplay(object):
 
                 if start_time_obj <= now <= end_time_obj:
                     guid = i['system']['guid'] + '-' + country_code.upper()
-                else:
-                    guid = guid + '-' + country_code.upper()
+                    url = 'https://play-live.viaplay.{tld}/api/stream/bymediaguid'.format(tld=self.tld)
 
-        #url = 'https://play.viaplay.%s/api/stream/byguid' % self.tld
-        #url = 'https://play.viaplay.%s/api/stream/bymediaguid' % self.tld
-        url = 'https://play-live.viaplay.%s/api/stream/bymediaguid' % self.tld
+        elif self.tld.upper() in guid:
+            guid = guid
+            url = 'https://play-live.viaplay.{tld}/api/stream/bymediaguid'.format(tld=self.tld)
+
+        else:
+            guid = guid
+            url = 'https://play.viaplay.{tld}/api/stream/bymediaguid'.format(tld=self.tld)
 
         params = {
             'deviceId': self.get_deviceid(),
             'deviceName': 'web',
             'deviceType': 'pc',
             'userAgent': 'Kodi',
-            'deviceKey': 'chromecast-%s' % self.country,
+            'deviceKey': 'chromecast-{cc}'.format(cc=self.country),
             #'guid': guid
             'mediaGuid': guid
         }

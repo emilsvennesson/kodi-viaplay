@@ -276,3 +276,7 @@ msgstr ""
 msgctxt "#30068"
 msgid "Autologin on Kodi startup"
 msgstr ""
+
+msgctxt "#30069"
+msgid "InputStream Adaptive"
+msgstr ""

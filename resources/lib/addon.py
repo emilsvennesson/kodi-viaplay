@@ -24,6 +24,8 @@ import routing
 import re
 import os
 
+import sqlite3
+
 if sys.version_info[0] > 2:
     PY3 = True
 else:
@@ -35,16 +37,68 @@ params = dict(parse_qsl(sys.argv[2][1:]))
 helper = KodiHelper(base_url, handle)
 plugin = routing.Plugin()
 
-
 if PY3:
     profile_path = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 else:
     profile_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 
+def sql_watched():
+    kodi_version = xbmc.getInfoLabel('System.BuildVersion')[:2]
+
+    kodi_list = [('18', '116'), ('19', '119'), ('20', '121'), ('21', '121')]
+
+    for k in kodi_list:
+        if k[0] == kodi_version:
+            version = k[1]
+
+    SOURCE_DB = 'MyVideos{v}.db'.format(v=version)
+
+    path = xbmcvfs.translatePath("special://profile/")
+
+    database_path = os.path.join(path, 'Database', SOURCE_DB)
+
+    conn = sqlite3.connect(database_path, detect_types=sqlite3.PARSE_DECLTYPES, cached_statements=2000)
+    conn.row_factory = sqlite3.Row
+
+    c = conn.cursor()
+
+    watched_list = []
+
+    c.execute('SELECT idFile, strFilename, playcount, lastPlayed FROM files')
+
+    for row in c:
+        viaplay_str = row[str('strFilename')]
+        if 'plugin://plugin.video.viaplay' in viaplay_str:
+            id = row[str('idFile')]
+            playcount = row[str('playcount')]
+            lastplayed = row[str('lastPlayed')]
+
+            kv_pairs = viaplay_str.split("?")[1].split("&")
+            viaplay_dict = {kv.split("=")[0]: kv.split("=")[1] for kv in kv_pairs}
+
+            guid = viaplay_dict['guid']
+
+            watched_list.append((guid, playcount, lastplayed, id))
+
+    duration_list = []
+
+    c.execute('SELECT idFile, TimeInSeconds, TotalTimeInSeconds FROM bookmark')
+
+    for row in c:
+        id = row[str('idFile')]
+        time = row[str('TimeInSeconds')]
+        total = row[str('TotalTimeInSeconds')]
+
+        duration_list.append((time, total, id))
+
+    conn.close()
+
+    return watched_list, duration_list
+
 def run():
     mode = params.get('mode', None)
     action = params.get('action', '')
-    gen = params.get('guid', '')    
+    gen = params.get('guid', '')
 
     if action == 'BUILD_M3U':
         generate_m3u()
@@ -54,7 +108,7 @@ def run():
         tve = params.get('tve', '')
         guid = params.get('guid', '')
         helper.play(url=id, tve=tve, guid=guid)
-    
+
     try:
         plugin.run()
     except helper.vp.ViaplayError as error:
@@ -79,7 +133,7 @@ def generate_m3u():
                                       xbmcgui.NOTIFICATION_ERROR)
         return
     xbmcgui.Dialog().notification('Viaplay', helper.language(30063), xbmcgui.NOTIFICATION_INFO)
-    
+
     data = '#EXTM3U\n'
 
     country_code = helper.get_country_code()
@@ -103,7 +157,7 @@ def generate_m3u():
     channels = [x['viaplay:channel']['content']['title'] for x in channels_block]
     images = [x['viaplay:channel']['_embedded']['viaplay:products'][0]['station']['images']['fallbackImage']['template'] for x in channels_block]
     guids = [x['viaplay:channel']['_embedded']['viaplay:products'][1]['epg']['channelGuids'][0] for x in channels_block]
-    
+
     for i in range(len(channels)):
         image = images[i].split('{')[0]
 
@@ -119,7 +173,7 @@ def generate_m3u():
 
         guid = guids[i]
         data += '#EXTINF:-1 tvg-id="%s" tvg-name="%s" tvg-logo="%s" group-title="Viasat",%s\nplugin://plugin.video.viaplay/play?guid=%s&url=None&tve=true\n' % (guid, title, image, title, guid)
-    
+
     f = xbmcvfs.File(path + file_name, 'wb')
     if sys.version_info[0] > 2:
         f.write(data)
@@ -161,7 +215,6 @@ def root():
             helper.log('Unsupported page found: %s' % page['name'])
     helper.eod()
 
-
 @plugin.route('/start')
 def start():
     collections = helper.vp.get_collections(plugin.args['url'][0])
@@ -182,6 +235,7 @@ def search():
     actions = ["New search", "Remove search"] + searches
 
     action = helper.dialog(dialog_type='select', heading="Program search", options=actions)
+    title = None
 
     if action == -1:
         return
@@ -194,7 +248,7 @@ def search():
         else:
             for item in reversed(which):
                 del searches[item]
-                
+
             f = xbmcvfs.File(file_name, "wb")
             if sys.version_info[0] < 3:
                 searches = [x.decode('utf-8') for x in searches]
@@ -213,7 +267,7 @@ def search():
             search = title
         else:
             search = title.encode('utf-8')
-    
+
     if not search:
         return
     searches = (set([search] + searches))
@@ -231,7 +285,7 @@ def search():
 def vod():
     """List categories and collections from the VOD pages (movies, series, kids, store)."""
     helper.add_item(helper.language(30041), plugin.url_for(categories, url=plugin.args['url'][0]))
-    collections = helper.vp.get_collections(plugin.args['url'][0])  
+    collections = helper.vp.get_collections(plugin.args['url'][0])
 
     for i in collections:
         if i['type'] == 'list-featurebox':  # skip feature box for now
@@ -284,7 +338,6 @@ def vod():
 
     helper.eod()
 
-
 @plugin.route('/sport')
 def sport():
     collections = helper.vp.get_collections(plugin.args['url'][0])
@@ -296,8 +349,9 @@ def sport():
             helper.add_item(i['_links']['viaplay:seeTableau']['title'], plugin_url)
             schedule_added = True
 
-        if i.get('totalProductCount', 0) < 1:
-            continue  # hide empty collections
+        if i.get('totalProductCount'):
+            if i.get('totalProductCount', 0) < 1:
+                continue  # hide empty collections
         helper.add_item(i['title'], plugin.url_for(list_products, url=i['_links']['self']['href']))
     helper.eod()
 
@@ -330,7 +384,7 @@ def channels():
 
         if sys.version_info[0] > 2:
             list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
-        else:   
+        else:
             list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title.encode('utf-8'))
 
         helper.add_item(list_title, plugin_url, art=art)
@@ -428,8 +482,8 @@ def play():
     sessionid = helper.authorize()
     if not sessionid:
         sessionid = helper.authorize()
-    helper.play(guid=plugin.args['guid'][0], url=plugin.args['url'][0], tve=plugin.args['tve'][0])
 
+    helper.play(guid=plugin.args['guid'][0], url=plugin.args['url'][0], tve=plugin.args['tve'][0])
 
 @plugin.route('/dialog')
 def dialog():
@@ -454,7 +508,9 @@ def add_movie(movie):
         url = movie['_links']['self']['href']
 
     plugin_url = plugin.url_for(play, guid=guid, url=url, tve='false')
+
     details = movie['content']
+
     try:
         plotx = details.get('synopsis')
     except:
@@ -475,13 +531,30 @@ def add_movie(movie):
         'code': details['imdb'].get('id') if 'imdb' in details else None
     }
 
-    helper.add_item(movie_info['title'], plugin_url, info=movie_info, art=add_art(details['images'], 'movie'),
-                    content='movies', playable=True)
+    watched_list, duration_list = sql_watched()
 
+    properties = []
+
+    for w in watched_list:
+        if w[0] == guid:
+            movie_info.update({'playcount': w[1], 'lastplayed': w[2]})
+
+            for d in duration_list:
+                if d[2] == w[3]:
+                    properties.append((d[0], d[1]))
+
+    helper.add_item(movie_info['title'], plugin_url, info=movie_info, art=add_art(details['images'], 'movie'),
+                    content='movies', playable=True, properties=properties)
 
 def add_series(show):
     plugin_url = plugin.url_for(seasons_page, url=show['_links']['viaplay:page']['href'])
+
     details = show['content']
+
+    if show['system'].get('guid'):
+        guid = show['system']['guid']
+    else:
+        guid = None
 
     series_info = {
         'mediatype': 'tvshow',
@@ -505,12 +578,18 @@ def add_series(show):
 
 def add_episode(episode):
     plugin_url = plugin.url_for(play, guid=episode['system']['guid'], url=None, tve='false')
+
     details = episode['content']
+
+    if episode['system'].get('guid'):
+        guid = episode['system']['guid']
+    else:
+        guid = None
 
     episode_info = {
         'mediatype': 'episode',
-        'title': details.get('title'),
-        'list_title': details['series']['episodeTitle'] if details['series'].get('episodeTitle') else details.get(
+        'originaltitle': details.get('title'),
+        'title': details['series']['episodeTitle'] if details['series'].get('episodeTitle') else details.get(
             'title'),
         'tvshowtitle': details['series'].get('title'),
         'plot': details['synopsis'] if details.get('synopsis') else details['series'].get('synopsis'),
@@ -525,10 +604,22 @@ def add_episode(episode):
         'code': details['imdb'].get('id') if 'imdb' in details else None,
         'season': int(details['series']['season'].get('seasonNumber')),
         'episode': int(details['series'].get('episodeNumber'))
-    }
+    } 
 
-    helper.add_item(episode_info['list_title'], plugin_url, info=episode_info,
-                    art=add_art(details['images'], 'episode'), content='episodes', playable=True, episode=True)
+    watched_list, duration_list = sql_watched()
+
+    properties = []
+
+    for w in watched_list:
+        if w[0] == guid:
+            episode_info.update({'playcount': w[1], 'lastplayed': w[2]})
+
+            for d in duration_list:
+                if d[2] == w[3]:
+                    properties.append((d[0], d[1]))
+
+    helper.add_item(episode_info['title'], plugin_url, info=episode_info,
+                    art=add_art(details['images'], 'episode'), content='episodes', playable=True, episode=True, properties=properties)
 
 
 def add_sports_event(event):
@@ -564,14 +655,14 @@ def add_sports_event(event):
 
     event_info = {
         'mediatype': 'video',
-        'title': details.get('title'),
+        'originaltitle': details.get('title'),
         'plot': plotx,
         'year': int(details['production'].get('year')),
         'genre': details['format'].get('title'),
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
+        'title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
     }
 
-    helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info,
+    helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
                     art=add_art(details['images'], 'sport'), content='episodes')
 
 
@@ -624,14 +715,14 @@ def add_sports_series(event):
 
     event_info = {
         'mediatype': 'video',
-        'title': title,
+        'originaltitle': title,
         'plot': plotx,
         'year': details['production'].get('year'),
         'genre': genre,
-        'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
+        'title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
     }
 
-    helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info,
+    helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
                     art=add_art(details['images'], 'sport'), content='episodes')
 
 
@@ -680,10 +771,10 @@ def add_tv_event(event):
 
         event_info = {
             'mediatype': 'video',
-            'title': details.get('title'),
+            'originaltitle': details.get('title'),
             'plot': details.get('synopsis'),
             'year': details['production'].get('year'),
-            'list_title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
+            'title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
         }
 
         art = {
@@ -691,11 +782,11 @@ def add_tv_event(event):
             'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
         }
 
-        helper.add_item(event_info['list_title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
+        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
 
 def add_event(event):
     plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
-    
+
     details = event['content']
 
     if sys.version_info[0] > 2:
@@ -705,10 +796,10 @@ def add_event(event):
 
     event_info = {
             'mediatype': 'video',
-            'title': details.get('title'),
+            'originaltitle': details.get('title'),
             'plot': details.get('synopsis'),
             'year': details['production'].get('year'),
-            'list_title': '{0}'.format(title)
+            'title': '{0}'.format(title)
         }
 
     art = {
@@ -716,7 +807,7 @@ def add_event(event):
             'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
         }
 
-    helper.add_item(event_info['list_title'], plugin_url, playable=True, info=event_info, art=art, content='episodes')
+    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, content='episodes')
 
 def add_art(images, content_type):
     artwork = {}

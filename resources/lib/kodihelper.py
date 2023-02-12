@@ -13,7 +13,6 @@ import xbmcplugin
 import inputstreamhelper
 from xbmcaddon import Addon
 
-
 class KodiHelper(object):
     def __init__(self, base_url=None, handle=None):
         addon = self.get_addon()
@@ -185,13 +184,26 @@ class KodiHelper(object):
         else:
             return None
 
-    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, content=False, episode=False):
+    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, content=False, episode=False, properties=None):
         addon = self.get_addon()
+
+        if info:
+            title = info.get('title')
+        else:
+            info = {'title': title}
+
         listitem = xbmcgui.ListItem(label=title)
+
+        if properties:
+            listitem.setProperty('ResumeTime', str(int(properties[0][0])))
+            listitem.setProperty('TotalTime', str(int(properties[0][1])))
 
         if playable:
             listitem.setProperty('IsPlayable', 'true')
             folder = False
+        else:
+            listitem.setProperty('IsPlayable', 'false')
+
         if art:
             listitem.setArt(art)
         else:
@@ -200,8 +212,10 @@ class KodiHelper(object):
                 'fanart': addon.getAddonInfo('fanart')
             }
             listitem.setArt(art)
+
         if info:
             listitem.setInfo('Video', info)
+
         if content:
             xbmcplugin.setContent(self.handle, content)
 
@@ -217,10 +231,10 @@ class KodiHelper(object):
     def play(self, guid=None, url=None, pincode=None, tve='false'):
         if url and url != 'None':
             guid = self.vp.get_products(url)['products'][0]['system']['guid']
-        
+
         try:
             stream = self.vp.get_stream(guid, pincode=pincode, tve=tve)
-        
+
         except self.vp.ViaplayError as error:
             if error.value == 'MissingVideoError':
                 message = 'Content is missing'
@@ -254,7 +268,7 @@ class KodiHelper(object):
             playitem.setMimeType('application/xml+dash')  # prevents HEAD request that causes 404 error
             if sys.version_info[0] > 2:
                 playitem.setProperty('inputstream', 'inputstream.adaptive')
-            else:    
+            else:
                 playitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
             playitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
             playitem.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')

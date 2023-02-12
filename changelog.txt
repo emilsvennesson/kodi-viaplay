@@ -1,3 +1,8 @@
+v2.4.0 (2023-02-12)
+- Fixed watched marking.
+- Fixed playback errors.
+- Other fixes.
+
 v2.3.9 (2023-01-27)
 - Fix live.
 
