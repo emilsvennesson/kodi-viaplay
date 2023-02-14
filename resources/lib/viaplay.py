@@ -112,7 +112,7 @@ class Viaplay(object):
 
         tld = self.get_tld()
 
-        pattern = re.compile('viaplay.(\w{2})', re.IGNORECASE)
+        pattern = re.compile(r'viaplay.(\w{2})', re.IGNORECASE)
         n_tld = pattern.search(cookies).group(1)
 
         if n_tld != tld:
@@ -144,7 +144,7 @@ class Viaplay(object):
 
         return url
 
-    def make_request(self, url, method, params=None, payload=None, headers=None):
+    def make_request(self, url, method, params=None, payload=None, headers=None, status=False):
         """Make an HTTP request. Return the response."""
         try:
             return self._make_request(url, method, params=params, payload=payload, headers=headers)
@@ -152,7 +152,7 @@ class Viaplay(object):
             self.validate_session()
             return self._make_request(url, method, params=params, payload=payload, headers=headers)
 
-    def _make_request(self, url, method, params=None, payload=None, headers=None):
+    def _make_request(self, url, method, params=None, payload=None, headers=None, status=False):
         """Helper. Make an HTTP request. Return the response."""
         url = self.parse_url(url)
         self.log('Request URL: %s' % url)
@@ -174,7 +174,10 @@ class Viaplay(object):
         self.log('Response: %s' % req.content)
         self.cookie_jar.save(ignore_discard=True, ignore_expires=False)
 
-        return self.parse_response(req.content)
+        if status:
+            return self.parse_response(req.status_code)
+        else:
+            return self.parse_response(req.content)
 
     def parse_response(self, response):
         """Try to load JSON data into dict and raise potential errors."""

@@ -103,6 +103,10 @@ def run():
     if action == 'BUILD_M3U':
         generate_m3u()
 
+    elif action == 'favourite':
+        guid = sys.argv[3][5:]
+        favourite(guid)
+
     elif gen != '':
         id = params.get('url', '')
         tve = params.get('tve', '')
@@ -119,6 +123,47 @@ def run():
                 plugin.run()
         else:
             show_error(error.value)
+
+    except:
+        pass
+
+def favourite(guid):
+    guid = guid.split('-')[0]
+    params = {
+        'deviceId': helper.vp.get_deviceid(),
+        'deviceName': 'web',
+        'deviceType': 'pc',
+        'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
+        'deviceKey': 'pcdash-pl',
+        'cse': 'true',
+        'guid': guid,
+    }
+
+    response = helper.vp.make_request(url='https://play.viaplay.pl/api/stream/byguid', method='get', params=params)
+
+    params = {
+        'profileId': response['socket']['userId'],
+    }
+
+    if response['product'].get('series'):
+        program_guid = response['product']['content']['series']['seriesGuid']
+    else:
+        program_guid = guid
+
+    if not guid[1:].isnumeric():
+        message = helper.language(30072)
+        helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
+        return
+
+    json_data = {
+        'programGuid': program_guid,
+        'action': 'add',
+    }
+
+    response = helper.vp.make_request(url='https://content.viaplay.pl/pcdash-pl/myList', method='put', params=params, payload=json_data, status=True)
+
+    message = helper.language(30071)
+    helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
 
 def generate_m3u():
     sessionid = helper.authorize()
@@ -185,6 +230,7 @@ def generate_m3u():
 @plugin.route('/')
 def root():
     pages = helper.vp.get_root_page()
+
     supported_pages = {
         'viaplay:root': start,
         'viaplay:search': search,
@@ -663,7 +709,7 @@ def add_sports_event(event):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), content='playlists')
+                    art=add_art(details['images'], 'sport'), content='episodes')
 
 
 def add_sports_series(event):

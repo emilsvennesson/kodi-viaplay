@@ -201,6 +201,17 @@ class KodiHelper(object):
         if playable:
             listitem.setProperty('IsPlayable', 'true')
             folder = False
+
+            txt = self.language(30070)
+
+            kv_pairs = url.split("?")[1].split("&")
+            viaplay_dict = {kv.split("=")[0]: kv.split("=")[1] for kv in kv_pairs}
+
+            guid = viaplay_dict['guid']
+
+            context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=favourite,guid={0})'.format(guid))]
+            listitem.addContextMenuItems(context_menu, replaceItems=True)
+
         else:
             listitem.setProperty('IsPlayable', 'false')
 
