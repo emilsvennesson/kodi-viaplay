@@ -356,7 +356,9 @@ class Viaplay(object):
             }
             params = {'query': search_query}
         else:
+            headers = None
             params = None
+
         data = self.make_request(url, method='get', params=params, headers=headers)
 
         if 'list' in data['type'].lower():

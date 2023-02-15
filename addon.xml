@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.4.1-beta.2" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev, zuzia-dev">
+<addon id="plugin.video.viaplay" version="2.4.1-beta.3" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev, zuzia-dev">
   <requires>
     <import addon="script.module.requests" version="2.9.1" />
     <import addon="script.module.iso8601" version="0.1.11" />
