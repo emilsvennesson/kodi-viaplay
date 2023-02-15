@@ -349,10 +349,15 @@ class Viaplay(object):
     def get_products(self, url, filter_event=False, search_query=None):
         """Return a dict containing the products and next page if available."""
         if search_query:
+            headers = {
+                'accept': '*/*',
+                'accept-language': 'sv,en;q=0.9,en-GB;q=0.8,en-US;q=0.7',
+                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
+            }
             params = {'query': search_query}
         else:
             params = None
-        data = self.make_request(url, method='get', params=params)
+        data = self.make_request(url, method='get', params=params, headers=headers)
 
         if 'list' in data['type'].lower():
             products = data['_embedded']['viaplay:products']
