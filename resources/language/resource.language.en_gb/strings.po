@@ -292,3 +292,19 @@ msgstr ""
 msgctxt "#30072"
 msgid "Content could not be added to list"
 msgstr ""
+
+msgctxt "#30073"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30074"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30075"
+msgid "Wrong login credentials"
+msgstr ""
+
+msgctxt "#30076"
+msgid "Error"
+msgstr ""

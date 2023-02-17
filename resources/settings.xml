@@ -21,6 +21,27 @@
 						<heading>Select</heading>
 					</control>
 				</setting>
+				<setting help="" id="viaplay_username" label="30073" type="string">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control format="string" type="edit">
+						<heading>30073</heading>
+					</control>
+				</setting>
+				<setting help="" id="viaplay_password" label="30074" type="string">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control format="string" type="edit">
+						<heading>30074</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
 				<setting help="" id="autologin" label="30068" type="boolean">
 					<level>0</level>
 					<default>false</default>

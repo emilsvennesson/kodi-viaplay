@@ -13,6 +13,12 @@ import xbmcplugin
 import inputstreamhelper
 from xbmcaddon import Addon
 
+try:
+    from urllib.parse import unquote
+except ImportError:
+    import urllib
+    from urllib import unquote
+
 class KodiHelper(object):
     def __init__(self, base_url=None, handle=None):
         addon = self.get_addon()
@@ -125,41 +131,52 @@ class KodiHelper(object):
         """Presents a dialog with information on how to activate the device.
         Attempts to authorize the device using the interval returned by the activation data."""
         activation_data = self.vp.get_activation_data()
-        message = self.language(30039).format(activation_data['verificationUrl'], activation_data['userCode'])
-        dialog = xbmcgui.DialogProgress()
-        xbmc.sleep(200)  # small delay to prevent DialogProgress from hanging
-        dialog.create(self.language(30040), message)
-        secs = 0
-        expires = activation_data['expires']
 
-        while not xbmc.Monitor().abortRequested() and secs < expires:
-            try:
-                self.vp.authorize_device(activation_data)
-                dialog.close()
+        if self.vp.get_setting('viaplay_username') != '' and self.vp.get_setting('viaplay_password') != '':
+            login = self.vp.login()
+            if login:
                 return True
-            except self.vp.ViaplayError as error:
-                # raise all non-pending authorization errors
-                auth_error = 'DeviceAuthorizationPendingError'
-                dev_error = 'DeviceAuthorizationNotFound'
+            else:
+                message = self.language(30075)
+                self.dialog(dialog_type='notification', heading=self.language(30076), message=message)
+                return False
 
-                if error.value == auth_error:
-                    secs += activation_data['interval']
-                    percent = int(100 * float(secs) / float(expires))
-                    dialog.update(percent, message)
-                    xbmc.Monitor().waitForAbort(activation_data['interval'])
-                    if dialog.iscanceled():
+            message = self.language(30039).format(activation_data['verificationUrl'], activation_data['userCode'])
+            dialog = xbmcgui.DialogProgress()
+            xbmc.sleep(200)  # small delay to prevent DialogProgress from hanging
+            dialog.create(self.language(30040), message)
+            secs = 0
+            expires = activation_data['expires']
+
+        else:
+            while not xbmc.Monitor().abortRequested() and secs < expires:
+                try:
+                    self.vp.authorize_device(activation_data)
+                    dialog.close()
+                    return True
+                except self.vp.ViaplayError as error:
+                    # raise all non-pending authorization errors
+                    auth_error = 'DeviceAuthorizationPendingError'
+                    dev_error = 'DeviceAuthorizationNotFound'
+
+                    if error.value == auth_error:
+                        secs += activation_data['interval']
+                        percent = int(100 * float(secs) / float(expires))
+                        dialog.update(percent, message)
+                        xbmc.Monitor().waitForAbort(activation_data['interval'])
+                        if dialog.iscanceled():
+                            dialog.close()
+                            return False
+                    elif error.value == dev_error:  # time expired
                         dialog.close()
+                        self.dialog('ok', self.language(30051), self.language(30052))
                         return False
-                elif error.value == dev_error:  # time expired
-                    dialog.close()
-                    self.dialog('ok', self.language(30051), self.language(30052))
-                    return False
-                else:
-                    dialog.close()
-                    raise
+                    else:
+                        dialog.close()
+                        raise
 
-        dialog.close()
-        return False
+            dialog.close()
+            return False
 
     def get_user_input(self, heading, hidden=False):
         keyboard = xbmc.Keyboard('', heading, hidden)
@@ -184,7 +201,7 @@ class KodiHelper(object):
         else:
             return None
 
-    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, content=False, episode=False, properties=None):
+    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, site=None, content=False, episode=False, properties=None, context=False):
         addon = self.get_addon()
 
         if info:
@@ -198,20 +215,35 @@ class KodiHelper(object):
             listitem.setProperty('ResumeTime', str(int(properties[0][0])))
             listitem.setProperty('TotalTime', str(int(properties[0][1])))
 
-        if playable:
-            listitem.setProperty('IsPlayable', 'true')
-            folder = False
-
-            txt = self.language(30070)
-
+        if context:
             kv_pairs = url.split("?")[1].split("&")
             viaplay_dict = {kv.split("=")[0]: kv.split("=")[1] for kv in kv_pairs}
 
-            guid = viaplay_dict['guid']
+            guid = viaplay_dict.get('guid')
+            program_guid = None
+            if not guid:
+                program_guid = unquote(viaplay_dict.get('url')).split('/byguid/')[1]
 
-            context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=favourite,guid={0})'.format(guid))]
+            if site == 'https://content.viaplay.{0}/xdk-{1}/starred'.format(self.vp.country, self.vp.country):
+                txt = 'Remove from list'
+
+                if program_guid:
+                    context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=remove_favourite_program,guid={0})'.format(program_guid))]
+                else:
+                    context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=remove_favourite,guid={0})'.format(guid))]
+
+            else:
+                txt = self.language(30070)
+                if program_guid:
+                    context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=favourite_program,guid={0})'.format(program_guid))]
+                else:
+                    context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=favourite,guid={0})'.format(guid))]
+
             listitem.addContextMenuItems(context_menu, replaceItems=True)
 
+        if playable:
+            listitem.setProperty('IsPlayable', 'true')
+            folder = False
         else:
             listitem.setProperty('IsPlayable', 'false')
 

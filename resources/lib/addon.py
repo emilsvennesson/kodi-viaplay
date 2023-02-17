@@ -10,11 +10,13 @@ from resources.lib.kodihelper import KodiHelper
 try:
     import urllib.request, urllib.parse, urllib.error
     from urllib.parse import urlencode, quote_plus, quote, unquote, parse_qsl
+    import http.cookiejar as cookielib
 except ImportError:
     import urllib
     import urlparse
     from urllib import urlencode, quote_plus, quote, unquote
     from urlparse import parse_qsl
+    import cookielib
 
 import xbmc
 import xbmcgui
@@ -25,6 +27,9 @@ import re
 import os
 
 import sqlite3
+
+import requests
+import json
 
 if sys.version_info[0] > 2:
     PY3 = True
@@ -107,6 +112,18 @@ def run():
         guid = sys.argv[3][5:]
         favourite(guid)
 
+    elif action == 'favourite_program':
+        guid = sys.argv[3][5:]
+        favourite(guid, program=True)
+
+    elif action == 'remove_favourite':
+        guid = sys.argv[3][5:]
+        favourite(guid, remove=True)
+
+    elif action == 'remove_favourite_program':
+        guid = sys.argv[3][5:]
+        favourite(guid, program=True, remove=True)
+
     elif gen != '':
         id = params.get('url', '')
         tve = params.get('tve', '')
@@ -127,43 +144,92 @@ def run():
     except:
         pass
 
-def favourite(guid):
-    guid = guid.split('-')[0]
-    params = {
-        'deviceId': helper.vp.get_deviceid(),
-        'deviceName': 'web',
-        'deviceType': 'pc',
-        'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
-        'deviceKey': 'pcdash-pl',
-        'cse': 'true',
-        'guid': guid,
-    }
-
-    response = helper.vp.make_request(url='https://play.viaplay.pl/api/stream/byguid', method='get', params=params)
-
-    params = {
-        'profileId': response['socket']['userId'],
-    }
-
-    if response['product'].get('series'):
-        program_guid = response['product']['content']['series']['seriesGuid']
-    else:
+def favourite(guid, program=False, remove=False):
+    if program:
         program_guid = guid
 
-    if not guid[1:].isnumeric():
-        message = helper.language(30072)
+        http_session = requests.Session()
+
+        cookie_file = os.path.join(helper.vp.addon_profile, 'cookie_file')
+
+        cookie_jar = cookielib.LWPCookieJar(cookie_file)
+
+        try:
+            cookie_jar.load(ignore_discard=True, ignore_expires=True)
+        except IOError:
+            pass
+
+        http_session.cookies = cookie_jar
+
+        for cookie in http_session.cookies:
+            if cookie.name == 'session':
+                value = unquote(cookie.value)
+
+                json_regex = re.compile(r'\{(.*?)\}.*\}')
+
+                r = json_regex.search(value)
+                json_str = r.group(0) if r else ''
+
+                data = json.loads(json_str)
+
+                profileId = data['userId']
+
+        params = {
+            'profileId': profileId,
+        }
+
+    else:
+        guid = guid.split('-')[0]
+
+        params = {
+            'deviceId': helper.vp.get_deviceid(),
+            'deviceName': 'web',
+            'deviceType': 'pc',
+            'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
+            'deviceKey': helper.vp.device_key,
+            'cse': 'true',
+            'guid': guid,
+        }
+
+        response = helper.vp.make_request(url='https://play.viaplay.{0}/api/stream/byguid'.format(helper.vp.country), method='get', params=params)
+
+        params = {
+            'profileId': response['socket']['userId'],
+        }
+
+        if response['product'].get('series'):
+            program_guid = response['product']['content']['series']['seriesGuid']
+        else:
+            program_guid = guid
+
+        if not guid[1:].isnumeric():
+            message = helper.language(30072)
+            helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
+            return
+
+    if remove:
+        json_data = {
+            'programGuid': program_guid,
+            'action': 'remove',
+        }
+
+        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{1}/myList'.format(helper.vp.country, helper.vp.country), method='put', params=params, payload=json_data, status=True)
+
+        xbmc.executebuiltin('Container.Refresh')
+
+        message = 'Content removed from list'
         helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
-        return
 
-    json_data = {
-        'programGuid': program_guid,
-        'action': 'add',
-    }
+    else:
+        json_data = {
+            'programGuid': program_guid,
+            'action': 'add',
+        }
 
-    response = helper.vp.make_request(url='https://content.viaplay.pl/pcdash-pl/myList', method='put', params=params, payload=json_data, status=True)
+        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{1}/myList'.format(helper.vp.country, helper.vp.country), method='put', params=params, payload=json_data, status=True)
 
-    message = helper.language(30071)
-    helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
+        message = helper.language(30071)
+        helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
 
 def generate_m3u():
     sessionid = helper.authorize()
@@ -449,24 +515,24 @@ def log_out():
 
 @plugin.route('/list_products')
 def list_products(url=None, search_query=None):
-    if not url:
+    if not url or url is None:
         url = plugin.args['url'][0]
     products_dict = helper.vp.get_products(url, search_query=search_query)
     for product in products_dict['products']:
         if product['type'] == 'series':
-            add_series(product)
+            add_series(product, url)
         elif product['type'] == 'episode':
-            add_episode(product)
+            add_episode(product, url)
         elif product['type'] == 'movie':
-            add_movie(product)
+            add_movie(product, url)
         elif product['type'] == 'sport':
-            add_sports_event(product)
+            add_sports_event(product, url)
         elif product['type'] == 'sportSeries':
-            add_sports_series(product)
+            add_sports_series(product, url)
         elif product['type'] == 'tvEvent':
-            add_tv_event(product)
+            add_tv_event(product, url)
         elif product['type'] == 'clip':
-            add_event(product)
+            add_event(product, url)
         else:
             helper.log('product type: {0} is not (yet) supported.'.format(product['type']))
             return False
@@ -545,10 +611,10 @@ def ia_settings():
 def capitalize(string):
     return string[0].upper()+string[1:]
 
-def add_movie(movie):
+def add_movie(movie, url):
+    print('Category: add_movie')
     if movie['system'].get('guid'):
         guid = movie['system']['guid']
-        url = None
     else:
         guid = None
         url = movie['_links']['self']['href']
@@ -590,9 +656,10 @@ def add_movie(movie):
                     properties.append((d[0], d[1]))
 
     helper.add_item(movie_info['title'], plugin_url, info=movie_info, art=add_art(details['images'], 'movie'),
-                    content='movies', playable=True, properties=properties)
+                    site=url, content='movies', playable=True, properties=properties, context=True)
 
-def add_series(show):
+def add_series(show, url):
+    print('Category: add_series')
     plugin_url = plugin.url_for(seasons_page, url=show['_links']['viaplay:page']['href'])
 
     details = show['content']
@@ -619,10 +686,11 @@ def add_series(show):
     }
 
     helper.add_item(series_info['title'], plugin_url, folder=True, info=series_info,
-                    art=add_art(details['images'], 'series'), content='tvshows')
+                    art=add_art(details['images'], 'series'), site=url, content='tvshows', context=True)
 
 
-def add_episode(episode):
+def add_episode(episode, url):
+    print('Category: add_episode')
     plugin_url = plugin.url_for(play, guid=episode['system']['guid'], url=None, tve='false')
 
     details = episode['content']
@@ -665,10 +733,11 @@ def add_episode(episode):
                     properties.append((d[0], d[1]))
 
     helper.add_item(episode_info['title'], plugin_url, info=episode_info,
-                    art=add_art(details['images'], 'episode'), content='episodes', playable=True, episode=True, properties=properties)
+                    art=add_art(details['images'], 'episode'), site=url, content='episodes', playable=True, episode=True, properties=properties, context=True)
 
 
-def add_sports_event(event):
+def add_sports_event(event, url):
+    print('Category: add_sports_event')
     now = datetime.now()
     date_today = now.date()
     event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
@@ -709,10 +778,11 @@ def add_sports_event(event):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), content='episodes')
+                    art=add_art(details['images'], 'sport'), site=url, content='episodes', context=False)
 
 
-def add_sports_series(event):
+def add_sports_series(event, url):
+    print('Category: add_sports_series')
     now = datetime.now()
     date_today = now.date()
     if event.get('epg'):
@@ -769,10 +839,11 @@ def add_sports_series(event):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), content='episodes')
+                    art=add_art(details['images'], 'sport'), site=url, content='episodes', context=False)
 
 
-def add_tv_event(event):
+def add_tv_event(event, url):
+    print('Category: add_tv_event')
     now = datetime.now()
     date_today = now.date()
 
@@ -828,9 +899,10 @@ def add_tv_event(event):
             'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
         }
 
-        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, content='episodes')
+        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, site=url, content='episodes', context=False)
 
-def add_event(event):
+def add_event(event, url):
+    print('Category: add_event')
     plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
 
     details = event['content']
@@ -841,11 +913,11 @@ def add_event(event):
         title = details.get('title').encode('utf-8')
 
     event_info = {
-        'mediatype': 'video',
+        'mediatype': 'episode',
         'originaltitle': details.get('title'),
         'plot': details.get('synopsis'),
         'year': details['production'].get('year'),
-        'title': '{0}'.format(title)
+        'title': '{0}'.format(title),
     }
 
     art = {
@@ -865,7 +937,7 @@ def add_event(event):
                 if d[2] == w[3]:
                     properties.append((d[0], d[1]))
 
-    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, content='episodes', properties=properties)
+    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, site=url, content='episodes', properties=properties, context=True)
 
 def add_art(images, content_type):
     artwork = {}

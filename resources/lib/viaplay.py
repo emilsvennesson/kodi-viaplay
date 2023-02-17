@@ -182,7 +182,7 @@ class Viaplay(object):
     def parse_response(self, response):
         """Try to load JSON data into dict and raise potential errors."""
         try:
-            response = json.loads(response, object_pairs_hook=OrderedDict)  # keep the key order
+            response = json.loads(response)#, object_pairs_hook=OrderedDict)  # keep the key order
             if 'success' in response and not response['success']:  # raise ViaplayError when 'success' is False
                 raise self.ViaplayError(response['name'])
 
@@ -190,6 +190,26 @@ class Viaplay(object):
             pass
 
         return response
+
+    def login(self):
+        try:
+            url = self.login_api + '/login/v1'
+
+            params = {
+                'deviceKey': self.device_key,
+                'username': self.get_setting('viaplay_username'),
+                'persistent': 'true',
+            }
+
+            data = {
+                'password': self.get_setting('viaplay_password'),
+            }
+
+            response = self.make_request(url=url, method='post', params=params, payload=data)
+            self.validate_session()  # we need this to validate the new cookies
+            return response
+        except:
+            return False
 
     def get_activation_data(self):
         """Get activation data (reg code etc) needed to authorize the device."""
