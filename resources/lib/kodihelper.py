@@ -201,7 +201,7 @@ class KodiHelper(object):
         else:
             return None
 
-    def add_item(self, title, url, folder=True, playable=False, info=None, art=None, site=None, content=False, episode=False, properties=None, context=False):
+    def add_item(self, title, url, sys_guid=None, folder=True, playable=False, info=None, art=None, site=None, content=False, episode=False, properties=None, context=False):
         addon = self.get_addon()
 
         if info:
@@ -222,7 +222,12 @@ class KodiHelper(object):
             guid = viaplay_dict.get('guid')
             program_guid = None
             if not guid:
-                program_guid = unquote(viaplay_dict.get('url')).split('/byguid/')[1]
+                if viaplay_dict.get('url'):
+                    program_guid = unquote(viaplay_dict.get('url')).split('/byguid/')[1]
+                elif viaplay_dict.get('message'):
+                    guid = sys_guid
+                else:
+                    program_guid = 'no_guid'
 
             if site == 'https://content.viaplay.{0}/xdk-{1}/starred'.format(self.vp.country, self.vp.country):
                 txt = 'Remove from list'

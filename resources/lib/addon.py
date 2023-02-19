@@ -146,6 +146,11 @@ def run():
 
 def favourite(guid, program=False, remove=False):
     if program:
+        if guid == 'no_guid':
+            message = helper.language(30072)
+            helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
+            return
+
         program_guid = guid
 
         http_session = requests.Session()
@@ -165,7 +170,7 @@ def favourite(guid, program=False, remove=False):
             if cookie.name == 'session':
                 value = unquote(cookie.value)
 
-                json_regex = re.compile(r'\{(.*?)\}.*\}')
+                json_regex = re.compile(r'[{\[]{1}([,:{}\[\]0-9.\-+A-zr-u \n\r\t]|".*:?")+[}\]]{1}')
 
                 r = json_regex.search(value)
                 json_str = r.group(0) if r else ''
@@ -779,7 +784,7 @@ def add_sports_event(event, site):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), site=site, content='episodes', context=False)
+                    art=add_art(details['images'], 'sport'), sys_guid=event['system']['guid'], site=site, content='episodes', context=True)
 
 
 def add_sports_series(event, site):
@@ -840,7 +845,7 @@ def add_sports_series(event, site):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), site=site, content='episodes', context=False)
+                    art=add_art(details['images'], 'sport'), sys_guid=event['system']['guid'], site=site, content='episodes', context=True)
 
 
 def add_tv_event(event, site):
@@ -900,7 +905,7 @@ def add_tv_event(event, site):
             'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
         }
 
-        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, site=site, content='episodes', context=False)
+        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, sys_guid=event['system']['guid'], site=site, content='episodes', context=True)
 
 def add_event(event, site):
     print('Category: add_event')
