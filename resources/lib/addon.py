@@ -611,9 +611,10 @@ def ia_settings():
 def capitalize(string):
     return string[0].upper()+string[1:]
 
-def add_movie(movie, url):
+def add_movie(movie, site):
     print('Category: add_movie')
     if movie['system'].get('guid'):
+        url = None
         guid = movie['system']['guid']
     else:
         guid = None
@@ -656,9 +657,9 @@ def add_movie(movie, url):
                     properties.append((d[0], d[1]))
 
     helper.add_item(movie_info['title'], plugin_url, info=movie_info, art=add_art(details['images'], 'movie'),
-                    site=url, content='movies', playable=True, properties=properties, context=True)
+                    site=site, content='movies', playable=True, properties=properties, context=True)
 
-def add_series(show, url):
+def add_series(show, site):
     print('Category: add_series')
     plugin_url = plugin.url_for(seasons_page, url=show['_links']['viaplay:page']['href'])
 
@@ -686,10 +687,10 @@ def add_series(show, url):
     }
 
     helper.add_item(series_info['title'], plugin_url, folder=True, info=series_info,
-                    art=add_art(details['images'], 'series'), site=url, content='tvshows', context=True)
+                    art=add_art(details['images'], 'series'), site=site, content='tvshows', context=True)
 
 
-def add_episode(episode, url):
+def add_episode(episode, site):
     print('Category: add_episode')
     plugin_url = plugin.url_for(play, guid=episode['system']['guid'], url=None, tve='false')
 
@@ -733,10 +734,10 @@ def add_episode(episode, url):
                     properties.append((d[0], d[1]))
 
     helper.add_item(episode_info['title'], plugin_url, info=episode_info,
-                    art=add_art(details['images'], 'episode'), site=url, content='episodes', playable=True, episode=True, properties=properties, context=True)
+                    art=add_art(details['images'], 'episode'), site=site, content='episodes', playable=True, episode=True, properties=properties, context=True)
 
 
-def add_sports_event(event, url):
+def add_sports_event(event, site):
     print('Category: add_sports_event')
     now = datetime.now()
     date_today = now.date()
@@ -778,10 +779,10 @@ def add_sports_event(event, url):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), site=url, content='episodes', context=False)
+                    art=add_art(details['images'], 'sport'), site=site, content='episodes', context=False)
 
 
-def add_sports_series(event, url):
+def add_sports_series(event, site):
     print('Category: add_sports_series')
     now = datetime.now()
     date_today = now.date()
@@ -839,10 +840,10 @@ def add_sports_series(event, url):
     }
 
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), site=url, content='episodes', context=False)
+                    art=add_art(details['images'], 'sport'), site=site, content='episodes', context=False)
 
 
-def add_tv_event(event, url):
+def add_tv_event(event, site):
     print('Category: add_tv_event')
     now = datetime.now()
     date_today = now.date()
@@ -899,9 +900,9 @@ def add_tv_event(event, url):
             'fanart': event['content']['images']['landscape']['template'].split('{')[0] if 'landscape' in details['images'] else None
         }
 
-        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, site=url, content='episodes', context=False)
+        helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, site=site, content='episodes', context=False)
 
-def add_event(event, url):
+def add_event(event, site):
     print('Category: add_event')
     plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
 
@@ -937,7 +938,7 @@ def add_event(event, url):
                 if d[2] == w[3]:
                     properties.append((d[0], d[1]))
 
-    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, site=url, content='episodes', properties=properties, context=True)
+    helper.add_item(event_info['title'], plugin_url, playable=True, info=event_info, art=art, site=site, content='episodes', properties=properties, context=True)
 
 def add_art(images, content_type):
     artwork = {}
