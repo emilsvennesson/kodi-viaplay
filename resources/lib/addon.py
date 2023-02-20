@@ -617,7 +617,7 @@ def capitalize(string):
     return string[0].upper()+string[1:]
 
 def add_movie(movie, site):
-    print('Category: add_movie')
+    #print('Category: add_movie')
     if movie['system'].get('guid'):
         url = None
         guid = movie['system']['guid']
@@ -665,7 +665,7 @@ def add_movie(movie, site):
                     site=site, content='movies', playable=True, properties=properties, context=True)
 
 def add_series(show, site):
-    print('Category: add_series')
+    #print('Category: add_series')
     plugin_url = plugin.url_for(seasons_page, url=show['_links']['viaplay:page']['href'])
 
     details = show['content']
@@ -696,7 +696,7 @@ def add_series(show, site):
 
 
 def add_episode(episode, site):
-    print('Category: add_episode')
+    #print('Category: add_episode')
     plugin_url = plugin.url_for(play, guid=episode['system']['guid'], url=None, tve='false')
 
     details = episode['content']
@@ -743,7 +743,7 @@ def add_episode(episode, site):
 
 
 def add_sports_event(event, site):
-    print('Category: add_sports_event')
+    #print('Category: add_sports_event')
     now = datetime.now()
     date_today = now.date()
     event_date = helper.vp.parse_datetime(event['epg']['start'], localize=True)
@@ -788,7 +788,7 @@ def add_sports_event(event, site):
 
 
 def add_sports_series(event, site):
-    print('Category: add_sports_series')
+    #print('Category: add_sports_series')
     now = datetime.now()
     date_today = now.date()
     if event.get('epg'):
@@ -849,7 +849,7 @@ def add_sports_series(event, site):
 
 
 def add_tv_event(event, site):
-    print('Category: add_tv_event')
+    #print('Category: add_tv_event')
     now = datetime.now()
     date_today = now.date()
 
@@ -908,7 +908,7 @@ def add_tv_event(event, site):
         helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info, art=art, sys_guid=event['system']['guid'], site=site, content='episodes', context=True)
 
 def add_event(event, site):
-    print('Category: add_event')
+    #print('Category: add_event')
     plugin_url = plugin.url_for(play, guid=event['system']['guid'], url=None, tve='false')
 
     details = event['content']

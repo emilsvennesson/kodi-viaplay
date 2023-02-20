@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.4.1-beta.6" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev, zuzia-dev">
+<addon id="plugin.video.viaplay" version="2.4.1-beta.7" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev, zuzia-dev">
   <requires>
     <import addon="script.module.requests" version="2.9.1" />
     <import addon="script.module.iso8601" version="0.1.11" />
@@ -24,7 +24,7 @@
     <platform>all</platform>
     <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 and MIT LICENSE.</license>
     <source>https://github.com/Mariusz89B/plugin.video.viaplay</source>
-    <news>v2.4.1 (2023-02-19)
+    <news>v2.4.1 (2023-02-20)
 - Add to my list option.
 - Added login option with username and password.
 - Fixed watched markings for sports events.

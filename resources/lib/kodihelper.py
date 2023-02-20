@@ -141,14 +141,15 @@ class KodiHelper(object):
                 self.dialog(dialog_type='notification', heading=self.language(30076), message=message)
                 return False
 
+        else:
             message = self.language(30039).format(activation_data['verificationUrl'], activation_data['userCode'])
             dialog = xbmcgui.DialogProgress()
             xbmc.sleep(200)  # small delay to prevent DialogProgress from hanging
             dialog.create(self.language(30040), message)
+
             secs = 0
             expires = activation_data['expires']
 
-        else:
             while not xbmc.Monitor().abortRequested() and secs < expires:
                 try:
                     self.vp.authorize_device(activation_data)
