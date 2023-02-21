@@ -170,7 +170,7 @@ msgid "Categories"
 msgstr "Kategorie"
 
 msgctxt "#30042"
-msgid "Log out"
+msgid "Logout"
 msgstr "Wyloguj"
 
 msgctxt "#30043"
@@ -288,3 +288,39 @@ msgstr "Dodano treść do mojej listy"
 msgctxt "#30072"
 msgid "Content could not be added to list"
 msgstr "Nie można dodać treści do listy"
+
+msgctxt "#30073"
+msgid "Username"
+msgstr "Użytkownik"
+
+msgctxt "#30074"
+msgid "Password"
+msgstr "Hasło"
+
+msgctxt "#30075"
+msgid "Wrong login credentials"
+msgstr "Błędne dane logowania"
+
+msgctxt "#30076"
+msgid "Error"
+msgstr "Błąd"
+
+msgctxt "#30077"
+msgid "My list"
+msgstr "Moja lista"
+
+msgctxt "#30078"
+msgid "Remove from my list"
+msgstr "Usuń z mojej listy"
+
+msgctxt "#30079"
+msgid "New search"
+msgstr "Nowe wyszukiwanie"
+
+msgctxt "#30080"
+msgid "Remove search"
+msgstr "Usuń wyszukiwanie"
+
+msgctxt "#30081"
+msgid "Program search"
+msgstr "Wyszukiwanie programów"

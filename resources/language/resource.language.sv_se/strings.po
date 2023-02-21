@@ -170,7 +170,7 @@ msgid "Categories"
 msgstr "Kategorier"
 
 msgctxt "#30042"
-msgid "Log out"
+msgid "Logout"
 msgstr "Logga ut"
 
 msgctxt "#30043"
@@ -288,3 +288,39 @@ msgstr "Materialet lades till i listan"
 msgctxt "#30072"
 msgid "Content could not be added to list"
 msgstr "Innehåll kunde inte läggas till i listan"
+
+msgctxt "#30073"
+msgid "Username"
+msgstr "Användarnamn"
+
+msgctxt "#30074"
+msgid "Password"
+msgstr "Användarnamn"
+
+msgctxt "#30075"
+msgid "Wrong login credentials"
+msgstr "Fel inloggningsuppgifter"
+
+msgctxt "#30076"
+msgid "Error"
+msgstr "Fel"
+
+msgctxt "#30077"
+msgid "My list"
+msgstr "Min lista"
+
+msgctxt "#30078"
+msgid "Remove from my list"
+msgstr "Ta bort från min lista"
+
+msgctxt "#30079"
+msgid "New search"
+msgstr "Ny sökning"
+
+msgctxt "#30080"
+msgid "Remove search"
+msgstr "Ta bort sökning"
+
+msgctxt "#30081"
+msgid "Program search"
+msgstr "Programsökning"

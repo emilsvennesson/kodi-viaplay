@@ -231,7 +231,7 @@ class KodiHelper(object):
                     program_guid = 'no_guid'
 
             if site == 'https://content.viaplay.{0}/xdk-{1}/starred'.format(self.vp.country, self.vp.country):
-                txt = 'Remove from list'
+                txt = self.language(30078)
 
                 if program_guid:
                     context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=remove_favourite_program,guid={0})'.format(program_guid))]

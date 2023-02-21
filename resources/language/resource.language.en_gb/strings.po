@@ -170,7 +170,7 @@ msgid "Categories"
 msgstr ""
 
 msgctxt "#30042"
-msgid "Log out"
+msgid "Logout"
 msgstr ""
 
 msgctxt "#30043"
@@ -307,4 +307,24 @@ msgstr ""
 
 msgctxt "#30076"
 msgid "Error"
+msgstr ""
+
+msgctxt "#30077"
+msgid "My list"
+msgstr ""
+
+msgctxt "#30078"
+msgid "Remove from my list"
+msgstr ""
+
+msgctxt "#30079"
+msgid "New search"
+msgstr ""
+
+msgctxt "#30080"
+msgid "Remove search"
+msgstr ""
+
+msgctxt "#30081"
+msgid "Program search"
 msgstr ""

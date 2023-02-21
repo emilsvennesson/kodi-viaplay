@@ -321,10 +321,11 @@ def root():
     for page in pages:
         page['title'] = capitalize(page['title'])
 
-        if 'logout' in page['href']:
-            page['title'] = helper.language(30042)
-
         if page['name'] in supported_pages:
+            if page['name'] == 'viaplay:starred':
+                page['title'] = helper.language(30077)
+            elif 'viaplay:logout' in page['name']:
+                page['title'] = helper.language(30042)
             helper.add_item(page['title'], plugin.url_for(supported_pages[page['name']], url=page['href']))
         elif 'type' in page and page['type'] in supported_pages:  # weird channels listing fix on some subscriptions
             helper.add_item(page['title'], plugin.url_for(supported_pages[page['type']], url=page['href']))
@@ -349,9 +350,9 @@ def search():
     searches = sorted(f.read().splitlines())
     f.close()
 
-    actions = ["New search", "Remove search"] + searches
+    actions = [helper.language(30079), helper.language(30080)] + searches
 
-    action = helper.dialog(dialog_type='select', heading="Program search", options=actions)
+    action = helper.dialog(dialog_type='select', heading=helper.language(30081), options=actions)
     title = None
 
     if action == -1:
@@ -359,7 +360,7 @@ def search():
     elif action == 0:
         pass
     elif action == 1:
-        which = helper.dialog(dialog_type='multiselect', heading="Remove search", options=searches)
+        which = helper.dialog(dialog_type='multiselect', heading=helper.language(30080), options=searches)
         if which is None:
             return
         else:
