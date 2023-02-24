@@ -1,3 +1,6 @@
+v2.4.2 (2023-02-24)
+- Added playcount for sport events.
+
 v2.4.1 (2023-02-21)
 - Add to my list option.
 - Added login option with username and password.

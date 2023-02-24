@@ -81,7 +81,7 @@ def sql_watched():
             kv_pairs = viaplay_str.split("?")[1].split("&")
             viaplay_dict = {kv.split("=")[0]: kv.split("=")[1] for kv in kv_pairs}
 
-            guid = viaplay_dict['guid']
+            guid = viaplay_dict['guid'].split('-')[0]
 
             watched_list.append((guid, playcount, lastplayed, id))
 
@@ -277,7 +277,7 @@ def generate_m3u():
     for i in range(len(channels)):
         image = images[i].split('{')[0]
 
-        img = re.compile('replace-(.*?)_.*\.png')
+        img = re.compile(r'replace-(.*?)_.*\.png')
 
         try:
             title = img.search(image).group(1)
@@ -766,6 +766,11 @@ def add_sports_event(event, site):
 
     details = event['content']
 
+    if event['system'].get('guid'):
+        guid = event['system']['guid']
+    else:
+        guid = None
+
     if sys.version_info[0] > 2:
         title = details.get('title')
     else:
@@ -784,8 +789,20 @@ def add_sports_event(event, site):
         'title': '[B]{0}:[/B] {1}'.format(coloring(start_time, event_status), title)
     }
 
+    watched_list, duration_list = sql_watched()
+
+    properties = []
+
+    for w in watched_list:
+        if w[0] == guid:
+            event_info.update({'playcount': w[1], 'lastplayed': w[2]})
+
+            for d in duration_list:
+                if d[2] == w[3]:
+                    properties.append((d[0], d[1]))
+
     helper.add_item(event_info['title'], plugin_url, playable=playable, info=event_info,
-                    art=add_art(details['images'], 'sport'), sys_guid=event['system']['guid'], site=site, content='episodes', context=True)
+                    art=add_art(details['images'], 'sport'), sys_guid=event['system']['guid'], site=site, content='episodes', properties=properties, context=True)
 
 
 def add_sports_series(event, site):
