@@ -298,6 +298,11 @@ def generate_m3u():
     f.close()
     xbmcgui.Dialog().notification('Viaplay', helper.language(30064), xbmcgui.NOTIFICATION_INFO)
 
+@plugin.route('/profiles')
+def profiles():
+    helper.profiles_dialog()
+    xbmc.executebuiltin('Container.Refresh()')
+
 @plugin.route('/')
 def root():
     pages = helper.vp.get_root_page()
@@ -318,6 +323,21 @@ def root():
         'channels': channels
     }
 
+    profiles_dict = helper.vp.get_profiles()
+
+    for profile in profiles_dict:
+        if helper.vp.get_setting('profileid'):
+            id = helper.vp.get_setting('profileid')
+        else:
+            id = helper.vp.get_user_id()['id']
+
+        if id == profile['data'].get('id'):
+            name = '{0} {1}'.format(helper.language(30090), profile['data'].get('name'))
+            avatar = {
+                'thumb': profile['embedded']['avatar']['data'].get('url'),
+            }
+            helper.add_item(name, plugin.url_for(profiles), art=avatar)
+
     for page in pages:
         page['title'] = capitalize(page['title'])
 
@@ -331,6 +351,7 @@ def root():
             helper.add_item(page['title'], plugin.url_for(supported_pages[page['type']], url=page['href']))
         else:
             helper.log('Unsupported page found: %s' % page['name'])
+
     helper.eod()
 
 @plugin.route('/start')

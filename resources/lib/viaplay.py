@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 A Kodi-agnostic library for Viaplay
 """
@@ -56,8 +56,10 @@ class Viaplay(object):
         self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
         self.device_key = 'xdk-%s' % self.country
+        self.profile_url = 'https://viaplay.mtg-api.com'
         self.base_url = 'https://content.viaplay.{0}/{1}'.format(self.tld, self.device_key)
         self.login_api = 'https://login.viaplay.%s/api' % self.tld
+
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
         except IOError:
@@ -94,6 +96,12 @@ class Viaplay(object):
             country_code = 'lt'
         elif country_id == '6':
             country_code = 'nl'
+        elif country_id == '7':
+            country_code = 'ee'
+        elif country_id == '8':
+            country_code = 'lv'
+        elif country_id == '9':
+            country_code = 'gb'
 
         return country_code
 
@@ -146,6 +154,13 @@ class Viaplay(object):
 
     def make_request(self, url, method, params=None, payload=None, headers=None, status=False):
         """Make an HTTP request. Return the response."""
+        if not params:
+            params = {}
+
+        id = self.get_setting('profileid')
+        if id:
+            params['profileId'] = id
+
         try:
             return self._make_request(url, method, params=params, payload=payload, headers=headers)
         except self.ViaplayError:
@@ -178,6 +193,35 @@ class Viaplay(object):
             return self.parse_response(req.status_code)
         else:
             return self.parse_response(req.content)
+
+    def get_user_id(self):
+        url = self.login_api + '/persistentLogin/v1'
+        params = {
+            'deviceKey': self.device_key
+        }
+        data = self.make_request(url=url, method='get', params=params)
+
+        return {'id': data['userData']['userId'], 'token': data['userData']['accessToken']}
+
+    def get_profiles(self):
+        url = self.profile_url + '/user-profiles/users/{0}/profiles/'.format(self.get_user_id()['id'])
+
+        headers = {
+            'authorization': 'MTG-AT {0}'.format(self.get_user_id()['token'])
+        }
+
+        params = {
+            'language': self.get_country_code()
+        }
+
+        data = self.make_request(url=url, method='get', params=params, headers=headers)
+
+        profiles = None
+
+        if data['embedded'].get('profiles'):
+            profiles = data['embedded']['profiles']
+
+        return profiles
 
     def parse_response(self, response):
         """Try to load JSON data into dict and raise potential errors."""

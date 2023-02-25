@@ -328,3 +328,39 @@ msgstr ""
 msgctxt "#30081"
 msgid "Program search"
 msgstr ""
+
+msgctxt "#30082"
+msgid "viaplay.ee"
+msgstr ""
+
+msgctxt "#30083"
+msgid "Estonian"
+msgstr ""
+
+msgctxt "#30084"
+msgid "viaplay.lv"
+msgstr ""
+
+msgctxt "#30085"
+msgid "Latvian"
+msgstr ""
+
+msgctxt "#30086"
+msgid "viaplay.gb"
+msgstr ""
+
+msgctxt "#30087"
+msgid "English"
+msgstr ""
+
+msgctxt "#30088"
+msgid "Select profile"
+msgstr ""
+
+msgctxt "#30089"
+msgid "Kids account"
+msgstr ""
+
+msgctxt "#30090"
+msgid "Signed in as"
+msgstr ""

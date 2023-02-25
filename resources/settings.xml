@@ -8,13 +8,16 @@
 					<default>0</default>
 					<constraints>
 						<options>
-							<option label="30008">0</option>
-							<option label="30009">1</option>
-							<option label="30010">2</option>
+						    <option label="30009">1</option>
+							<option label="30082">7</option>
 							<option label="30011">3</option>
-							<option label="30054">4</option>
+							<option label="30086">9</option>
 							<option label="30065">5</option>
+							<option label="30084">8</option>
 							<option label="30067">6</option>
+							<option label="30010">2</option>
+							<option label="30054">4</option>
+							<option label="30008">0</option>
 						</options>
 					</constraints>
 					<control format="string" type="list">

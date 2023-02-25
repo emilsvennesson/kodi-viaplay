@@ -78,6 +78,12 @@ class KodiHelper(object):
             country_code = 'lt'
         elif country_id == '6':
             country_code = 'nl'
+        elif country_id == '7':
+            country_code = 'ee'
+        elif country_id == '8':
+            country_code = 'lv'
+        elif country_id == '9':
+            country_code = 'gb'
 
         return country_code
 
@@ -87,14 +93,14 @@ class KodiHelper(object):
             return "com"
         return country_code
 
-    def dialog(self, dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None):
+    def dialog(self, dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None, useDetails=False):
         dialog = xbmcgui.Dialog()
         if dialog_type == 'ok':
             dialog.ok(heading, message)
         elif dialog_type == 'yesno':
             return dialog.yesno(heading, message, nolabel=nolabel, yeslabel=yeslabel)
         elif dialog_type == 'select':
-            ret = dialog.select(heading, options)
+            ret = dialog.select(heading, options, useDetails=useDetails)
             if ret > -1:
                 return ret
             else:
@@ -107,6 +113,42 @@ class KodiHelper(object):
                 return None
         elif dialog_type == 'notification':
             dialog.notification(heading, message)
+
+    def ensure_profile(self):
+        if not self.vp.get_user_id():
+            self.vp.validate_session()
+        if not self.vp.get_setting('profile_id'):
+            self.profiles_dialog()
+
+    def profiles_dialog(self):
+        profiles = self.vp.get_profiles()
+
+        options = []
+        ids = []
+
+        for profile in profiles:
+            profile_type = profile['data'].get('type')
+            if profile_type != 'adult':
+                profile_type = self.language(30089)
+            else:
+                profile_type = ''
+
+            listitem = xbmcgui.ListItem(
+                label=profile['data'].get('name'),
+                label2=profile_type
+            )
+
+            listitem.setArt({
+                'thumb': profile['embedded']['avatar']['data'].get('url'),
+            })
+
+            options.append(listitem)
+            ids.append(profile['data'].get('id'))
+
+        idx = self.dialog('select', self.language(30088), options=options, useDetails=True)
+
+        if idx >= 0:
+            self.set_setting('profileid', ids[idx])
 
     def log_out(self):
         confirm = self.dialog('yesno', self.language(30042), self.language(30043))

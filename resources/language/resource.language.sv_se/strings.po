@@ -324,3 +324,39 @@ msgstr "Ta bort sökning"
 msgctxt "#30081"
 msgid "Program search"
 msgstr "Programsökning"
+
+msgctxt "#30082"
+msgid "viaplay.ee"
+msgstr "viaplay.ee"
+
+msgctxt "#30083"
+msgid "Estonian"
+msgstr "Estisk"
+
+msgctxt "#30084"
+msgid "viaplay.lv"
+msgstr "viaplay.lv"
+
+msgctxt "#30085"
+msgid "Latvian"
+msgstr "Lettisk"
+
+msgctxt "#30086"
+msgid "viaplay.gb"
+msgstr "viaplay.gb"
+
+msgctxt "#30087"
+msgid "English"
+msgstr "Engelsk"
+
+msgctxt "#30088"
+msgid "Select profile"
+msgstr "Välj profil"
+
+msgctxt "#30089"
+msgid "Kids account"
+msgstr "Barnkonto"
+
+msgctxt "#30090"
+msgid "Signed in as"
+msgstr "Inloggad som"
