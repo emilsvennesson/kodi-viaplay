@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.4.3-beta.1" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev">
+<addon id="plugin.video.viaplay" version="2.4.3-beta.2" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev">
   <requires>
     <import addon="script.module.requests" version="2.9.1" />
     <import addon="script.module.iso8601" version="0.1.11" />
@@ -24,7 +24,7 @@
     <platform>all</platform>
     <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 and MIT LICENSE.</license>
     <source>https://github.com/Mariusz89B/plugin.video.viaplay</source>
-    <news>v2.4.3 (2023-02-25)
+    <news>v2.4.3 (2023-02-26)
 - Added profile selector.
 - Added supported countries.
 

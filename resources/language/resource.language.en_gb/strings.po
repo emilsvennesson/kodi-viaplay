@@ -364,3 +364,11 @@ msgstr ""
 msgctxt "#30090"
 msgid "Signed in as"
 msgstr ""
+
+msgctxt "#30091"
+msgid "Content removed from list"
+msgstr ""
+
+msgctxt "#30092"
+msgid "Remove watched content"
+msgstr ""

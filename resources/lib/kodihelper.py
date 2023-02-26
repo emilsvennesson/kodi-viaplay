@@ -272,7 +272,15 @@ class KodiHelper(object):
                 else:
                     program_guid = 'no_guid'
 
-            if site == 'https://content.viaplay.{0}/xdk-{1}/starred'.format(self.vp.country, self.vp.country):
+            if site.split('?')[0] == 'https://content.viaplay.{0}/xdk-{0}/watched'.format(self.vp.country):
+                txt = self.language(30092)
+
+                if program_guid:
+                    context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=remove_watched_program,guid={0})'.format(program_guid))]
+                else:
+                    context_menu = [('{0}'.format(txt), 'RunScript(plugin.video.viaplay,-1,?action=remove_watched,guid={0})'.format(guid))]
+
+            elif site.split('?')[0] == 'https://content.viaplay.{0}/xdk-{0}/starred'.format(self.vp.country):
                 txt = self.language(30078)
 
                 if program_guid:
@@ -296,6 +304,7 @@ class KodiHelper(object):
             listitem.setProperty('IsPlayable', 'false')
 
         if art:
+            art.update({'fanart': addon.getAddonInfo('fanart')})
             listitem.setArt(art)
         else:
             art = {

@@ -360,3 +360,11 @@ msgstr "Konto dziecięce"
 msgctxt "#30090"
 msgid "Signed in as"
 msgstr "Zalogowano jako"
+
+msgctxt "#30091"
+msgid "Content removed from list"
+msgstr "Zawartość usunięto z listy"
+
+msgctxt "#30092"
+msgid "Remove watched content"
+msgstr "Usuń oglądaną zawartość"

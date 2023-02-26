@@ -360,3 +360,11 @@ msgstr "Barnkonto"
 msgctxt "#30090"
 msgid "Signed in as"
 msgstr "Inloggad som"
+
+msgctxt "#30091"
+msgid "Content removed from list"
+msgstr "Innehåll borttaget från listan"
+
+msgctxt "#30092"
+msgid "Remove watched content"
+msgstr "Ta bort sett innehåll"

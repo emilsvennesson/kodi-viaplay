@@ -41,13 +41,30 @@ handle = int(sys.argv[1])
 params = dict(parse_qsl(sys.argv[2][1:]))
 helper = KodiHelper(base_url, handle)
 plugin = routing.Plugin()
+addon = xbmcaddon.Addon(id='plugin.video.viaplay')
+
+path = addon.getAddonInfo('path')
+resources = os.path.join(path, 'resources')
+icons = os.path.join(resources, 'icons')
+
+movie_icon = os.path.join(icons, 'movie.png')
+tv_icon = os.path.join(icons, 'tv.png')
+vod_icon = os.path.join(icons, 'vod.png')
+sport_icon = os.path.join(icons, 'sport.png')
+kids_icon = os.path.join(icons, 'kids.png')
+fav_icon = os.path.join(icons, 'fav.png')
+search_icon = os.path.join(icons, 'search.png')
+root_icon = os.path.join(icons, 'root.png')
+settings_icon = os.path.join(icons, 'settings.png')
+logout_icon = os.path.join(icons, 'logout.png')
+watched_icon = os.path.join(icons, 'watched.png')
 
 if PY3:
     profile_path = xbmcvfs.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 else:
     profile_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 
-def sql_watched():
+def get_sql_source():
     kodi_version = xbmc.getInfoLabel('System.BuildVersion')[:2]
 
     kodi_list = [('18', '116'), ('19', '119'), ('20', '121'), ('21', '121')]
@@ -61,6 +78,11 @@ def sql_watched():
     path = xbmcvfs.translatePath("special://profile/")
 
     database_path = os.path.join(path, 'Database', SOURCE_DB)
+
+    return database_path
+
+def sql_watched():
+    database_path = get_sql_source()
 
     conn = sqlite3.connect(database_path, detect_types=sqlite3.PARSE_DECLTYPES, cached_statements=2000)
     conn.row_factory = sqlite3.Row
@@ -100,6 +122,32 @@ def sql_watched():
 
     return watched_list, duration_list
 
+def sql_remove_watched(guid):
+    database_path = get_sql_source()
+
+    conn = sqlite3.connect(database_path, detect_types=sqlite3.PARSE_DECLTYPES, cached_statements=2000)
+    conn.row_factory = sqlite3.Row
+
+    c = conn.cursor()
+
+    c.execute('SELECT idFile, strFilename FROM files')
+
+    for row in c:
+        viaplay_str = row[str('strFilename')]
+        if 'plugin://plugin.video.viaplay' in viaplay_str:
+            kv_pairs = viaplay_str.split("?")[1].split("&")
+            viaplay_dict = {kv.split("=")[0]: kv.split("=")[1] for kv in kv_pairs}
+
+            guid_ = viaplay_dict['guid']
+
+            if guid.split('-')[0] == guid_.split('-')[0]:
+                id = row[str('idFile')]
+                c.execute('UPDATE files SET playCount=? WHERE idFile=?', [None, id])
+                c.execute('DELETE FROM bookmark WHERE idFile like ?', [id])
+                conn.commit()
+
+    conn.close()
+
 def run():
     mode = params.get('mode', None)
     action = params.get('action', '')
@@ -107,6 +155,14 @@ def run():
 
     if action == 'BUILD_M3U':
         generate_m3u()
+
+    elif action == 'remove_watched':
+        guid = sys.argv[3][5:]
+        watched(guid)
+
+    elif action == 'remove_watched_program':
+        guid = sys.argv[3][5:]
+        watched(guid, program=True)
 
     elif action == 'favourite':
         guid = sys.argv[3][5:]
@@ -143,6 +199,59 @@ def run():
 
     except:
         pass
+
+def watched(guid, program=False):
+    if program:
+        if guid == 'no_guid':
+            message = helper.language(30072)
+            helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
+            return
+
+        program_guid = guid
+
+    else:
+        guid = guid.split('-')[0]
+
+        params = {
+            'deviceId': helper.vp.get_deviceid(),
+            'deviceName': 'web',
+            'deviceType': 'pc',
+            'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
+            'deviceKey': helper.vp.device_key,
+            'cse': 'true',
+            'guid': guid,
+        }
+
+        response = helper.vp.make_request(url='https://play.viaplay.{0}/api/stream/byguid'.format(helper.vp.country), method='get', params=params)
+
+        params = {
+            'profileId': response['socket']['userId'],
+        }
+
+        if response['product'].get('series'):
+            program_guid = response['product']['content']['series']['seriesGuid']
+        else:
+            program_guid = guid
+
+        if not guid[1:].isnumeric():
+            message = helper.language(30072)
+            helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
+            return
+
+    url = 'https://content.viaplay.{0}/pcdash-{0}/deleteAllProgress/default/{1}/{2}'.format(helper.vp.country, program_guid, helper.vp.get_user_id()['id'])
+
+    params = {
+        'profileId': helper.vp.get_setting('profileid'),
+    }
+
+    response = helper.vp.make_request(url=url, method='post', params=params, status=True)
+
+    sql_remove_watched(program_guid)
+
+    xbmc.executebuiltin('Container.Refresh')
+
+    message = helper.language(30091)
+    helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
 
 def favourite(guid, program=False, remove=False):
     if program:
@@ -218,11 +327,11 @@ def favourite(guid, program=False, remove=False):
             'action': 'remove',
         }
 
-        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{1}/myList'.format(helper.vp.country, helper.vp.country), method='put', params=params, payload=json_data, status=True)
+        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{0}/myList'.format(helper.vp.country), method='put', params=params, payload=json_data, status=True)
 
         xbmc.executebuiltin('Container.Refresh')
 
-        message = 'Content removed from list'
+        message = helper.language(30091)
         helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
 
     else:
@@ -231,7 +340,7 @@ def favourite(guid, program=False, remove=False):
             'action': 'add',
         }
 
-        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{1}/myList'.format(helper.vp.country, helper.vp.country), method='put', params=params, payload=json_data, status=True)
+        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{0}/myList'.format(helper.vp.country), method='put', params=params, payload=json_data, status=True)
 
         message = helper.language(30071)
         helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
@@ -333,20 +442,40 @@ def root():
 
         if id == profile['data'].get('id'):
             name = '{0} {1}'.format(helper.language(30090), profile['data'].get('name'))
-            avatar = {
-                'thumb': profile['embedded']['avatar']['data'].get('url'),
-            }
+            avatar = {'thumb': profile['embedded']['avatar']['data'].get('url')}
             helper.add_item(name, plugin.url_for(profiles), art=avatar)
 
-    for page in pages:
+    sorted_json = sorted(pages, key=lambda x: x['name'] == 'viaplay:logout')
+
+    for page in sorted_json:
         page['title'] = capitalize(page['title'])
 
         if page['name'] in supported_pages:
-            if page['name'] == 'viaplay:starred':
-                page['title'] = helper.language(30077)
-            elif 'viaplay:logout' in page['name']:
+            art = None
+            if page['name'] == 'viaplay:root':
+                art = {'icon': root_icon}
+            elif page['name'] == 'viaplay:search':
+                art = {'icon': search_icon}
+            elif page['name'] == 'viaplay:logout':
                 page['title'] = helper.language(30042)
-            helper.add_item(page['title'], plugin.url_for(supported_pages[page['name']], url=page['href']))
+                art = {'icon': logout_icon}
+            elif page['name'] == 'viaplay:starred':
+                page['title'] = helper.language(30077)
+                art = {'icon': fav_icon}
+            elif page['name'] == 'viaplay:watched':
+                art = {'icon': watched_icon}
+            elif page['name'] == 'series':
+                art = {'icon': vod_icon}
+            elif page['name'] == 'movie':
+                art = {'icon': movie_icon}
+            elif page['name'] == 'kids':
+                art = {'icon': kids_icon}
+            elif page['name'] == 'sport':
+                art = {'icon': sport_icon}
+            elif page['name'] == 'channels':
+                art = {'icon': tv_icon}
+
+            helper.add_item(page['title'], plugin.url_for(supported_pages[page['name']], url=page['href']), art=art)
         elif 'type' in page and page['type'] in supported_pages:  # weird channels listing fix on some subscriptions
             helper.add_item(page['title'], plugin.url_for(supported_pages[page['type']], url=page['href']))
         else:

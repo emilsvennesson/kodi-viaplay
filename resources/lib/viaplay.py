@@ -345,6 +345,7 @@ class Viaplay(object):
             #'guid': guid
             'mediaGuid': guid
         }
+
         if pincode:
             params['pgPin'] = pincode
         if tve == 'true':
