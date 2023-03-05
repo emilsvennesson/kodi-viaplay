@@ -356,9 +356,6 @@ class Viaplay(object):
 
         data = self.make_request(url=url, method='get', params=params)
 
-        print('TEST0')
-        print(data)
-
         title = data['product']['content']['title']
 
         session_guid = data['cseReporting']['sessionGuid']
@@ -372,21 +369,20 @@ class Viaplay(object):
 
         session = response['data']['sessionId']
 
-        url = self.cronos_url + '/cronos-events/event/viaplay/{0}/5.54.1/11/view_displayed_content'.format(self.device_key)
+        url = self.cronos_url + '/cronos-events/event/viaplay/{0}/5.54.1/15/stream_start'.format(self.device_key)
 
         params = {
             'sessionId': session,
         }
 
-        """
         payload = {
             'contentDataArray': [
                 {
                     'availability': 'available',
                     'context': 'view',
                     'creatives': [
-                        'no-background-type',
-                        'no-background',
+                        'promo',
+                        'dynamic-background',
                         'page',
                         'x-large'
                     ],
@@ -443,9 +439,8 @@ class Viaplay(object):
                 'resolution': '411x659'
             },
             'streamData': {
-                'offline': False,
+                'offline': True,
                 'progress': 0,
-                'sessionGuid': session_guid,
                 'startMethod': 'manual',
                 'state': 'default'
             },
@@ -459,95 +454,10 @@ class Viaplay(object):
                 'virtual': True
             }
         }
-        """
 
-        payload = {
-           'contentDataArray':[
-              {
-                 'availability':'available',
-                 'context':'view',
-                 'creatives':[
-                    'promo',
-                    'dynamic-background',
-                    'page',
-                    'x-large'
-                 ],
-                 'houseId':house_id,
-                 'position':2,
-                 'price':0,
-                 'title': title,
-                 'types':[
-                    'SVOD'
-                 ]
-              }
-           ],
-           'deviceData':{
-              'architecture':'ranchu',
-              'category':'Mobile',
-              'country': country_code.upper(),
-              'key': self.device_key,
-              'manufacturer':'google',
-              'name':'sdk_gphone_x86',
-              'os':'Android',
-              'osVersion':'11',
-              'package':'com.viaplay.android',
-              'year':'2020'
-           },
-           'environmentData':{
-              'currency':'EUR',
-              'environment':'production',
-              'language':'en',
-              'market': country_code.upper(),
-              'name':'com.viaplay.android',
-              'touchPoint':'android',
-              'variant':'default',
-              'version':'5.54.1'
-           },
-           'experimentDataArray':[
-              'gradual_rollouts.client_side_logging',
-              'kids',
-              'start_page'
-           ],
-           'pageData':{
-              'title':'Filmy',
-              'type':'product'
-           },
-           'profileData':{
-              'id': self.get_setting('profileid'),
-              'type':'adult'
-           },
-           'sectionData':{
-              'id': corr_id,
-              'name':'movie'
-           },
-           'stateData':{
-              'locale':'en_US',
-              'resolution':'411x659'
-           },
-           'userData':{
-              'loggedIn':True,
-              'userId':self.get_user_id()['id']
-           },
-           'viewContentData':{
-              'availability':'available',
-              'context':'view',
-              'creatives':[
-                 'promo',
-                 'dynamic-background',
-                 'page',
-                 'x-large'
-              ],
-              'houseId': house_id,
-              'position':2,
-              'price':0,
-              'title': title
-           }
-        }
+        response = self.make_request(url=url, method='post', payload=json.dumps(payload), params=params, profile=False, status=True)
 
-        response = self.make_request(url=url, method='post', payload=payload, params=params, profile=False, status=True)
-
-        print('TEST1')
-        print(payload)
+        print('PRINT RESPONSE:')
         print(response)
 
         if 'viaplay:media' in data['_links']:

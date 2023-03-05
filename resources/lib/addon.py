@@ -201,6 +201,10 @@ def run():
         pass
 
 def watched(guid, program=False):
+    params = {
+        'profileId': helper.vp.get_setting('profileid'),
+    }
+
     if program:
         if guid == 'no_guid':
             message = helper.language(30072)
@@ -212,26 +216,7 @@ def watched(guid, program=False):
     else:
         guid = guid.split('-')[0]
 
-        params = {
-            'deviceId': helper.vp.get_deviceid(),
-            'deviceName': 'web',
-            'deviceType': 'pc',
-            'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
-            'deviceKey': helper.vp.device_key,
-            'cse': 'true',
-            'guid': guid,
-        }
-
-        response = helper.vp.make_request(url=helper.vp.play_api + '/api/stream/byguid', method='get', params=params)
-
-        params = {
-            'profileId': response['socket']['userId'],
-        }
-
-        if response['product'].get('series'):
-            program_guid = response['product']['content']['series']['seriesGuid']
-        else:
-            program_guid = guid
+        program_guid = guid
 
         if not guid[1:].isnumeric():
             message = helper.language(30072)
@@ -239,10 +224,6 @@ def watched(guid, program=False):
             return
 
     url = helper.vp.base_url + '/deleteAllProgress/default/{0}/{1}'.format(program_guid, helper.vp.get_user_id()['id'])
-
-    params = {
-        'profileId': helper.vp.get_setting('profileid'),
-    }
 
     response = helper.vp.make_request(url=url, method='post', params=params, status=True)
 
@@ -254,6 +235,10 @@ def watched(guid, program=False):
     helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
 
 def favourite(guid, program=False, remove=False):
+    params = {
+        'profileId': helper.vp.get_setting('profileid'),
+    }
+
     if program:
         if guid == 'no_guid':
             message = helper.language(30072)
@@ -262,59 +247,10 @@ def favourite(guid, program=False, remove=False):
 
         program_guid = guid
 
-        http_session = requests.Session()
-
-        cookie_file = os.path.join(helper.vp.addon_profile, 'cookie_file')
-
-        cookie_jar = cookielib.LWPCookieJar(cookie_file)
-
-        try:
-            cookie_jar.load(ignore_discard=True, ignore_expires=True)
-        except IOError:
-            pass
-
-        http_session.cookies = cookie_jar
-
-        for cookie in http_session.cookies:
-            if cookie.name == 'session':
-                value = unquote(cookie.value)
-
-                json_regex = re.compile(r'[{\[]{1}([,:{}\[\]0-9.\-+A-zr-u \n\r\t]|".*:?")+[}\]]{1}')
-
-                r = json_regex.search(value)
-                json_str = r.group(0) if r else ''
-
-                data = json.loads(json_str)
-
-                profileId = data['userId']
-
-        params = {
-            'profileId': profileId,
-        }
-
     else:
         guid = guid.split('-')[0]
 
-        params = {
-            'deviceId': helper.vp.get_deviceid(),
-            'deviceName': 'web',
-            'deviceType': 'pc',
-            'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.41',
-            'deviceKey': helper.vp.device_key,
-            'cse': 'true',
-            'guid': guid,
-        }
-
-        response = helper.vp.make_request(url=helper.vp.play_api + '/stream/byguid', method='get', params=params)
-
-        params = {
-            'profileId': response['socket']['userId'],
-        }
-
-        if response['product'].get('series'):
-            program_guid = response['product']['content']['series']['seriesGuid']
-        else:
-            program_guid = guid
+        program_guid = guid
 
         if not guid[1:].isnumeric():
             message = helper.language(30072)
