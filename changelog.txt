@@ -1,4 +1,4 @@
-v2.4.3 (2023-02-26)
+v2.4.3 (2023-03-05)
 - Added profile selector.
 - Added supported countries.
 

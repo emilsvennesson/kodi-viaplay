@@ -55,10 +55,13 @@ class Viaplay(object):
             os.makedirs(self.tempdir)
         self.deviceid_file = os.path.join(settings_folder, 'deviceId')
         self.http_session = requests.Session()
-        self.device_key = 'xdk-%s' % self.country
+        self.device_key = 'xdk-{0}'.format(self.country)
         self.profile_url = 'https://viaplay.mtg-api.com'
         self.base_url = 'https://content.viaplay.{0}/{1}'.format(self.tld, self.device_key)
-        self.login_api = 'https://login.viaplay.%s/api' % self.tld
+        self.cronos_url = 'https://cronos-events.viaplay.{0}'.format(self.tld)
+        self.socket_url = 'https://socket.viaplay.{0}'.format(self.tld)
+        self.play_api = 'https://play.viaplay.{0}/api'.format(self.tld)
+        self.login_api = 'https://login.viaplay.{0}/api'.format(self.tld)
 
         try:
             self.cookie_jar.load(ignore_discard=True, ignore_expires=True)
@@ -152,13 +155,13 @@ class Viaplay(object):
 
         return url
 
-    def make_request(self, url, method, params=None, payload=None, headers=None, status=False):
+    def make_request(self, url, method, params=None, payload=None, headers=None, profile=True, status=False):
         """Make an HTTP request. Return the response."""
         if not params:
             params = {}
 
         id = self.get_setting('profileid')
-        if id:
+        if id and profile:
             params['profileId'] = id
 
         try:
@@ -341,7 +344,7 @@ class Viaplay(object):
             'deviceName': 'web',
             'deviceType': 'pc',
             'userAgent': 'Kodi',
-            'deviceKey': 'chromecast-{cc}'.format(cc=self.country),
+            'deviceKey': 'chromecast-{0}'.format(country_code),
             #'guid': guid
             'mediaGuid': guid
         }
@@ -352,6 +355,200 @@ class Viaplay(object):
             params['isTve'] = tve
 
         data = self.make_request(url=url, method='get', params=params)
+
+        print('TEST0')
+        print(data)
+
+        title = data['product']['content']['title']
+
+        session_guid = data['cseReporting']['sessionGuid']
+
+        house_id = data['product']['system']['guid']
+        corr_id = data['cseReporting']['data']['correlationId']
+
+        url = self.cronos_url + '/cronos-events/session/viaplay/xdk/5.54.1'
+
+        response = self.make_request(url=url, method='get', status=True)
+
+        session = response['data']['sessionId']
+
+        url = self.cronos_url + '/cronos-events/event/viaplay/{0}/5.54.1/11/view_displayed_content'.format(self.device_key)
+
+        params = {
+            'sessionId': session,
+        }
+
+        """
+        payload = {
+            'contentDataArray': [
+                {
+                    'availability': 'available',
+                    'context': 'view',
+                    'creatives': [
+                        'no-background-type',
+                        'no-background',
+                        'page',
+                        'x-large'
+                    ],
+                    'houseId': house_id,
+                    'position': 2,
+                    'price': 0,
+                    'title': title,
+                    'types': [
+                        'SVOD'
+                    ]
+                }
+            ],
+            'deviceData': {
+                'architecture': 'ranchu',
+                'category': 'Mobile',
+                'country': country_code.upper(),
+                'key': self.device_key,
+                'manufacturer': 'google',
+                'name': 'sdk_gphone_x86',
+                'os': 'Android',
+                'osVersion': '11',
+                'package': 'com.viaplay.android',
+                'year': '2020'
+            },
+            'environmentData': {
+                'currency': 'EUR',
+                'environment': 'production',
+                'language': 'en',
+                'market': country_code.upper(),
+                'name': 'com.viaplay.android',
+                'touchPoint': 'android',
+                'variant': 'default',
+                'version': '5.54.1'
+            },
+            'experimentDataArray': [
+                'gradual_rollouts.client_side_logging',
+                'kids',
+                'start_page'
+            ],
+            'pageData': {
+                'title': 'Player',
+                'type': 'player'
+            },
+            'profileData': {
+                'id': self.get_setting('profileid'),
+                'type': 'adult'
+            },
+            'sectionData': {
+                'id': 'player',
+                'name': 'player'
+            },
+            'stateData': {
+                'locale': 'en_US',
+                'resolution': '411x659'
+            },
+            'streamData': {
+                'offline': False,
+                'progress': 0,
+                'sessionGuid': session_guid,
+                'startMethod': 'manual',
+                'state': 'default'
+            },
+            'userData': {
+                'loggedIn': True,
+                'userId': self.get_user_id()['id']
+            },
+            'viewData': {
+                'title': 'Player',
+                'type': 'player',
+                'virtual': True
+            }
+        }
+        """
+
+        payload = {
+           'contentDataArray':[
+              {
+                 'availability':'available',
+                 'context':'view',
+                 'creatives':[
+                    'promo',
+                    'dynamic-background',
+                    'page',
+                    'x-large'
+                 ],
+                 'houseId':house_id,
+                 'position':2,
+                 'price':0,
+                 'title': title,
+                 'types':[
+                    'SVOD'
+                 ]
+              }
+           ],
+           'deviceData':{
+              'architecture':'ranchu',
+              'category':'Mobile',
+              'country': country_code.upper(),
+              'key': self.device_key,
+              'manufacturer':'google',
+              'name':'sdk_gphone_x86',
+              'os':'Android',
+              'osVersion':'11',
+              'package':'com.viaplay.android',
+              'year':'2020'
+           },
+           'environmentData':{
+              'currency':'EUR',
+              'environment':'production',
+              'language':'en',
+              'market': country_code.upper(),
+              'name':'com.viaplay.android',
+              'touchPoint':'android',
+              'variant':'default',
+              'version':'5.54.1'
+           },
+           'experimentDataArray':[
+              'gradual_rollouts.client_side_logging',
+              'kids',
+              'start_page'
+           ],
+           'pageData':{
+              'title':'Filmy',
+              'type':'product'
+           },
+           'profileData':{
+              'id': self.get_setting('profileid'),
+              'type':'adult'
+           },
+           'sectionData':{
+              'id': corr_id,
+              'name':'movie'
+           },
+           'stateData':{
+              'locale':'en_US',
+              'resolution':'411x659'
+           },
+           'userData':{
+              'loggedIn':True,
+              'userId':self.get_user_id()['id']
+           },
+           'viewContentData':{
+              'availability':'available',
+              'context':'view',
+              'creatives':[
+                 'promo',
+                 'dynamic-background',
+                 'page',
+                 'x-large'
+              ],
+              'houseId': house_id,
+              'position':2,
+              'price':0,
+              'title': title
+           }
+        }
+
+        response = self.make_request(url=url, method='post', payload=payload, params=params, profile=False, status=True)
+
+        print('TEST1')
+        print(payload)
+        print(response)
 
         if 'viaplay:media' in data['_links']:
             mpd_url = data['_links']['viaplay:media']['href']

@@ -222,7 +222,7 @@ def watched(guid, program=False):
             'guid': guid,
         }
 
-        response = helper.vp.make_request(url='https://play.viaplay.{0}/api/stream/byguid'.format(helper.vp.country), method='get', params=params)
+        response = helper.vp.make_request(url=helper.vp.play_api + '/api/stream/byguid', method='get', params=params)
 
         params = {
             'profileId': response['socket']['userId'],
@@ -238,7 +238,7 @@ def watched(guid, program=False):
             helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
             return
 
-    url = 'https://content.viaplay.{0}/pcdash-{0}/deleteAllProgress/default/{1}/{2}'.format(helper.vp.country, program_guid, helper.vp.get_user_id()['id'])
+    url = helper.vp.base_url + '/deleteAllProgress/default/{0}/{1}'.format(program_guid, helper.vp.get_user_id()['id'])
 
     params = {
         'profileId': helper.vp.get_setting('profileid'),
@@ -305,7 +305,7 @@ def favourite(guid, program=False, remove=False):
             'guid': guid,
         }
 
-        response = helper.vp.make_request(url='https://play.viaplay.{0}/api/stream/byguid'.format(helper.vp.country), method='get', params=params)
+        response = helper.vp.make_request(url=helper.vp.play_api + '/stream/byguid', method='get', params=params)
 
         params = {
             'profileId': response['socket']['userId'],
@@ -327,7 +327,7 @@ def favourite(guid, program=False, remove=False):
             'action': 'remove',
         }
 
-        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{0}/myList'.format(helper.vp.country), method='put', params=params, payload=json_data, status=True)
+        response = helper.vp.make_request(url=helper.vp.base_url + '/myList', method='put', params=params, payload=json_data, status=True)
 
         xbmc.executebuiltin('Container.Refresh')
 
@@ -340,7 +340,7 @@ def favourite(guid, program=False, remove=False):
             'action': 'add',
         }
 
-        response = helper.vp.make_request(url='https://content.viaplay.{0}/pcdash-{0}/myList'.format(helper.vp.country), method='put', params=params, payload=json_data, status=True)
+        response = helper.vp.make_request(url=helper.vp.base_url + '/myList', method='put', params=params, payload=json_data, status=True)
 
         message = helper.language(30071)
         helper.dialog(dialog_type='notification', heading=helper.language(30017), message=message)
@@ -361,8 +361,6 @@ def generate_m3u():
 
     data = '#EXTM3U\n'
 
-    country_code = helper.get_country_code()
-    tld = helper.get_tld()
     country_id = helper.get_setting('site')
     if country_id == '0':
         chann = 'kanaler'
@@ -375,7 +373,7 @@ def generate_m3u():
     elif country_id == '4':
         chann = 'channels'
 
-    url = 'https://content.viaplay.{c1}/xdk-{c2}/{chann}'.format(c1=tld, c2=country_code, chann=chann)
+    url = helper.vp.base_url + '/{0}'.format(chann)
 
     response = helper.vp.make_request(url=url, method='get')
     channels_block = response['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:blocks']
