@@ -61,6 +61,7 @@ class Viaplay(object):
         self.cronos_url = 'https://cronos-events.viaplay.{0}'.format(self.tld)
         self.socket_url = 'https://socket.viaplay.{0}'.format(self.tld)
         self.play_api = 'https://play.viaplay.{0}/api'.format(self.tld)
+        self.play_live_api = 'https://play-live.viaplay.{0}/api'.format(self.tld)
         self.login_api = 'https://login.viaplay.{0}/api'.format(self.tld)
 
         try:
@@ -155,13 +156,13 @@ class Viaplay(object):
 
         return url
 
-    def make_request(self, url, method, params=None, payload=None, headers=None, profile=True, status=False):
+    def make_request(self, url, method, params=None, payload=None, headers=None, status=False):
         """Make an HTTP request. Return the response."""
         if not params:
             params = {}
 
         id = self.get_setting('profileid')
-        if id and profile:
+        if id:
             params['profileId'] = id
 
         try:
@@ -325,19 +326,18 @@ class Viaplay(object):
                 end_time_obj = self.parse_datetime(i['epg']['endTime'], localize=True)
 
                 now = datetime.now()
-                date_today = now.date()
 
                 if start_time_obj <= now <= end_time_obj:
                     guid = i['system']['guid'] + '-' + country_code.upper()
-                    url = 'https://play-live.viaplay.{tld}/api/stream/bymediaguid'.format(tld=self.tld)
+                    url = self.play_live_api + '/stream/bymediaguid'
 
         elif self.tld.upper() in guid:
             guid = guid
-            url = 'https://play-live.viaplay.{tld}/api/stream/bymediaguid'.format(tld=self.tld)
+            url = self.play_live_api + '/stream/bymediaguid'
 
         else:
             guid = guid
-            url = 'https://play.viaplay.{tld}/api/stream/bymediaguid'.format(tld=self.tld)
+            url = self.play_api + '/stream/bymediaguid'
 
         params = {
             'deviceId': self.get_deviceid(),
@@ -356,109 +356,38 @@ class Viaplay(object):
 
         data = self.make_request(url=url, method='get', params=params)
 
-        title = data['product']['content']['title']
-
-        session_guid = data['cseReporting']['sessionGuid']
-
-        house_id = data['product']['system']['guid']
-        corr_id = data['cseReporting']['data']['correlationId']
+        correlation_id = data['cseReporting']['data']['correlationId']
 
         url = self.cronos_url + '/cronos-events/session/viaplay/xdk/5.54.1'
 
         response = self.make_request(url=url, method='get', status=True)
 
-        session = response['data']['sessionId']
-
-        url = self.cronos_url + '/cronos-events/event/viaplay/{0}/5.54.1/15/stream_start'.format(self.device_key)
+        url = data['cseReporting']['link']['reportingUrl']['href']
 
         params = {
-            'sessionId': session,
+            'profileId': self.get_setting('profileid'),
         }
 
-        payload = {
-            'contentDataArray': [
-                {
-                    'availability': 'available',
-                    'context': 'view',
-                    'creatives': [
-                        'promo',
-                        'dynamic-background',
-                        'page',
-                        'x-large'
-                    ],
-                    'houseId': house_id,
-                    'position': 2,
-                    'price': 0,
-                    'title': title,
-                    'types': [
-                        'SVOD'
-                    ]
-                }
-            ],
-            'deviceData': {
-                'architecture': 'ranchu',
-                'category': 'Mobile',
-                'country': country_code.upper(),
-                'key': self.device_key,
-                'manufacturer': 'google',
-                'name': 'sdk_gphone_x86',
-                'os': 'Android',
-                'osVersion': '11',
-                'package': 'com.viaplay.android',
-                'year': '2020'
-            },
-            'environmentData': {
-                'currency': 'EUR',
-                'environment': 'production',
-                'language': 'en',
-                'market': country_code.upper(),
-                'name': 'com.viaplay.android',
-                'touchPoint': 'android',
-                'variant': 'default',
-                'version': '5.54.1'
-            },
-            'experimentDataArray': [
-                'gradual_rollouts.client_side_logging',
-                'kids',
-                'start_page'
-            ],
-            'pageData': {
-                'title': 'Player',
-                'type': 'player'
-            },
-            'profileData': {
-                'id': self.get_setting('profileid'),
-                'type': 'adult'
-            },
-            'sectionData': {
-                'id': 'player',
-                'name': 'player'
-            },
-            'stateData': {
-                'locale': 'en_US',
-                'resolution': '411x659'
-            },
-            'streamData': {
-                'offline': True,
-                'progress': 0,
-                'startMethod': 'manual',
-                'state': 'default'
-            },
-            'userData': {
-                'loggedIn': True,
-                'userId': self.get_user_id()['id']
-            },
-            'viewData': {
-                'title': 'Player',
-                'type': 'player',
-                'virtual': True
-            }
+        for a in data['cseReporting']['data']['reportAction']:
+            if a['key'] == 'unload':
+                action = a['value']
+
+        json_data = {
+            'bitrate': 10000,
+            'clientVersion': '1.1.1-657ada7f80f',
+            'deltaTime': data['postplay']['duration'],
+            'correlationId': correlation_id,
+            'sequenceNumber': 1,
+            'actionType': action,
+            'consentData': {
+                'approved': ['functional', 'targeted', 'performance'],
+                'rejected': ['personalization']
+                },
+            'duration': data['duration'],
+            'position': 0
         }
 
-        response = self.make_request(url=url, method='post', payload=json.dumps(payload), params=params, profile=False, status=True)
-
-        print('PRINT RESPONSE:')
-        print(response)
+        response = self.make_request(url=url, method='post', payload=json.dumps(json_data), params=params, status=True)
 
         if 'viaplay:media' in data['_links']:
             mpd_url = data['_links']['viaplay:media']['href']
