@@ -295,7 +295,7 @@ msgstr "Användarnamn"
 
 msgctxt "#30074"
 msgid "Password"
-msgstr "Användarnamn"
+msgstr "Lösenord"
 
 msgctxt "#30075"
 msgid "Wrong login credentials"
@@ -368,3 +368,7 @@ msgstr "Innehåll borttaget från listan"
 msgctxt "#30092"
 msgid "Remove watched content"
 msgstr "Ta bort sett innehåll"
+
+msgctxt "#30093"
+msgid "Synchronize content"
+msgstr "Synkronisera innehåll"

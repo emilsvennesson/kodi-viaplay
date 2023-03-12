@@ -429,57 +429,73 @@ def start():
 
 @plugin.route('/search')
 def search():
-    file_name = os.path.join(profile_path, 'title_search.list')
-    f = xbmcvfs.File(file_name, "rb")
-    searches = sorted(f.read().splitlines())
-    f.close()
+    pages = helper.vp.get_root_page()
+    title = [x['title'] for x in pages if x['name'] == 'viaplay:search'][0]
 
-    actions = [helper.language(30079), helper.language(30080)] + searches
+    file_search = os.path.join(profile_path, 'last_search.list')
 
-    action = helper.dialog(dialog_type='select', heading=helper.language(30081), options=actions)
-    title = None
+    if xbmc.getInfoLabel('ListItem.Label') == title:
+        file_name = os.path.join(profile_path, 'title_search.list')
+        f = xbmcvfs.File(file_name, 'rb')
+        searches = sorted(f.read().splitlines())
+        f.close()
 
-    if action == -1:
-        return
-    elif action == 0:
-        pass
-    elif action == 1:
-        which = helper.dialog(dialog_type='multiselect', heading=helper.language(30080), options=searches)
-        if which is None:
+        actions = [helper.language(30079), helper.language(30080)] + searches
+
+        action = helper.dialog(dialog_type='select', heading=helper.language(30081), options=actions)
+        title = None
+
+        if action == -1:
             return
-        else:
-            for item in reversed(which):
-                del searches[item]
+        elif action == 0:
+            pass
+        elif action == 1:
+            which = helper.dialog(dialog_type='multiselect', heading=helper.language(30080), options=searches)
+            if which is None:
+                return
+            else:
+                for item in reversed(which):
+                    del searches[item]
 
-            f = xbmcvfs.File(file_name, "wb")
-            if sys.version_info[0] < 3:
-                searches = [x.decode('utf-8') for x in searches]
-            f.write(bytearray('\n'.join(searches), 'utf-8'))
+                f = xbmcvfs.File(file_name, 'wb')
+                if sys.version_info[0] < 3:
+                    searches = [x.decode('utf-8') for x in searches]
+                f.write(bytearray('\n'.join(searches), 'utf-8'))
+                f.close()
+                return
+        else:
+            if searches:
+                title = searches[action - 2]
+
+        if action == 0:
+            search = helper.get_user_input(helper.language(30015))
+
+        else:
+            if sys.version_info[0] > 2:
+                search = title
+            else:
+                search = title.encode('utf-8')
+
+        if not search:
+            return
+        searches = (set([search] + searches))
+        f = xbmcvfs.File(file_name, 'wb')
+        if sys.version_info[0] < 3:
+            searches = [x.decode('utf-8') for x in searches]
+        f.write(bytearray('\n'.join(searches), 'utf-8'))
+        f.close()
+
+        if search != '':
+            f = xbmcvfs.File(file_search, 'w')
+            f.write(search)
             f.close()
-            return
+
+            list_products(plugin.args['url'][0], search_query=search)
     else:
-        if searches:
-            title = searches[action - 2]
+        f = xbmcvfs.File(file_search, 'r')
+        search = f.read().splitlines()
+        f.close()
 
-    if action == 0:
-        search = helper.get_user_input(helper.language(30015))
-
-    else:
-        if sys.version_info[0] > 2:
-            search = title
-        else:
-            search = title.encode('utf-8')
-
-    if not search:
-        return
-    searches = (set([search] + searches))
-    f = xbmcvfs.File(file_name, "wb")
-    if sys.version_info[0] < 3:
-        searches = [x.decode('utf-8') for x in searches]
-    f.write(bytearray('\n'.join(searches), 'utf-8'))
-    f.close()
-
-    if search != '':
         list_products(plugin.args['url'][0], search_query=search)
 
 

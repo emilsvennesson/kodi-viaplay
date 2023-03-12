@@ -372,3 +372,7 @@ msgstr ""
 msgctxt "#30092"
 msgid "Remove watched content"
 msgstr ""
+
+msgctxt "#30093"
+msgid "Synchronize content"
+msgstr ""

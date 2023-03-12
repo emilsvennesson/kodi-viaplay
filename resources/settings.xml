@@ -50,6 +50,11 @@
 					<default>false</default>
 					<control type="toggle"/>
 				</setting>
+				<setting help="" id="synchronize" label="30093" type="boolean">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
 				<setting help="" id="subtitles" label="30012" type="boolean">
 					<level>0</level>
 					<default>true</default>

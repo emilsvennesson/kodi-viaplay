@@ -368,3 +368,7 @@ msgstr "Zawartość usunięto z listy"
 msgctxt "#30092"
 msgid "Remove watched content"
 msgstr "Usuń oglądaną zawartość"
+
+msgctxt "#30093"
+msgid "Synchronize content"
+msgstr "Synchronizuj zawartość"

@@ -387,7 +387,8 @@ class Viaplay(object):
             'position': 0
         }
 
-        response = self.make_request(url=url, method='post', payload=json.dumps(json_data), params=params, status=True)
+        if self.get_setting('synchronize'):
+            response = self.make_request(url=url, method='post', payload=json.dumps(json_data), params=params, status=True)
 
         if 'viaplay:media' in data['_links']:
             mpd_url = data['_links']['viaplay:media']['href']
