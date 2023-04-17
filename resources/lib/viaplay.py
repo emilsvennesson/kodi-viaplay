@@ -338,6 +338,14 @@ class Viaplay(object):
             guid = guid
             url = self.play_live_api + '/stream/bymediaguid'
 
+        elif 'GB' in guid:
+            guid = guid
+            url = self.play_live_api + '/stream/bymediaguid'
+
+        elif 'NL' in guid:
+            guid = guid
+            url = self.play_live_api + '/stream/bymediaguid'
+
         else:
             guid = guid
             url = self.play_api + '/stream/bymediaguid'
