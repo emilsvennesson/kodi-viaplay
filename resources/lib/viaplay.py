@@ -210,10 +210,11 @@ class Viaplay(object):
         return {'id': data['userData']['userId'], 'token': data['userData']['accessToken']}
 
     def get_profiles(self):
-        url = self.profile_url + '/user-profiles/users/{0}/profiles/'.format(self.get_user_id()['id'])
+        url = self.profile_url + '/profiles/users/{0}/profiles/'.format(self.get_user_id()['id'])
 
         headers = {
-            'authorization': 'MTG-AT {0}'.format(self.get_user_id()['token'])
+            'authorization': 'MTG-AT {0}'.format(self.get_user_id()['token']),
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.48'
         }
 
         params = {
