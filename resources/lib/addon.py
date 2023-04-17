@@ -367,17 +367,17 @@ def root():
     }
 
     profiles_dict = helper.vp.get_profiles()
+    if profiles_dict:
+        for profile in profiles_dict:
+            if helper.vp.get_setting('profileid'):
+                id = helper.vp.get_setting('profileid')
+            else:
+                id = helper.vp.get_user_id()['id']
 
-    for profile in profiles_dict:
-        if helper.vp.get_setting('profileid'):
-            id = helper.vp.get_setting('profileid')
-        else:
-            id = helper.vp.get_user_id()['id']
-
-        if id == profile['data'].get('id'):
-            name = '{0} {1}'.format(helper.language(30090), profile['data'].get('name'))
-            avatar = {'thumb': profile['embedded']['avatar']['data'].get('url')}
-            helper.add_item(name, plugin.url_for(profiles), art=avatar)
+            if id == profile['data'].get('id'):
+                name = '{0} {1}'.format(helper.language(30090), profile['data'].get('name'))
+                avatar = {'thumb': profile['embedded']['avatar']['data'].get('url')}
+                helper.add_item(name, plugin.url_for(profiles), art=avatar)
 
     sorted_json = sorted(pages, key=lambda x: x['name'] == 'viaplay:logout')
 

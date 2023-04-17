@@ -89,8 +89,10 @@ class KodiHelper(object):
 
     def get_tld(self):
         country_code = self.get_country_code()
-        if country_code == "nl":
-            return "com"
+        if country_code == 'nl':
+            return 'com'
+        elif country_code == 'gb':
+            return 'com'
         return country_code
 
     def dialog(self, dialog_type, heading, message=None, options=None, nolabel=None, yeslabel=None, useDetails=False):
