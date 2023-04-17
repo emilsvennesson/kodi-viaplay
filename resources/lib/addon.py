@@ -593,17 +593,20 @@ def channels():
 
         for index, program in enumerate(channel['_embedded']['viaplay:products']):  # get current live program
             if index > 0:
-                if helper.vp.get_event_status(program) == 'live':
+                if helper.vp.get_event_status(program) in ['live', 'archive', 'upcoming']:
                     if program.get('content'):
                         current_program_title = coloring(program['content']['title'], 'live')
                     else:  # no broadcast
                         current_program_title = coloring(helper.language(30049), 'no_broadcast')
                     break
 
+        regex = fr'\(SimplyTV\)\s*|\b{helper.get_country_code().upper()}\b\s*'
+        title = re.sub(regex, '', channel['content']['title'])
+
         if sys.version_info[0] > 2:
-            list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title)
+            list_title = '[B]{0}[/B]: {1}'.format(title, current_program_title)
         else:
-            list_title = '[B]{0}[/B]: {1}'.format(channel['content']['title'], current_program_title.encode('utf-8'))
+            list_title = '[B]{0}[/B]: {1}'.format(title, current_program_title.encode('utf-8'))
 
         helper.add_item(list_title, plugin_url, art=art)
 
