@@ -387,7 +387,7 @@ class Viaplay(object):
         json_data = {
             'bitrate': 10000,
             'clientVersion': '1.1.1-657ada7f80f',
-            'deltaTime': data['postplay']['duration'],
+            'deltaTime': data['duration'],
             'correlationId': correlation_id,
             'sequenceNumber': 1,
             'actionType': action,

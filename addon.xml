@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.4.5" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev">
+<addon id="plugin.video.viaplay" version="2.4.6-beta.1" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev">
   <requires>
     <import addon="script.module.requests" version="2.9.1" />
     <import addon="script.module.iso8601" version="0.1.11" />
@@ -24,7 +24,10 @@
     <platform>all</platform>
     <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 and MIT LICENSE.</license>
     <source>https://github.com/Mariusz89B/plugin.video.viaplay</source>
-    <news>v2.4.5 (2023-04-17)
+    <news>v2.4.6 (2023-04-17)
+- Fixed live channels.
+
+v2.4.5 (2023-04-17)
 - Bug fixes.
 
 v2.4.4 (2023-03-12)
