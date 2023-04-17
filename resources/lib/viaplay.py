@@ -113,8 +113,10 @@ class Viaplay(object):
         return self.get_tld_for(self.get_country_code())
 
     def get_tld_for(self, country_code):
-        if country_code == "nl":
-            return "com"
+        if country_code == 'nl':
+            return 'com'
+        elif country_code == 'gb':
+            return 'com'
         return country_code
 
     def replace_cookies(self):
