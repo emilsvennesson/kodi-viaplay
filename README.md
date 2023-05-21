@@ -1,27 +1,54 @@
-﻿# Viaplay for Kodi #
-This is a Kodi add-on that allows you to stream content from Viaplay in Kodi.
+[![GitHub release](https://img.shields.io/github/v/release/Mariusz89B/plugin.video.viaplay.svg)](https://github.com/Mariusz89B/plugin.video.viaplay/releases)
+[![GitHub downloads](https://img.shields.io/github/downloads/Mariusz89B/plugin.video.viaplay/total.svg)](https://github.com/Mariusz89B/plugin.video.viaplay)
+[![License: GPLv3](https://img.shields.io/badge/license-GPLv3-red.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Kodi](https://img.shields.io/badge/platform-Kodi-lightgrey.svg)](https://kodi.tv/)
 
-## Disclaimer ##
-This add-on is unoffical and is not endorsed or supported by Viaplay in any way. Any trademarks used belong to their owning companies and organisations.
+# Support us!
 
-## Dependencies: ##
-This add-on is available in the official Kodi repository and all dependencies will be installed automatically when installed from there. However, if you're installing straight from git, please make sure you've got the following modules installed:
- * script.module.requests >= 2.9.1 (http://mirrors.kodi.tv/addons/krypton/script.module.requests/)
- * script.module.iso8601 (http://mirrors.kodi.tv/addons/krypton/script.module.iso8601/)
- * script.module.inputstreamhelper >= 0.3.3 (http://mirrors.kodi.tv/addons/krypton/script.module.inputstreamhelper/)
- * script.module.routing >= 0.2.0 (http://mirrors.kodi.tv/addons/krypton/script.module.routing/)
- 
-This add-on requires Kodi 17.4 or higher with InputStream Adaptive installed. Kodi 18 is required for Android based devices.
+All donations are appreciated.<br>
+https://www.paypal.me/mariusz89b
 
-## DRM protected streams ##
-Viaplay's content is DRM protected and requires the proprietary decryption module Widevine CDM for playback. You will be prompted to install this if you're attempting to play a stream without the binary installed.
- 
-Most Android devices have built-in support for Widevine DRM and doesn't require any additional binaries. You can see if your Android device supports Widevine DRM by using the [DRM Info](https://play.google.com/store/apps/details?id=com.androidfung.drminfo) app available in Play Store.
 
-## Support ##
-Please report any issues or bug reports on the [GitHub Issues](https://github.com/emilsvennesson/kodi-viaplay/issues) page. Remember to include a full, non-cut off Kodi debug log. See the [Kodi wiki page](http://kodi.wiki/view/Log_file/Advanced) for more detailed instructions on how to obtain the log file.
+## Disclaimer
 
-Additional support/discussion about the add-on can be found in the [Viaplay add-on thread](https://forum.kodi.tv/showthread.php?tid=286387).
+This add-on is unoffical and is not endorsed or supported by the service provided in any way. 
+Any trademarks used belong to their owning companies and organisations. 
 
-## License ##
-This add-on is licensed under the **GNU GENERAL PUBLIC LICENSE Version 3**. Please see the [LICENSE.txt](LICENSE.txt) file for details.
+Connection to the service takes place with the help of an API request that is processed by the server and respond back to the client.
+
+## Regulations
+
+Detailed regulations of the television providers can be found on their websites.
+
+* **Viaplay** - https://viaplay.se/se-sv/terms
+
+
+
+Subscription fees are made on the television providers website and are not linked to the add-on.
+
+More information on licensed television providers is found here:
+
+Sweden - Post- och telestyrelsen
+https://www.pts.se/
+
+
+## DRM protected streams
+
+Some content is DRM protected and requires the proprietary decryption module 
+Widevine CDM for playback. You will be prompted to install this if you're attempting to
+play a stream without the binary installed.
+
+Most Android devices have built-in support for Widevine DRM and doesn't require 
+any additional binaries. You can see if your Android device supports Widevine DRM by 
+using the DRM Info app available in Play Store.
+
+
+## License
+
+This add-on is licensed under the **`GNU GENERAL PUBLIC LICENSE Version 3`** and **`MIT LICENSE`**. 
+Please see the **`LICENSE.txt`** file for details.
+
+![](https://github.com/Mariusz89B/plugin.video.viaplay/blob/master/resources/fanart.jpg?raw=true?)
+
+Copyright Mariusz89B © 2023

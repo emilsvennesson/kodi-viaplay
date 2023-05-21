@@ -1,87 +1,201 @@
-2019.03.11 v.2.1.2
-+ Fix channels listing on some subscriptions
-+ Fix 'fallback' image is not always available
+v2.4.6 (2023-04-17)
+- Fixed live channels.
 
-2018.02.21 v2.1.1
-+ Fix parental control
+v2.4.5 (2023-04-17)
+- Bug fixes.
 
-2018.02.21 v2.1.0
-+ New dependency: script.module.routing
-+ Support for 4K streams and 5.1 audio
-+ Fix audio bug on some sports streams (requires Kodi v18 Leia)
-+ Channels section improvements
-+ Code cleanup
+v2.4.4 (2023-03-12)
+- Fixed bug when returning from search.
+- Added option to enable/disable synchronization. 
 
-2017.12.27 v2.0.1
-+ Minor changes needed for approval in the official repository
+v2.4.3 (2023-03-06)
+- Added profile selector.
+- Added supported countries.
+- Added synchronization with watched list.
 
-2017.12.27 v2.0.0
-+ New dependency: script.module.inputstreamhelper
-+ Switch to registration code activation
-+ Finally replace HLS with MPEG-DASH (Widevine DRM is now required)
-+ Channels support (previously Viasat TV To Go)
-+ Implement dynamically acquired 'theme pages' in addition to browsing through categories
-+ Starred, Watched and Purchased pages now work
-+ Open add-on settings on first run
-+ Major rewrite and cleanup of the code
-+ Big improvements all-around and a massively enhanced experience
+v2.4.2 (2023-02-24)
+- Added playcount for sport events.
 
-2017.04.10 v1.0.8
-+ Fix audio on newer Viaplay content
-+ Fix icon/fanart
-+ Move addon code to addon.py
+v2.4.1 (2023-02-21)
+- Add to my list option.
+- Added login option with username and password.
+- Fixed watched markings for sports events.
+- Fixed playback errors.
 
-2017.01.25 v1.0.7.1
-+ Additional stream URL fix
+v2.4.0 (2023-02-12)
+- Fixed watched marking.
+- Fixed playback errors.
+- Other fixes.
 
-2017.01.25 v1.0.7
-+ Update for Krypton
-+ Fix stream URL retrieval
+v2.3.9 (2023-01-27)
+- Fix live.
 
-2016.12.11 v1.0.6
-+ Improve sports section
-+ Fix broken playback for new content
-+ Remove add-on debugging setting and automatically detect it instead
-+ Code cleanup
+v2.3.8 (2023-01-10)
+- Added new Viaplay arts.
 
-2016.09.08 v1.0.5
-+ Bug fix: possible UTC bug when determining game status
-+ Bump required requests version to 2.9.1
-+ Don't set watched status on sports content
-+ Implement parental control
-+ Add option to limit the max allowed bitrate
-+ Code cleanup & refactoring
+v2.3.7 (2023-01-10)
+- Fixes.
 
-2016.08.31 v1.0.4
-+ Remove dateutil dependency; add iso8601
-+ Improve the sports section
-+ Get better at catching exceptions
-+ Use 'with' statement to open files
+v2.3.6 (2023-01-01)
+- Added autologin on Kodi startup.
 
-2016.08.28 v1.0.3
-+ New dependency: m3u8
-+ The sports section is getting listed again
-+ Add poster artwork
-+ Add setting to select stream quality (for movies & TV)
-+ Store the device ID in file
-+ List episodes directly if there's only one season available
-+ Turn core code into a Kodi independent module (vialib)
-+ Performance improvements
-+ Significant code refactoring
+v2.3.5 (2022-07-28)
+- Fixed live channels. 
 
-2016.08.05 v1.0.2
-+ Store support
-+ Bug fix: some categories failed to load due to unavailable artwork
-+ Better info messages when playback fails
-+ Fix episode/sports thumbnails
-+ Code cleanup
+v2.3.4 (2022-04-23)
+- Fixed py2 support.
 
-2016.07.24 v1.0.1
-+ Bug fix: kids category showed sports category
-+ base_url changed so that more content is available
-+ SSL is now enabled by default. An option to disable it is available.
-+ Code cleanup
+v2.3.3 (2022-04-05)
+- Fixed live tv channels and popular sports in .se. @heppen-dev 
 
-2016.07.18 v1.0.0
-+ Initial release
-+ Thanks to eriksoderblom for icon and fanart!
+v2.3.2 (2022-03-27)
+- Fixed sports series event listing. @heppen-dev
+
+v2.3.1 (2022-03-24)
+- Add NL country support.
+- Fixed popular sport tiles. 
+
+v2.3.0 (2022-02-17)
+- Added search history function.
+
+v2.2.9 (2022-02-16)
+- Sport category fix. 
+
+v2.2.8 (2022-01-28)
+- Kids category updates.
+
+v2.2.7 (2022-01-27) 
+- Fixed logout. 
+
+v2.2.6 (2022-01-27)
+- Fixed login error. 
+
+v2.2.5 (2022-01-25)
+- Fixes.
+
+v2.2.4 (2022-01-23)
+- Fixed external authorization. 
+
+v2.2.3 (2021-11-09)
+- Added viaplay.lt. 
+
+v2.2.2 (2021-10-24)
+- Fixed plot. 
+
+v2.2.1 (2021-10-06)
+- Fixed category sport matches abbreviations. 
+
+v2.2.0 (2021-09-29)
+- Fixed subtitles. 
+
+v2.1.9 (2021-09-27)
+- Fixed product categories.
+
+v2.1.8 (2021-08-17)
+- Fixed html import error. 
+
+v2.1.7 (2021-08-11)
+- Fixed M3U playlist generator. 
+
+v2.1.6 (2021-08-09)
+- Added M3U playlist generator. 
+
+v2.1.5 (2021-08-08)
+- Added setting "Hide previously aired Live-Tv programmes".
+
+v2.1.4 (2021-08-07)
+- Added watched and purchased categories for viaplay.pl
+- Fixed category error. 
+
+v.2.1.3 (2021-08-05)
+- Added viaplay.pl
+- Added Polish translation. @hevet
+- Added Swedish translation. @Mariusz89B
+
+v2.1.2 (2019-03-11) 
+- Fix channels listing on some subscriptions.
+- Fix 'fallback' image is not always available.
+
+v2.1.1 (2018-02-21)
+- Fix parental control.
+
+v2.1.0 (2018-02-21)
+- New dependency: script.module.routing.
+- Support for 4K streams and 5.1 audio.
+- Fix audio bug on some sports streams (requires Kodi v18 Leia).
+- Channels section improvements.
+- Code cleanup.
+
+v2.0.1 (2017-12-27)
+- Minor changes needed for approval in the official repository.
+
+v2.0.0 (2017-12-27)
+- New dependency: script.module.inputstreamhelper.
+- Switch to registration code activation.
+- Finally replace HLS with MPEG-DASH (Widevine DRM is now required).
+- Channels support (previously Viasat TV To Go).
+- Implement dynamically acquired 'theme pages' in addition to browsing through categories.
+- Starred, Watched and Purchased pages now work.
+- Open add-on settings on first run.
+- Major rewrite and cleanup of the code.
+- Big improvements all-around and a massively enhanced experience.
+
+v1.0.8 (2017-04-10)
+- Fix audio on newer Viaplay content.
+- Fix icon/fanart.
+- Move addon code to addon.py
+
+v1.0.7.1 (2017-01-25)
+- Additional stream URL fix.
+
+v1.0.7 (2017-01-25)
+- Update for Krypton.
+- Fix stream URL retrieval.
+
+v1.0.6 (2016-12-11)
+- Improve sports section.
+- Fix broken playback for new content.
+- Remove add-on debugging setting and automatically detect it instead.
+- Code cleanup.
+
+v1.0.5 (2016-09-08)
+- Bug fix: possible UTC bug when determining game status.
+- Bump required requests version to 2.9.1.
+- Don't set watched status on sports content.
+- Implement parental control.
+- Add option to limit the max allowed bitrate.
+- Code cleanup & refactoring.
+
+v1.0.4 (2016-08-31)
+- Remove dateutil dependency; add iso8601.
+- Improve the sports section.
+- Get better at catching exceptions.
+- Use 'with' statement to open files.
+
+v1.0.3 (2016-08-28)
+- New dependency: m3u8.
+- The sports section is getting listed again.
+- Add poster artwork.
+- Add setting to select stream quality (for movies & TV).
+- Store the device ID in file.
+- List episodes directly if there's only one season available.
+- Turn core code into a Kodi independent module (vialib).
+- Performance improvements.
+- Significant code refactoring.
+
+v1.0.2 (2016-08-05)
+- Store support.
+- Bug fix: some categories failed to load due to unavailable artwork.
+- Better info messages when playback fails.
+- Fix episode/sports thumbnails.
+- Code cleanup.
+
+v1.0.1 (2016-07-24)
+- Bug fix: kids category showed sports category.
+- base_url changed so that more content is available.
+- SSL is now enabled by default. An option to disable it is available.
+- Code cleanup
+
+v1.0.0 (2016-07-18)
+- Initial release.
+- Thanks to eriksoderblom for icon and fanart!

@@ -1,34 +1,151 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.viaplay" version="2.1.2" name="Viaplay" provider-name="emilsvennesson">
-   <requires>
-      <import addon="xbmc.python" version="3.0.0" />
-      <import addon="script.module.requests" version="2.9.1" />
-      <import addon="script.module.iso8601" version="0.1.11" />
-      <import addon="script.module.inputstreamhelper" version="0.3.3" />
-      <import addon="script.module.routing" version="0.2.0" />
-   </requires>
-   <extension point="xbmc.python.pluginsource" library="default.py">
-      <provides>video</provides>
-   </extension>
-   <extension point="xbmc.addon.metadata">
-      <description lang="da_DK">Se indhold fra Viaplay.</description>
-      <description lang="en_GB">Watch content from Viaplay.</description>
-      <description lang="fi_FI">Katso sisältöä Viaplay.</description>
-      <description lang="nb_NO">Se innhold fra Viaplay.</description>
-      <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
-      <news>2019.03.11 v.2.1.2
-      + Fix channels listing on some subscriptions
-      + Fix 'fallback' image is not always available
-      </news>
-      <platform>all</platform>
-      <language>sv dk no fi en</language>
-      <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-      <source>https://github.com/emilsvennesson/kodi-viaplay</source>
-      <forum>http://forum.kodi.tv/showthread.php?tid=286387</forum>
-      <disclaimer>This add-on requires you to have a subscription to Viaplay.[CR]This add-on is completely unofficial and is not endorsed by Viaplay in any way.</disclaimer>
-      <assets>
-         <icon>resources/art/icon.png</icon>
-         <fanart>resources/art/fanart.jpg</fanart>
-      </assets>
-   </extension>
+<addon id="plugin.video.viaplay" version="2.4.6-beta.3" name="Viaplay" provider-name="mariusz89b, emilsvennesson, heppen-dev">
+  <requires>
+    <import addon="script.module.requests" version="2.9.1" />
+    <import addon="script.module.iso8601" version="0.1.11" />
+    <import addon="script.module.inputstreamhelper" version="0.3.3" />
+    <import addon="script.module.routing" version="0.2.0" />
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.service" library="login.py"/>
+  <extension point="xbmc.addon.metadata">
+    <description lang="da_DK">Se indhold fra Viaplay.</description>
+    <description lang="en_GB">Watch content from Viaplay.</description>
+    <description lang="fi_FI">Katso sisältöä Viaplay.</description>
+    <description lang="nb_NO">Se innhold fra Viaplay.</description>
+	<description lang="nl_NL">Bekijk inhoud van Viaplay.</description>
+    <description lang="sv_SE">Titta på innehåll från Viaplay.</description>
+    <description lang="pl_PL">Oglądaj treści z Viaplay.</description>
+    <description lang="lt_LT">Žiūrėkite turinį iš Viaplay.</description>
+	<disclaimer lang="en_GB">This add-on is unoffical and is not endorsed or supported by any of the services provided in any way. Any trademarks used belong to their owning companies and organisations, it is also required to have a subscription to Viaplay.</disclaimer>
+	<language>da en fi nb nl sv pl lt</language>
+    <platform>all</platform>
+    <license>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 and MIT LICENSE.</license>
+    <source>https://github.com/Mariusz89B/plugin.video.viaplay</source>
+    <news>v2.4.6 (2023-04-17)
+- Fixed live channels.
+
+v2.4.5 (2023-04-17)
+- Bug fixes.
+
+v2.4.4 (2023-03-12)
+- Fixed bug when returning from search.
+- Added option to enable/disable synchronization. 
+
+v2.4.3 (2023-03-06)
+- Added profile selector.
+- Added supported countries.
+- Added synchronization with watched list.
+
+v2.4.2 (2023-02-24)
+- Added playcount for sport events.
+
+v2.4.1 (2023-02-21)
+- Add to my list option.
+- Added login option with username and password.
+- Fixed watched markings for sports events.
+- Fixed playback errors.
+
+v2.4.0 (2023-02-12)
+- Fixed watched marking.
+- Fixed playback errors.
+- Other fixes.
+
+v2.3.9 (2023-01-27)
+- Fix live.
+
+v2.3.8 (2023-01-10)
+- Added new Viaplay arts.
+
+v2.3.7 (2023-01-10)
+- Fixes.
+
+v2.3.6 (2023-01-01)
+- Added autologin on Kodi startup.
+
+v2.3.5 (2022-07-28)
+- Fixed live channels. 
+
+v2.3.4 (2022-04-23)
+- Fixed py2 support.
+
+v2.3.3 (2022-04-05)
+- Fixed live tv channels and popular sports in .se. @heppen-dev 
+
+v2.3.2 (2022-03-27)
+- Fixed sports series event listing. @heppen-dev
+
+v2.3.1 (2022-03-24)
+- Add NL country support.
+- Fixed popular sport tiles. 
+
+v2.3.0 (2022-02-17)
+- Added search history function.
+
+v2.2.9 (2022-02-16)
+- Sport category fix. 
+
+v2.2.8 (2022-01-28)
+- Kids category updates.
+
+v2.2.7 (2022-01-27) 
+- Fixed logout. 
+
+v2.2.6 (2022-01-27)
+- Fixed login error. 
+
+v2.2.5 (2022-01-25)
+- Fixes.
+
+v2.2.4 (2022-01-23)
+- Fixed external authorization. 
+
+v2.2.3 (2021-11-09)
+- Added viaplay.lt. 
+
+v2.2.2 (2021-10-24)
+- Fixed plot. 
+
+v2.2.1 (2021-10-06)
+- Fixed category sport matches abbreviations. 
+
+v2.2.0 (2021-09-29)
+- Fixed subtitles. 
+
+v2.1.9 (2021-09-27)
+- Fixed product categories.
+
+v2.1.8 (2021-08-17 )
+- Fixed html import error. 
+
+v2.1.7 (2021-08-11)
+- Fixed M3U playlist generator. 
+
+v2.1.6 (2021-08-09)
+- Added M3U playlist generator. 
+
+v2.1.5 (2021-08-08)
+- Added setting "Hide previously aired Live-Tv programmes".
+
+v2.1.4 (2021-08-07)
+- Added watched and purchased categories for viaplay.pl
+- Fixed category error. 
+
+v.2.1.3 (2021-08-05)
+- Added viaplay.pl
+- Added Polish translation. @hevet
+- Added Swedish translation. @Mariusz89B
+    </news>
+    <assets>
+        <icon>icon.png</icon>
+        <fanart>resources/fanart.jpg</fanart>
+        <banner>resources/banner.jpg</banner>
+        <clearlogo>resources/clearlogo.png</clearlogo>
+        <screenshot>resources/screenshots/screenshot-01.jpg</screenshot>
+		<screenshot>resources/screenshots/screenshot-02.jpg</screenshot>
+		<screenshot>resources/screenshots/screenshot-03.jpg</screenshot>
+    </assets>
+  </extension>
 </addon>

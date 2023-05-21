@@ -1,8 +1,117 @@
-﻿<settings>
-  <category label="30003">
-    <setting id="site" type="enum" label="30007" lvalues="30008|30009|30010|30011" default="0"/>
-    <setting id="first_run" type="bool" default="true" visible="false"/>
-    <setting type="sep" />
-    <setting id="ia_settings" type="action" label="30053" action="RunPlugin(plugin://plugin.video.viaplay/ia_settings)" enable="System.HasAddon(inputstream.adaptive)" option="close" />
-  </category>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings version="1">
+	<section id="plugin.video.viaplay">
+		<category help="" id="viaplay" label="30003">
+			<group id="1">
+				<setting help="" id="site" label="30007" type="integer">
+					<level>0</level>
+					<default>0</default>
+					<constraints>
+						<options>
+						    <option label="30009">1</option>
+							<option label="30082">7</option>
+							<option label="30011">3</option>
+							<option label="30086">9</option>
+							<option label="30065">5</option>
+							<option label="30084">8</option>
+							<option label="30067">6</option>
+							<option label="30010">2</option>
+							<option label="30054">4</option>
+							<option label="30008">0</option>
+						</options>
+					</constraints>
+					<control format="string" type="list">
+						<heading>Select</heading>
+					</control>
+				</setting>
+				<setting help="" id="viaplay_username" label="30073" type="string">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control format="string" type="edit">
+						<heading>30073</heading>
+					</control>
+				</setting>
+				<setting help="" id="viaplay_password" label="30074" type="string">
+					<level>0</level>
+					<default/>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control format="string" type="edit">
+						<heading>30074</heading>
+						<hidden>true</hidden>
+					</control>
+				</setting>
+				<setting help="" id="autologin" label="30068" type="boolean">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting help="" id="synchronize" label="30093" type="boolean">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting help="" id="subtitles" label="30012" type="boolean">
+					<level>0</level>
+					<default>true</default>
+					<control type="toggle"/>
+				</setting>
+				<setting help="" id="previous_channels" label="30056" type="boolean">
+					<level>0</level>
+					<default>false</default>
+					<control type="toggle"/>
+				</setting>
+				<setting help="" id="first_run" type="boolean">
+					<level>0</level>
+					<default>false</default>
+					<visible>false</visible>
+					<control type="toggle"/>
+				</setting>
+			</group>
+		</category>
+		<category id="build_m3u" label="30057" help="">
+			<group id="1">
+				<setting help="" id="fname" label="30059" type="string">
+					<level>0</level>
+					<default>viaplay_iptv.m3u</default>
+					<control format="string" type="edit">
+						<heading>30059</heading>
+					</control>
+				</setting>
+				<setting help="" id="path" label="30060" type="path">
+					<default/>
+					<constraints>
+						<writable>true</writable>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control format="path" type="button">
+						<heading>30060</heading>
+					</control>
+				</setting>
+				<setting help="" id="create_playlist" type="action" label="30061">
+					<level>0</level>
+					<data>RunPlugin(plugin://plugin.video.viaplay?action=BUILD_M3U)</data>
+					<control type="button" format="action">
+						<close>true</close>
+					</control>
+				</setting>
+			</group>
+		</category>
+		<category help="" id="ia" label="30069">
+			<group id="1">
+				<setting help="" id="ia_settings" label="30053" type="action">
+					<level>0</level>
+					<data>RunScript(special://home/addons/plugin.video.teliaplay/ia_settings.py,settings)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control format="action" type="button"/>
+				</setting>
+			</group>
+		</category>
+	</section>
 </settings>
