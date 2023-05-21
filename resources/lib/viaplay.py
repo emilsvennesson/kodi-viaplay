@@ -226,8 +226,9 @@ class Viaplay(object):
         profiles = None
 
         if data:
-            if data['embedded'].get('profiles'):
-                profiles = data['embedded']['profiles']
+            em = data.get('embedded')
+            if em:
+                profiles = em.get('profiles')
 
         return profiles
 
